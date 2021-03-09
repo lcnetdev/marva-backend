@@ -1,0 +1,5 @@
+database_files/*
+.DS_Store
+util-service/node_modules
+util-service
+tmp

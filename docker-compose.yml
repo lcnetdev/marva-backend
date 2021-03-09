@@ -1,0 +1,74 @@
+version: '3'
+services:
+
+  util:
+    build: 
+      context: ./
+      dockerfile: config/util.docker
+    container_name: 'util'
+    volumes:
+      - ./util-service:/app
+      - ./dist/staging:/dist/staging
+      - ./dist/prod:/dist/prod
+      - ./tmp:/tmp
+    environment:
+      # 1 means to use nodmon and reload on change (dev)
+      # 2 means to use forever ever ever ever (prod)
+      - MODE=1
+      - DEPLOYPW="test"
+    # ports:
+    #   - 5001:5001
+
+
+  database:
+    image: 'mongo:4.4.4'
+    container_name: 'mongo' # give your contatner a name
+    environment:
+      - MONGO_INITDB_DATABASE=bfe2 # database name you want to make
+      # We don't need to define root stuff because we are not using auth in the db
+      #- MONGO_INITDB_ROOT_USERNAME=bfe2 # set your container root username
+      #- MONGO_INITDB_ROOT_PASSWORD=bfe2 # set your contatner root password
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./database_files:/data/db
+    
+    # we don't need to expose the mongo server, it only talks internally to the other containers
+    #ports:
+    #  - '37017-37019:27017-27019'
+    
+
+
+
+  ldpjs-staging:
+    build: 
+      context: ./
+      dockerfile: config/ldpjs.docker
+    container_name: 'ldpjs-staging'
+    depends_on:
+      - 'database'    
+    volumes:      
+      - ./ldpjs:/app # make the app directory from the git submodule
+      - ./config/ldpjs_config_staging.js:/app/config/index.js # copy over our own
+      - ./config/ldpjs_server_staging.js:/app/server.js # copy over our own
+      - ./tmp:/app/tmp
+      - ./config/ldpjs_startup.sh:/app/startup.sh
+    # ports:
+    #   - 9501:3000
+
+  reverse:
+    container_name: reverse
+    hostname: reverse
+    depends_on:
+      - 'ldpjs-staging'
+      - 'util'
+    image: nginx:stable-alpine
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./dist/prod:/prod
+      - ./dist/staging:/staging
+    ports:
+      - 9400:80
+      # - 443:443
+    # volumes:
+
