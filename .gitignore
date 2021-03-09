@@ -1,5 +1,5 @@
 database_files/*
 .DS_Store
 util-service/node_modules
-util-service
+node_modules
 tmp
