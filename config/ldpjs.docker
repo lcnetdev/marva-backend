@@ -20,7 +20,7 @@ RUN apk add --update nodejs-current npm
 
 RUN node --version
 
-RUN npm install -g forever nodmon
+RUN npm install -g forever nodemon
 
 WORKDIR /app
 
