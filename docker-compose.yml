@@ -17,8 +17,8 @@ services:
       - MODE=1
       - DEPLOYPW="test"
       - STAGINGPOSTURL=""
-      - STAGINGPOSTUSER=""
-      - STAGINGPOSTPW=""
+      - MLUSER=""
+      - MLPASS=""
     # ports:
     #   - 5001:5001
 
