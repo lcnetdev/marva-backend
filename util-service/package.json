@@ -12,6 +12,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "mongodb": "^3.6.4",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "shelljs": "^0.8.4"
   }
 }

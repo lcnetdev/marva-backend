@@ -16,6 +16,9 @@ services:
       # 2 means to use forever ever ever ever (prod)
       - MODE=1
       - DEPLOYPW="test"
+      - STAGINGPOSTURL=""
+      - STAGINGPOSTUSER=""
+      - STAGINGPOSTPW=""
     # ports:
     #   - 5001:5001
 
