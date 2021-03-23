@@ -180,7 +180,7 @@ app.post('/publish/staging', (request, response) => {
 	            // IF successful, it is by definition in this case also posted.
 	            resp_data = {
 	                    "name": request.body.name, 
-	                    "url": resources + name, 
+	                    // "url": resources + name, 
 	                    "objid": data.objid, 
 	                    "lccn": lccn, 
 	                    "publish": {"status":"published"}
