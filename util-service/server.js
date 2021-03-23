@@ -187,13 +187,13 @@ app.post('/publish/staging', (request, response) => {
 	                }
 	        } else {
 	            resp_data = {
-	                    "name": rerequestq.body.name, 
+	                    "name": request.body.name, 
 	                    "objid":  data.objid, 
 	                    "publish": {"status": "error","message": data.publish.message }
 	                }
 	        }
-	        res.set('Content-Type', 'application/json');
-	        res.status(200).send(resp_data);
+	        response.set('Content-Type', 'application/json');
+	        response.status(200).send(resp_data);
 	    })
 	    .catch(function (err) {
 	        // POST failed...
