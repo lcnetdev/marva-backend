@@ -19,6 +19,7 @@ services:
       - STAGINGPOSTURL=""
       - MLUSER=""
       - MLPASS=""
+      - EDITORVERSION=0.5.0
     # ports:
     #   - 5001:5001
 
