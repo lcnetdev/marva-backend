@@ -20,6 +20,17 @@ const MLUSER = process.env.MLUSER;
 const MLPASS = process.env.MLPASS;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 
+let editorVersion = {'major':0,'minor':0,'patch':0}
+
+if (process.env.EDITORVERSION){
+
+	let v = process.env.EDITORVERSION.split('.')
+
+	editorVersion.major = parseInt(v[0])
+	editorVersion.minor = parseInt(v[1])
+	editorVersion.patch = parseInt(v[2])
+
+}
 
 
 
@@ -105,6 +116,10 @@ app.get('/', function(request, response){
    response.send(request.body);    // echo the result back
 });
 
+app.get('/version/editor', function(request, response){
+  response.json(editorVersion);
+
+});
 
 app.post('/error/report', (request, response) => {
 
@@ -182,7 +197,7 @@ app.post('/publish/staging', (request, response) => {
 	                    "name": request.body.name, 
 	                    // "url": resources + name, 
 	                    "objid": data.objid, 
-	                    "lccn": lccn, 
+	                    // "lccn": lccn, 
 	                    "publish": {"status":"published"}
 	                }
 	        } else {
