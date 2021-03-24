@@ -170,6 +170,9 @@ app.post('/publish/staging', (request, response) => {
 	var rdfxml = request.body.rdfxml; 
 
 	var url = "https://" + STAGINGPOSTURL.trim() + "/post/" + name;
+	console.log('------')
+	console.log(request.body.rdfxml)
+	console.log('------')
 	console.log('posting to',url)
 	var options = {
 	    method: 'POST',
