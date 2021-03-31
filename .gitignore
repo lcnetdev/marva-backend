@@ -3,3 +3,5 @@ database_files/*
 util-service/node_modules
 node_modules
 tmp
+dist/prod/*
+dist/staging/*
