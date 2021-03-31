@@ -148,13 +148,57 @@ app.get('/error/report', (request, response) => {
 		    var cursor = dbo.collection('errorReports').find({});
 		    let results = []
 		 		cursor.forEach((doc)=>{
-		 			results.push({eId:doc.eId,desc:doc.desc,contact:doc.contact})
-		 		}, function(err) {
-			 		console.log(results)
-			 		response.json(results)
+		 			results.push({id:doc._id,eId:doc.eId,desc:doc.desc,contact:doc.contact})
+		 		}, function(err) {			 		
+			 		response.json(results.reverse())
 				})
 
 
+    });
+});
+
+app.get('/error/:errorId', (request, response) => {
+
+		try{
+			new mongo.ObjectID(request.params.errorId)
+		}catch{
+			response.json(false);
+			return false
+		}
+
+
+
+    MongoClient.connect(uri, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+				dbo.collection('errorReports').findOne({'_id':new mongo.ObjectID(request.params.errorId)})
+				.then(function(doc) {
+
+					response.type("application/json");
+
+
+					if(!doc){
+						response.json(false);
+					}else{
+
+
+						if (request.query.download){
+							response.attachment(`${doc.eId}.json`);
+							doc = JSON.parse(doc.activeProfile)
+							response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
+
+						}else{
+							doc = JSON.parse(doc.activeProfile)
+
+							response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
+
+						}
+
+
+						
+					}
+				});
     });
 });
 
