@@ -60,6 +60,24 @@ services:
     # ports:
     #   - 9501:3000
 
+  ldpjs-production:
+    build: 
+      context: ./
+      dockerfile: config/ldpjs.docker
+    container_name: 'ldpjs-production'
+    depends_on:
+      - 'database'    
+    volumes:      
+      - ./ldpjs:/app # make the app directory from the git submodule
+      - ./config/ldpjs_config_production.js:/app/config/index.js # copy over our own
+      - ./config/ldpjs_server_production.js:/app/server.js # copy over our own
+      - ./tmp:/app/tmp
+      - ./config/ldpjs_startup.sh:/app/startup.sh
+    # ports:
+    #   - 9501:3000
+
+
+
   reverse:
     container_name: reverse
     hostname: reverse

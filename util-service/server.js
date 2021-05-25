@@ -19,6 +19,7 @@ var recsProdByUser = {}
 const MLUSER = process.env.MLUSER;
 const MLPASS = process.env.MLPASS;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
+const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
 
 let editorVersion = {'major':0,'minor':0,'patch':0}
 
@@ -97,6 +98,61 @@ MongoClient.connect(uri, function(err, client) {
 
 
     });
+
+
+
+
+    var cursor = db.collection('resourcesProduction').find({});
+
+ 		cursor.forEach((doc)=>{
+
+ 			if (doc.index){
+ 				if (doc.index.eid){
+ 					recsProdByEid[doc.index.eid] = doc.index
+ 				}
+ 				if (doc.index.user && doc.index.eid){
+ 					if (!recsProdByUser[doc.index.user]){
+ 						recsProdByUser[doc.index.user] = {}
+ 					}
+ 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index				
+ 				}
+ 			}
+ 		})
+
+
+    db.collection('resourcesProduction').watch().on('change', data => 
+    {
+
+        // get the doc
+				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
+				.then(function(doc) {
+        if(!doc)
+            throw new Error('No record found.');
+
+			      // add it to the list or update it whatever
+		 				if (doc.index.eid){
+		 					recsProdByEid[doc.index.eid] = doc.index
+		 				}
+
+			      if (doc.index.user && doc.index.eid){
+		 					if (!recsProdByUser[doc.index.user]){
+		 						recsProdByUser[doc.index.user] = {}
+		 					}
+		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+			      }
+
+
+
+
+			  });
+
+
+    });
+
+
+
+
+
 });
 
 
@@ -202,6 +258,80 @@ app.get('/error/:errorId', (request, response) => {
     });
 });
 
+
+
+app.post('/publish/production', (request, response) => {
+
+	// var shortuuid = require('short-uuid');
+	// var decimaltranslator = shortuuid("0123456789");
+	// var objid = req.body.objid;
+	// var lccn = req.body.lccn;
+	// var dirname = __dirname + resources;
+
+	var name = request.body.name + ".rdf";
+	var rdfxml = request.body.rdfxml; 
+
+	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/post/" + name;
+	console.log('------')
+	console.log(request.body.rdfxml)
+	console.log('------')
+	console.log('posting to',url)
+	var options = {
+	    method: 'POST',
+	    uri: url,
+	    body: rdfxml,
+	    headers: { "Content-type": "application/xml" },
+	    auth: {
+	            'user': MLUSER,
+	            'pass': MLPASS,
+	        },
+	    json: false // Takes JSON as string and converts to Object
+	};
+	rp(options)
+	    .then(function (data) {
+	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
+	        // "publish": {"status": "success","message": "posted"}}
+	        console.log(data);
+	        data = JSON.parse(data);
+	        console.log(data.objid)
+	        
+	        var resp_data = {}
+	        if (data.publish.status == "success") {
+	            // IF successful, it is by definition in this case also posted.
+	            resp_data = {
+	                    "name": request.body.name, 
+	                    // "url": resources + name, 
+	                    "objid": data.objid, 
+	                    // "lccn": lccn, 
+	                    "publish": {"status":"published"}
+	                }
+	        } else {
+	            resp_data = {
+	                    "name": request.body.name, 
+	                    "objid":  data.objid, 
+	                    "publish": {"status": "error","message": data.publish.message }
+	                }
+	        }
+	        response.set('Content-Type', 'application/json');
+	        response.status(200).send(resp_data);
+	    })
+	    .catch(function (err) {
+	        // POST failed...
+	        console.log(err)
+	        resp_data = {
+	                "name": request.body.name, 
+	                "objid":  "objid", 
+	                "publish": {"status": "error","message": err }
+	            }
+	        response.set('Content-Type', 'application/json');
+	        response.status(500).send(resp_data);
+	    });
+
+
+   
+});
+
+
 app.post('/publish/staging', (request, response) => {
 
 	// var shortuuid = require('short-uuid');
@@ -273,6 +403,24 @@ app.post('/publish/staging', (request, response) => {
    
 });
 
+
+app.get('/myrecords/production/:user', function(request, response){
+	if (request.params.user){
+		response.json(recsProdByUser[request.params.user]);
+	}else{
+		response.json({});	
+	}
+});
+
+
+app.get('/allrecords/production', function(request, response){
+	response.json(recsProdByEid);	
+});
+
+
+
+
+
 app.get('/myrecords/staging/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsStageByUser[request.params.user]);
@@ -284,6 +432,28 @@ app.get('/myrecords/staging/:user', function(request, response){
 
 app.get('/allrecords/staging', function(request, response){
 	response.json(recsStageByEid);	
+});
+
+
+
+app.get('/deploy-production', function(request, response){
+
+	let correctlogin = 'yeet'
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+  if (  request.headers.authorization !== `Basic ${correctlogin}`){
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+  }
+
+  // Access granted...
+	let r = shell.exec('./deploy-production.sh')		
+ 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	
+	console.log(r_html)
+
+  return response.status(200).send(r_html)
+
 });
 
 
