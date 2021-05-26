@@ -24,8 +24,8 @@ fi
 FILE=/tmp/production-deploy/bfe2test/dist/index.html
 if test -f "$FILE"; then
     echo "$FILE exists."
-	rm -fr /dist/production/*
-	cp -R /tmp/production-deploy/bfe2test/dist/* /dist/production/
+	rm -fr /dist/prod/*
+	cp -R /tmp/production-deploy/bfe2test/dist/* /dist/prod/
 
 fi
 
