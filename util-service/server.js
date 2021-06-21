@@ -177,6 +177,43 @@ app.get('/version/editor', function(request, response){
 
 });
 
+
+app.post('/delete/:stage/:user/:eid', (request, response) => {
+
+	let result = false 
+
+	if (request.params.stage == 'staging'){
+		if (recsStageByUser[request.params.user]){
+			if (recsStageByUser[request.params.user][request.params.eid]){
+				recsStageByUser[request.params.user][request.params.eid].status = 'deleted'
+				result = true
+			}
+		}
+		if (recsStageByEid[request.params.eid]){
+			recsStageByEid[request.params.eid].status = 'deleted'
+			result = true
+		}
+	}
+	else{
+		if (recsProdByUser[request.params.user]){
+			if (recsProdByUser[request.params.user][request.params.eid]){
+				recsProdByUser[request.params.user][request.params.eid].status = 'deleted'
+				result = true
+			}
+		}
+		if (recsProdByEid[request.params.eid]){
+			recsProdByEid[request.params.eid].status = 'deleted'
+			result = true
+		}
+
+	}
+
+
+	response.json({'result':result});
+
+
+})
+
 app.post('/error/report', (request, response) => {
 
     MongoClient.connect(uri, function(err, db) {
