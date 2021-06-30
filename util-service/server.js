@@ -343,10 +343,14 @@ app.post('/publish/production', (request, response) => {
 	                    "publish": {"status":"published"}
 	                }
 	        } else {
+
+	        	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
+	        		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
+	        	}
 	            resp_data = {
 	                    "name": request.body.name, 
 	                    "objid":  data.objid, 
-	                    "publish": {"status": "error","message": data.publish.message }
+	                    "publish": {"status": "error","server": url,"message": data.publish.message }
 	                }
 	        }
 	        response.set('Content-Type', 'application/json');
@@ -358,7 +362,7 @@ app.post('/publish/production', (request, response) => {
 	        resp_data = {
 	                "name": request.body.name, 
 	                "objid":  "objid", 
-	                "publish": {"status": "error","message": err }
+	                "publish": {"status": "error","server": url,"message": err }
 	            }
 	        response.set('Content-Type', 'application/json');
 	        response.status(500).send(resp_data);
@@ -415,10 +419,17 @@ app.post('/publish/staging', (request, response) => {
 	                    "publish": {"status":"published"}
 	                }
 	        } else {
+
+
+	        	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
+	        		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
+	        	}
+
+
 	            resp_data = {
 	                    "name": request.body.name, 
 	                    "objid":  data.objid, 
-	                    "publish": {"status": "error","message": data.publish.message }
+	                    "publish": {"status": "error","server": url, "message": data.publish.message }
 	                }
 	        }
 	        response.set('Content-Type', 'application/json');
@@ -430,7 +441,7 @@ app.post('/publish/staging', (request, response) => {
 	        resp_data = {
 	                "name": request.body.name, 
 	                "objid":  "objid", 
-	                "publish": {"status": "error","message": err }
+	                "publish": {"status": "error","server": url,"message": err }
 	            }
 	        response.set('Content-Type', 'application/json');
 	        response.status(500).send(resp_data);
