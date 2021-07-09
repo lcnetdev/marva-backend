@@ -384,7 +384,7 @@ app.post('/publish/staging', (request, response) => {
 	var name = request.body.name + ".rdf";
 	var rdfxml = request.body.rdfxml; 
 
-	var url = "https://" + STAGINGPOSTURL.trim() + "/controllers/ingest/bf-bib.xqy/" + name;
+	var url = "https://" + STAGINGPOSTURL.trim() + "/controllers/ingest/bf-bib.xqy";
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
