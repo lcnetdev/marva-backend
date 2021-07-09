@@ -18,6 +18,8 @@ var recsProdByUser = {}
 
 const MLUSER = process.env.MLUSER;
 const MLPASS = process.env.MLPASS;
+const MLUSERSTAGE = process.env.MLUSERSTAGE;
+const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
 
@@ -395,8 +397,8 @@ app.post('/publish/staging', (request, response) => {
 	    body: rdfxml,
 	    headers: { "Content-type": "application/xml" },
 	    auth: {
-	            'user': MLUSER,
-	            'pass': MLPASS,
+	            'user': MLUSERSTAGE,
+	            'pass': MLPASSSTAGE,
 	        },
 	    json: false // Takes JSON as string and converts to Object
 	};
