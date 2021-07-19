@@ -180,6 +180,219 @@ app.get('/version/editor', function(request, response){
 });
 
 
+app.get('/reports/stats/:year/:quarter', function(request, response){
+
+
+
+	let correctlogin = 'yeet'
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.STATSPW.replace(/"/g,'')}:${process.env.STATSPW.replace(/"/g,'')}`).toString('base64')
+	}
+	if (  request.headers.authorization !== `Basic ${correctlogin}`){
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+	}
+
+	var chunk = function(arr, chunkSize) {
+	  if (chunkSize <= 0) throw "Invalid chunk size";
+	  var R = [];
+	  for (var i=0,len=arr.length; i<len; i+=chunkSize)
+	    R.push(arr.slice(i,i+chunkSize));
+	  return R;
+	}
+
+	var isNumeric = function(num){
+	  return !isNaN(num)
+	}
+
+	var getDaysArray = function(start, end) {
+	    for(var arr=[],dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
+	        arr.push(new Date(dt));
+	    }
+	    return arr;
+	};
+
+
+	if (request.params.quarter){
+		request.params.quarter = request.params.quarter.toUpperCase()
+	}
+
+
+	let qlookup = {'Q1': ['-10-01','-12-31'],
+	'Q2': ['-01-01','-03-31'],
+	'Q3': ['-04-01','-06-30'],
+	'Q4': ['-07-01','-09-30']}
+
+
+
+	if (!isNumeric(request.params.year) || request.params.year.length < 4){
+		response.send('Year does not look like  a year')
+		return false
+	}
+
+	if (!qlookup[request.params.quarter]){
+		response.send('Year does not look like  a valid quarter')
+		return false
+	}
+
+
+	let start_date = request.params.year + qlookup[request.params.quarter][0]
+	let end_date = request.params.year + qlookup[request.params.quarter][1]
+
+
+	let start_time = new Date(start_date).getTime() / 1000
+	let end_time = new Date(end_date).getTime() / 1000
+
+
+  	let day_list = getDaysArray(new Date(start_date),new Date(end_date))
+
+
+  	day_chunks = chunk(day_list,7)
+
+  	let report = {}
+
+  	for (let day_chunk of day_chunks){
+  		
+
+  		report[day_chunk[0].toISOString().split('T')[0]] = {
+  			// label: day_chunk[0].toISOString().split('T')[0],
+  			label: (day_chunk[0].getMonth() + 1) + '/' + day_chunk[0].getDate() + '/' + day_chunk[0].getFullYear(),
+  			days: day_chunk.map((d)=>{return d.toISOString().split('T')[0]}),
+  			users: {}
+  		}
+
+  	}
+
+
+	MongoClient.connect(uri, function(err, client) {
+
+		const db = client.db('bfe2');
+
+		var cursor = db.collection('resourcesProduction').find({});
+		let all_users = {}
+		cursor.forEach((doc)=>{
+
+
+			// only work on records built between our ranges
+			if (doc.index && doc.index.timestamp && doc.index.timestamp>=  start_time && doc.index.timestamp <= end_time){
+
+
+				if (!all_users[doc.index.user]){
+					all_users[doc.index.user] = 0
+				}
+
+
+
+				for (let key in report){
+
+					for (let day of report[key].days){
+						if (doc.index.time.includes(day)){
+
+							// it contains one of the days, it belongs in this bucket
+
+							if (!report[key].users[doc.index.user]){
+								report[key].users[doc.index.user]=0
+							}
+
+							report[key].users[doc.index.user]++
+
+
+						}
+						
+
+					}
+
+
+				}
+
+				
+
+			}
+
+
+
+
+
+
+		}, function(err){
+
+			let all_users_alpha = Object.keys(all_users).sort()
+
+
+
+
+			let csvResults = `${request.params.year}${request.params.quarter} Editor Stats, By Cataloger\n`
+
+			csvResults = csvResults +'Cataloger,' + Object.keys(report).map((k)=>{ return report[k].label }).join(',') + ',Created Totals\n'
+
+
+
+
+
+			for (let u of all_users_alpha){
+
+				let row = [u]
+
+				for (let key in report){
+
+					// did they have activity for this week
+					if (report[key].users[u]){
+						row.push(report[key].users[u])
+
+						// add to the tottal
+						all_users[u] = all_users[u] +  report[key].users[u]
+					}else{
+						row.push(0)
+					}
+
+
+
+				}
+
+				// add in the tottal
+				row.push(all_users[u])
+
+
+				csvResults = csvResults + row.join(',') +'\n'
+
+			}
+
+			let totals = ['Created Total']
+			let all_total = 0
+			for (let key in report){
+
+				let t = 0
+				for (let u in report[key].users){
+					t = t +  report[key].users[u]
+					all_total = all_total + t
+				}
+
+				totals.push(t)
+			}
+			totals.push(all_total)
+
+			csvResults = csvResults + totals.join(',')
+
+
+
+
+
+			response.attachment(`stats_new_editor_${request.params.year}${request.params.quarter}.csv`);
+			response.status(200).send(csvResults);
+
+		})
+
+
+
+
+
+		
+
+	});
+
+
+});
+
+
 app.post('/delete/:stage/:user/:eid', (request, response) => {
 
 	let result = false 

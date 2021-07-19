@@ -16,6 +16,7 @@ services:
       # 2 means to use forever ever ever ever (prod)
       - MODE=1
       - DEPLOYPW="test"
+      - STATSPW="stats"
       - STAGINGPOSTURL=""
       - MLUSER=""
       - MLPASS=""
