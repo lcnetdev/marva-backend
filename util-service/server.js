@@ -363,7 +363,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 				let t = 0
 				for (let u in report[key].users){
 					t = t +  report[key].users[u]
-					all_total = all_total + t
+					all_total = all_total + report[key].users[u]
 				}
 
 				totals.push(t)
