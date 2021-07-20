@@ -617,15 +617,15 @@ app.post('/publish/staging', (request, response) => {
 	    json: false // Takes JSON as string and converts to Object
 	};
 	rp(options)
-	    .then(function (response) {
+	    .then(function (postResponse) {
 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
 	        // "publish": {"status": "success","message": "posted"}}
 
-	        console.log(response)
+	        console.log(postResponse)
 	        let postStatus = {"status":"published"}
 
-	        if (response.statusCode != 201 && response.statusCode != 204 ){
-	        	postStatus = {"status": "error","server": url, "message": response.statusCode }
+	        if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+	        	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
 	        }
 
 			let resp_data = {
