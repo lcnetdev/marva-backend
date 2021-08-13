@@ -612,7 +612,7 @@ app.post('/publish/production', (request, response) => {
 	    headers: { "Content-type": "application/xml" },
 	    auth: {
 	            'user': MLUSER,
-	            'pass': MLUSER,
+	            'pass': MLPASS,
 	        },
 	    json: false // Takes JSON as string and converts to Object
 	};
