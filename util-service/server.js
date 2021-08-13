@@ -512,6 +512,82 @@ app.get('/error/:errorId', (request, response) => {
 
 
 
+// app.post('/publish/production', (request, response) => {
+
+// 	// var shortuuid = require('short-uuid');
+// 	// var decimaltranslator = shortuuid("0123456789");
+// 	// var objid = req.body.objid;
+// 	// var lccn = req.body.lccn;
+// 	// var dirname = __dirname + resources;
+
+// 	var name = request.body.name + ".rdf";
+// 	var rdfxml = request.body.rdfxml; 
+
+// 	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/post/" + name;
+// 	console.log('------')
+// 	console.log(request.body.rdfxml)
+// 	console.log('------')
+// 	console.log('posting to',url)
+// 	var options = {
+// 	    method: 'POST',
+// 	    uri: url,
+// 	    body: rdfxml,
+// 	    headers: { "Content-type": "application/xml" },
+// 	    auth: {
+// 	            'user': MLUSER,
+// 	            'pass': MLPASS,
+// 	        },
+// 	    json: false // Takes JSON as string and converts to Object
+// 	};
+// 	rp(options)
+// 	    .then(function (data) {
+// 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
+// 	        // "publish": {"status": "success","message": "posted"}}
+// 	        console.log(data);
+// 	        data = JSON.parse(data);
+// 	        console.log(data.objid)
+	        
+// 	        var resp_data = {}
+// 	        if (data.publish.status == "success") {
+// 	            // IF successful, it is by definition in this case also posted.
+// 	            resp_data = {
+// 	                    "name": request.body.name, 
+// 	                    // "url": resources + name, 
+// 	                    "objid": data.objid, 
+// 	                    // "lccn": lccn, 
+// 	                    "publish": {"status":"published"}
+// 	                }
+// 	        } else {
+
+// 	        	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
+// 	        		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
+// 	        	}
+// 	            resp_data = {
+// 	                    "name": request.body.name, 
+// 	                    "objid":  data.objid, 
+// 	                    "publish": {"status": "error","server": url,"message": data.publish.message }
+// 	                }
+// 	        }
+// 	        response.set('Content-Type', 'application/json');
+// 	        response.status(200).send(resp_data);
+// 	    })
+// 	    .catch(function (err) {
+// 	        // POST failed...
+// 	        console.log(err)
+// 	        resp_data = {
+// 	                "name": request.body.name, 
+// 	                "objid":  "objid", 
+// 	                "publish": {"status": "error","server": url,"message": err }
+// 	            }
+// 	        response.set('Content-Type', 'application/json');
+// 	        response.status(500).send(resp_data);
+// 	    });
+
+
+   
+// });
+
+
 app.post('/publish/production', (request, response) => {
 
 	// var shortuuid = require('short-uuid');
@@ -523,7 +599,7 @@ app.post('/publish/production', (request, response) => {
 	var name = request.body.name + ".rdf";
 	var rdfxml = request.body.rdfxml; 
 
-	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/post/" + name;
+	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/controllers/ingest/bf-bib.xqy";
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
@@ -532,42 +608,35 @@ app.post('/publish/production', (request, response) => {
 	    method: 'POST',
 	    uri: url,
 	    body: rdfxml,
+	    resolveWithFullResponse: true,
 	    headers: { "Content-type": "application/xml" },
 	    auth: {
 	            'user': MLUSER,
-	            'pass': MLPASS,
+	            'pass': MLUSER,
 	        },
 	    json: false // Takes JSON as string and converts to Object
 	};
 	rp(options)
-	    .then(function (data) {
+	    .then(function (postResponse) {
 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
 	        // "publish": {"status": "success","message": "posted"}}
-	        console.log(data);
-	        data = JSON.parse(data);
-	        console.log(data.objid)
-	        
-	        var resp_data = {}
-	        if (data.publish.status == "success") {
-	            // IF successful, it is by definition in this case also posted.
-	            resp_data = {
-	                    "name": request.body.name, 
-	                    // "url": resources + name, 
-	                    "objid": data.objid, 
-	                    // "lccn": lccn, 
-	                    "publish": {"status":"published"}
-	                }
-	        } else {
 
-	        	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
-	        		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
-	        	}
-	            resp_data = {
-	                    "name": request.body.name, 
-	                    "objid":  data.objid, 
-	                    "publish": {"status": "error","server": url,"message": data.publish.message }
-	                }
+	        console.log(postResponse)
+	        let postStatus = {"status":"published"}
+
+	        if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+	        	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
 	        }
+
+			let resp_data = {
+                name: request.body.name, 
+                // "url": resources + name, 
+                //"objid": data.objid, 
+                // "lccn": lccn, 
+                publish: postStatus
+            }
+	        
+	        
 	        response.set('Content-Type', 'application/json');
 	        response.status(200).send(resp_data);
 	    })
@@ -586,6 +655,7 @@ app.post('/publish/production', (request, response) => {
 
    
 });
+
 
 
 app.post('/publish/staging', (request, response) => {
@@ -637,29 +707,6 @@ app.post('/publish/staging', (request, response) => {
             }
 	        
 
-	        // if (data.publish.status == "success") {
-	        //     // IF successful, it is by definition in this case also posted.
-	        //     resp_data = {
-	        //             "name": request.body.name, 
-	        //             // "url": resources + name, 
-	        //             //"objid": data.objid, 
-	        //             // "lccn": lccn, 
-	        //             "publish": {"status":"published"}
-	        //         }
-	        // } else {
-
-
-	        // 	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
-	        // 		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
-	        // 	}
-
-
-	        //     resp_data = {
-	        //             "name": request.body.name, 
-	        //             "objid":  data.objid, 
-	        //             "publish": {"status": "error","server": url, "message": data.publish.message }
-	        //         }
-	        // }
 	        response.set('Content-Type', 'application/json');
 	        response.status(200).send(resp_data);
 	    })
