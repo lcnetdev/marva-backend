@@ -643,6 +643,10 @@ app.post('/publish/production', (request, response) => {
 	    .catch(function (err) {
 	        // POST failed...
 	        console.log(err)
+
+	        err=err.replaceAll(MLUSER,'****')
+	        err=err.replaceAll(MLPASS,'****')
+
 	        resp_data = {
 	                "name": request.body.name, 
 	                "objid":  "objid", 
@@ -713,6 +717,9 @@ app.post('/publish/staging', (request, response) => {
 	    .catch(function (err) {
 	        // POST failed...
 	        console.log(err)
+	        err=err.replaceAll(MLUSERSTAGE,'****')
+	        err=err.replaceAll(MLPASSSTAGE,'****')
+	        
 	        resp_data = {
 	                "name": request.body.name, 
 	                "objid":  "objid", 
