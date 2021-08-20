@@ -2,7 +2,7 @@ const express = require('express');
 const shell = require('shelljs')
 const cors = require('cors')
 const rp = require('request-promise');
-
+const fs = require('fs');
 
 
 
@@ -719,7 +719,7 @@ app.post('/publish/staging', (request, response) => {
 	        console.log(err)
 	        err=err.replaceAll(MLUSERSTAGE,'****')
 	        err=err.replaceAll(MLPASSSTAGE,'****')
-	        
+
 	        resp_data = {
 	                "name": request.body.name, 
 	                "objid":  "objid", 
@@ -806,6 +806,183 @@ app.get('/deploy-staging', function(request, response){
   return response.status(200).send(r_html)
 
 });
+
+
+
+app.get('/dump/xml/prod', function(request, response){
+
+
+
+	let correctlogin = 'yeet'
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+	if (  request.headers.authorization !== `Basic ${correctlogin}`){
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+	}
+
+
+
+	fs.rmdirSync('/tmp/dumps/', { recursive: true });
+	fs.mkdirSync('/tmp/dumps/');
+
+
+
+	MongoClient.connect(uri, function(err, client) {
+
+		const db = client.db('bfe2');
+
+		var cursor = db.collection('resourcesStaging').find({});
+		let all_users = {}
+		cursor.forEach((doc)=>{
+
+			
+			let lastone = doc.versions.length-1
+
+
+
+			// console.log(doc.index.status)
+			// console.log(doc.index.eid)
+			// console.log(typeof doc.versions[lastone].content)
+
+
+
+
+			// if the sub dir doesnt exist make it
+			if (!fs.existsSync('/tmp/dumps/'+doc.index.status)){
+			    fs.mkdirSync('/tmp/dumps/'+doc.index.status);
+			}
+
+
+			if (typeof doc.versions[lastone].content === 'string'){
+				fs.writeFileSync( '/tmp/dumps/'+doc.index.status + '/' + doc.index.eid + '.xml' , doc.versions[lastone].content)
+			}
+
+			// console.log(doc.versions[lastone])
+			// // only work on records built between our ranges
+			// if (doc.index && doc.index.timestamp && doc.index.timestamp>=  start_time && doc.index.timestamp <= end_time){
+
+
+			// 	if (!all_users[doc.index.user]){
+			// 		all_users[doc.index.user] = 0
+			// 	}
+
+
+
+			// 	for (let key in report){
+
+			// 		for (let day of report[key].days){
+			// 			if (doc.index.time.includes(day)){
+
+			// 				// it contains one of the days, it belongs in this bucket
+
+			// 				if (!report[key].users[doc.index.user]){
+			// 					report[key].users[doc.index.user]=0
+			// 				}
+
+			// 				report[key].users[doc.index.user]++
+
+
+			// 			}
+						
+
+			// 		}
+
+
+			// 	}
+
+				
+
+			// }
+
+
+
+
+
+
+		}, function(err){
+
+			// let all_users_alpha = Object.keys(all_users).sort()
+
+
+
+
+			// let csvResults = `${request.params.year}${request.params.quarter} Editor Stats, By Cataloger\n`
+
+			// csvResults = csvResults +'Cataloger,' + Object.keys(report).map((k)=>{ return report[k].label }).join(',') + ',Created Totals\n'
+
+
+
+
+
+			// for (let u of all_users_alpha){
+
+			// 	let row = [u]
+
+			// 	for (let key in report){
+
+			// 		// did they have activity for this week
+			// 		if (report[key].users[u]){
+			// 			row.push(report[key].users[u])
+
+			// 			// add to the tottal
+			// 			all_users[u] = all_users[u] +  report[key].users[u]
+			// 		}else{
+			// 			row.push(0)
+			// 		}
+
+
+
+			// 	}
+
+			// 	// add in the tottal
+			// 	row.push(all_users[u])
+
+
+			// 	csvResults = csvResults + row.join(',') +'\n'
+
+			// }
+
+			// let totals = ['Created Total']
+			// let all_total = 0
+			// for (let key in report){
+
+			// 	let t = 0
+			// 	for (let u in report[key].users){
+			// 		t = t +  report[key].users[u]
+			// 		all_total = all_total + report[key].users[u]
+			// 	}
+
+			// 	totals.push(t)
+			// }
+			// totals.push(all_total)
+
+			// csvResults = csvResults + totals.join(',')
+
+
+
+
+
+			if (err){
+				response.status(500).send(err);	
+			}else{
+				response.status(200).send('OKAY');
+			}
+
+		})
+
+
+
+
+
+		
+
+	});
+
+
+});
+
+
 
 
 console.log('listending on 5200')
