@@ -25,6 +25,8 @@ const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
 
+let postLog = []
+
 let editorVersion = {'major':0,'minor':0,'patch':0}
 
 if (process.env.EDITORVERSION){
@@ -514,81 +516,6 @@ app.get('/error/:errorId', (request, response) => {
 
 
 
-// app.post('/publish/production', (request, response) => {
-
-// 	// var shortuuid = require('short-uuid');
-// 	// var decimaltranslator = shortuuid("0123456789");
-// 	// var objid = req.body.objid;
-// 	// var lccn = req.body.lccn;
-// 	// var dirname = __dirname + resources;
-
-// 	var name = request.body.name + ".rdf";
-// 	var rdfxml = request.body.rdfxml; 
-
-// 	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/post/" + name;
-// 	console.log('------')
-// 	console.log(request.body.rdfxml)
-// 	console.log('------')
-// 	console.log('posting to',url)
-// 	var options = {
-// 	    method: 'POST',
-// 	    uri: url,
-// 	    body: rdfxml,
-// 	    headers: { "Content-type": "application/xml" },
-// 	    auth: {
-// 	            'user': MLUSER,
-// 	            'pass': MLPASS,
-// 	        },
-// 	    json: false // Takes JSON as string and converts to Object
-// 	};
-// 	rp(options)
-// 	    .then(function (data) {
-// 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
-// 	        // "publish": {"status": "success","message": "posted"}}
-// 	        console.log(data);
-// 	        data = JSON.parse(data);
-// 	        console.log(data.objid)
-	        
-// 	        var resp_data = {}
-// 	        if (data.publish.status == "success") {
-// 	            // IF successful, it is by definition in this case also posted.
-// 	            resp_data = {
-// 	                    "name": request.body.name, 
-// 	                    // "url": resources + name, 
-// 	                    "objid": data.objid, 
-// 	                    // "lccn": lccn, 
-// 	                    "publish": {"status":"published"}
-// 	                }
-// 	        } else {
-
-// 	        	if (data.publish.message && data.publish.message.options && data.publish.message.options.auth){
-// 	        		data.publish.message.options.auth = "PASSWORD and USER hidden in debug response"	
-// 	        	}
-// 	            resp_data = {
-// 	                    "name": request.body.name, 
-// 	                    "objid":  data.objid, 
-// 	                    "publish": {"status": "error","server": url,"message": data.publish.message }
-// 	                }
-// 	        }
-// 	        response.set('Content-Type', 'application/json');
-// 	        response.status(200).send(resp_data);
-// 	    })
-// 	    .catch(function (err) {
-// 	        // POST failed...
-// 	        console.log(err)
-// 	        resp_data = {
-// 	                "name": request.body.name, 
-// 	                "objid":  "objid", 
-// 	                "publish": {"status": "error","server": url,"message": err }
-// 	            }
-// 	        response.set('Content-Type', 'application/json');
-// 	        response.status(500).send(resp_data);
-// 	    });
-
-
-   
-// });
-
 
 app.post('/publish/production', (request, response) => {
 
@@ -606,6 +533,18 @@ app.post('/publish/production', (request, response) => {
 	console.log(request.body.rdfxml)
 	console.log('------')
 	console.log('posting to',url)
+
+
+	let postLogEntry = {
+		'postingDate': new Date(),
+		'postingEnv': 'production',
+		'postingTo': url,
+		'postingXML': request.body.rdfxml,
+
+	}
+
+
+
 	var options = {
 	    method: 'POST',
 	    uri: url,
@@ -622,6 +561,16 @@ app.post('/publish/production', (request, response) => {
 	    .then(function (postResponse) {
 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
 	        // "publish": {"status": "success","message": "posted"}}
+
+	        postLogEntry['postingStatus'] = 'success'
+	        postLogEntry['postingStatusCode'] = postResponse.statusCode
+	        postLogEntry['postingBodyResponse'] = postResponse.body
+	        postLogEntry['postingName'] = request.body.name
+		    postLog.push(postLogEntry)
+		    if (postLogEntry.length>50){
+		    	postLogEntry.shift()
+		    }
+
 
 	        console.log(postResponse)
 	        let postStatus = {"status":"published"}
@@ -646,8 +595,25 @@ app.post('/publish/production', (request, response) => {
 	        // POST failed...
 	        console.log(err)
 
-	        err=err.replaceAll(MLUSER,'****')
-	        err=err.replaceAll(MLPASS,'****')
+	        postLogEntry['postingStatus'] = 'error'
+	        postLogEntry['postingStatusCode'] =  err.StatusCodeError
+	        postLogEntry['postingBodyResponse'] = err
+	        postLogEntry['postingBodyName'] = request.body.name
+	        postLogEntry['postingEid'] = request.body.eid
+	        
+	        postLog.push(postLogEntry)
+	        if (postLogEntry.length>50){
+	        	postLogEntry.shift()
+	        }
+
+
+	        errString = JSON.stringify(err)
+			let replace = `${MLUSER}|${MLPASS}`;
+			let re = new RegExp(replace,"g");
+			errString = errString.replace(re, ",'****')");
+	        err = JSON.parse(errString)
+
+
 
 	        resp_data = {
 	                "name": request.body.name, 
@@ -680,6 +646,19 @@ app.post('/publish/staging', (request, response) => {
 	console.log(request.body.rdfxml)
 	console.log('------')
 	console.log('posting to',url)
+
+
+	let postLogEntry = {
+		'postingDate': new Date(),
+		'postingEnv': 'production',
+		'postingTo': url,
+		'postingXML': request.body.rdfxml,
+
+	}
+
+
+
+
 	var options = {
 	    method: 'POST',
 	    uri: url,
@@ -696,6 +675,16 @@ app.post('/publish/staging', (request, response) => {
 	    .then(function (postResponse) {
 	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
 	        // "publish": {"status": "success","message": "posted"}}
+
+	        postLogEntry['postingStatus'] = 'success'
+	        postLogEntry['postingStatusCode'] = postResponse.statusCode
+	        postLogEntry['postingBodyResponse'] = postResponse.body
+	        postLogEntry['postingName'] = request.body.name
+
+		    postLog.push(postLogEntry)
+		    if (postLogEntry.length>50){
+		    	postLogEntry.shift()
+		    }
 
 	        console.log(postResponse)
 	        let postStatus = {"status":"published"}
@@ -718,9 +707,25 @@ app.post('/publish/staging', (request, response) => {
 	    })
 	    .catch(function (err) {
 	        // POST failed...
-	        console.log(err)
-	        err=err.replaceAll(MLUSERSTAGE,'****')
-	        err=err.replaceAll(MLPASSSTAGE,'****')
+
+	        errString = JSON.stringify(err)
+			let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
+			let re = new RegExp(replace,"g");
+			errString = errString.replace(re, ",'****')");
+	        err = JSON.parse(errString)
+
+
+
+	        postLogEntry['postingStatus'] = 'error'
+	        postLogEntry['postingStatusCode'] =  err.StatusCodeError
+	        postLogEntry['postingBodyResponse'] = err
+	        postLogEntry['postingBodyName'] = request.body.name
+	        postLogEntry['postingEid'] = request.body.eid
+		    postLog.push(postLogEntry)
+		    if (postLogEntry.length>50){
+		    	postLogEntry.shift()
+		    }
+
 
 	        resp_data = {
 	                "name": request.body.name, 
@@ -749,6 +754,10 @@ app.get('/allrecords/production', function(request, response){
 	response.json(recsProdByEid);	
 });
 
+
+app.get('/logs/posts', function(request, response){
+	response.json(postLog);	
+});
 
 
 
