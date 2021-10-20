@@ -528,7 +528,13 @@ app.post('/publish/production', (request, response) => {
 	var name = request.body.name + ".rdf";
 	var rdfxml = request.body.rdfxml; 
 
-	var url = "https://" + PRODUCTIONPOSTURL.trim() + "/controllers/ingest/bf-bib.xqy";
+	let endpoint = "/controllers/ingest/bf-bib.xqy"
+
+	if (request.body.hub === true){
+		endpoint = "/controllers/ingest/bf-hub.xqy"		
+	}
+
+	var url = "https://" + PRODUCTIONPOSTURL.trim() + endpoint;
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
@@ -641,7 +647,14 @@ app.post('/publish/staging', (request, response) => {
 	var name = request.body.name + ".rdf";
 	var rdfxml = request.body.rdfxml; 
 
-	var url = "https://" + STAGINGPOSTURL.trim() + "/controllers/ingest/bf-bib.xqy";
+	let endpoint = "/controllers/ingest/bf-bib.xqy"
+
+	if (request.body.hub === true){
+		endpoint = "/controllers/ingest/bf-hub.xqy"
+		console.log('using Hub END POInT')
+	}
+
+	var url = "https://" + STAGINGPOSTURL.trim() + endpoint;
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
