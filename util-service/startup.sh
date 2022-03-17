@@ -16,7 +16,7 @@ echo $MODE
 if [ $MODE = 1 ]
 then
 	echo "Doing dev mode"
-    nodemon server.js
+    nodemon server.js --ignore '*.json'
 else
 	echo "Doing prod mode"
     forever server.js

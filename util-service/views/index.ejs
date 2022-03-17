@@ -1,0 +1,87 @@
+<html>
+
+	<head></head>
+
+
+	<body>
+
+	<style>
+
+		body{
+			padding: 1em;
+		}
+		.deploy{
+			display: block-inline;
+			padding: 1em;
+			background-color: whitesmoke;
+			border: solid 1px lightgray;
+		}
+		hr{
+			margin: 2em;
+		}
+		.ver-input{
+			width: 2em;
+		}
+	</style>
+
+
+
+		<h2>Deploy</h2>
+		<a href="deploy-staging" class="deploy" target="_blank">Deploy Staging</a>
+		<a href="deploy-production" class="deploy"target="_blank">Deploy Production</a>
+		<hr>
+		<h2>Set Version</h2>
+
+		<div>Staging:</div>
+		<label>Major:</label><input class="ver-input" id="ver-staging-major" value="<%- editorVersionStage.major%>" type="text">
+		<label>Minor:</label><input class="ver-input" id="ver-staging-minor" value="<%- editorVersionStage.minor%>" type="text"><label>Patch:</label>
+		<input class="ver-input" id="ver-staging-patch" value="<%- editorVersionStage.patch%>" type="text">
+		<button id="set-staging-ver">Set</button>
+		<br><br>
+		<div>Production:</div>
+		<label>Major:</label><input class="ver-input" id="ver-production-major" value="<%- editorVersion.major%>" type="text">
+		<label>Minor:</label><input class="ver-input" id="ver-production-minor" value="<%- editorVersion.minor%>" type="text"><label>Patch:</label>
+		<input class="ver-input" id="ver-production-patch" value="<%- editorVersion.patch%>" type="text">
+		<button id="set-production-ver">Set</button>
+
+
+
+
+
+		<script>
+
+			function setVersion(env,major,minor,patch){
+
+				console.log(env,major,minor,patch)
+				//
+
+				fetch(`version/set/${env}/${major}/${minor}/${patch}`, {method:'GET'})
+				.then(response => response.json())
+				.then(json => console.log(json));
+
+			}
+
+			document.getElementById('set-staging-ver').addEventListener('click',()=>{
+				setVersion(
+					'staging',
+					document.getElementById('ver-staging-major').value,
+					document.getElementById('ver-staging-minor').value,
+					document.getElementById('ver-staging-patch').value					)
+			})
+
+			document.getElementById('set-production-ver').addEventListener('click',()=>{
+				setVersion(
+					'production',
+					document.getElementById('ver-production-major').value,
+					document.getElementById('ver-production-minor').value,
+					document.getElementById('ver-production-patch').value					)
+			})
+
+		</script>
+
+	</body>
+
+	
+
+
+</html>

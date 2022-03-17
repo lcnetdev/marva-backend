@@ -3,7 +3,7 @@ const shell = require('shelljs')
 const cors = require('cors')
 const rp = require('request-promise');
 const fs = require('fs');
-
+const { auth } = require('express-openid-connect');
 const zip = require('zip-a-folder');
 
 
@@ -29,16 +29,33 @@ let postLog = []
 
 let editorVersion = {'major':0,'minor':0,'patch':0}
 
-if (process.env.EDITORVERSION){
-
-	let v = process.env.EDITORVERSION.split('.')
-
-	editorVersion.major = parseInt(v[0])
-	editorVersion.minor = parseInt(v[1])
-	editorVersion.patch = parseInt(v[2])
-
+try{
+	editorVersion = JSON.parse(fs.readFileSync('ver_prod.json', 'utf8'));
+}catch{
+	console.error("Missing ver_prod.json")	
 }
 
+
+let editorVersionStage = {'major':0,'minor':0,'patch':0}
+
+try{
+	editorVersionStage = JSON.parse(fs.readFileSync('ver_stage.json', 'utf8'));
+}catch{
+	console.error("Missing ver_stage.json")	
+}
+
+
+
+// if (process.env.EDITORVERSION){
+// 	let v = process.env.EDITORVERSION.split('.')
+// 	editorVersion.major = parseInt(v[0])
+// 	editorVersion.minor = parseInt(v[1])
+// 	editorVersion.patch = parseInt(v[2])
+// }
+
+
+let now = parseInt(new Date() / 1000)
+let ageLimitForAllRecords = 15 //days
 
 
 const uri = 'mongodb://mongo:27017/';
@@ -62,16 +79,23 @@ MongoClient.connect(uri, function(err, client) {
 
  		cursor.forEach((doc)=>{
 
+
  			if (doc.index){
- 				if (doc.index.eid){
- 					recsStageByEid[doc.index.eid] = doc.index
- 				}
- 				if (doc.index.user && doc.index.eid){
- 					if (!recsStageByUser[doc.index.user]){
- 						recsStageByUser[doc.index.user] = {}
- 					}
- 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index				
- 				}
+ 				
+ 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+	 				if (doc.index.eid){
+	 					recsStageByEid[doc.index.eid] = doc.index
+	 					recsStageByEid[doc.index.eid]._id = doc._id
+	 				}
+	 				if (doc.index.user && doc.index.eid){
+	 					if (!recsStageByUser[doc.index.user]){
+	 						recsStageByUser[doc.index.user] = {}
+	 					}
+	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 				}
+	 			}
  			}
  		})
 
@@ -88,6 +112,7 @@ MongoClient.connect(uri, function(err, client) {
 			      // add it to the list or update it whatever
 		 				if (doc.index.eid){
 		 					recsStageByEid[doc.index.eid] = doc.index
+		 					recsStageByEid[doc.index.eid]._id = doc._id
 		 				}
 
 			      if (doc.index.user && doc.index.eid){
@@ -95,6 +120,7 @@ MongoClient.connect(uri, function(err, client) {
 		 						recsStageByUser[doc.index.user] = {}
 		 					}
 		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
 			      }
 
 
@@ -113,15 +139,21 @@ MongoClient.connect(uri, function(err, client) {
  		cursor.forEach((doc)=>{
 
  			if (doc.index){
- 				if (doc.index.eid){
- 					recsProdByEid[doc.index.eid] = doc.index
- 				}
- 				if (doc.index.user && doc.index.eid){
- 					if (!recsProdByUser[doc.index.user]){
- 						recsProdByUser[doc.index.user] = {}
- 					}
- 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index				
- 				}
+
+ 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+	 				if (doc.index.eid){
+	 					recsProdByEid[doc.index.eid] = doc.index
+	 					recsProdByEid[doc.index.eid]._id = doc._id
+	 				}
+	 				if (doc.index.user && doc.index.eid){
+	 					if (!recsProdByUser[doc.index.user]){
+	 						recsProdByUser[doc.index.user] = {}
+	 					}
+	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index				
+	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id			
+	 				}
+	 			}
  			}
  		})
 
@@ -138,6 +170,7 @@ MongoClient.connect(uri, function(err, client) {
 			      // add it to the list or update it whatever
 		 				if (doc.index.eid){
 		 					recsProdByEid[doc.index.eid] = doc.index
+		 					recsProdByEid[doc.index.eid]._id = doc._id
 		 				}
 
 			      if (doc.index.user && doc.index.eid){
@@ -145,6 +178,7 @@ MongoClient.connect(uri, function(err, client) {
 		 						recsProdByUser[doc.index.user] = {}
 		 					}
 		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
 			      }
 
 
@@ -162,9 +196,13 @@ MongoClient.connect(uri, function(err, client) {
 });
 
 
+
+
  
 
 var app = express();
+
+app.set('view engine', 'ejs');
 
 app.use(express.json({limit: '15mb'}));
 
@@ -173,15 +211,65 @@ app.use(cors({origin:true}))
 app.options('*', cors())
 
 
-app.get('/', function(request, response){
-  console.log(request.body);      // your JSON
-   response.send(request.body);    // echo the result back
+// app.get('/', function(request, response){
+//   console.log(request.body);      // your JSON
+//    response.send(request.body);    // echo the result back
+// });
+
+app.get('/', function(request, response) {
+
+
+	let correctlogin
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+	if (  request.headers.authorization !== `Basic ${correctlogin}`){
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+	}
+
+	// Access granted...
+	response.render('index', { editorVersionStage: editorVersionStage, editorVersion:editorVersion });
+  
 });
+
+
 
 app.get('/version/editor', function(request, response){
   response.json(editorVersion);
-
 });
+
+app.get('/version/editor/stage', function(request, response){
+  response.json(editorVersionStage);
+});
+
+app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
+
+	let correctlogin = 'yeet'
+	console.log('request.headers.authorization',request.headers.authorization)
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+	if (  request.headers.authorization !== `Basic ${correctlogin}`){
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+	}
+
+
+	let ver = {"major":parseInt(request.params.major),"minor":parseInt(request.params.minor),"patch":parseInt(request.params.patch)}
+
+	if (request.params.env == 'staging'){
+		fs.writeFileSync( 'ver_stage.json' , JSON.stringify(ver))
+		editorVersionStage = ver
+	}else{
+		fs.writeFileSync( 'ver_prod.json' , JSON.stringify(ver))
+		editorVersion = ver
+	}
+
+
+
+	response.json({});
+});
+
+
 
 
 app.get('/reports/stats/:year/:quarter', function(request, response){
@@ -412,8 +500,28 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 			recsStageByEid[request.params.eid].status = 'deleted'
 			result = true
 		}
-	}
-	else{
+
+	    MongoClient.connect(uri, function(err, db) {
+	        if (err) throw err;
+	        var dbo = db.db("bfe2");	    
+	        if (err) throw err;	        
+			dbo.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)})
+			.then(function(doc) {
+				if(!doc) throw new Error('No record found.');
+				doc.index.status='deleted'				
+				dbo.collection('resourcesStaging').updateOne(
+				    {'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)}, 
+				    { $set: doc }
+
+				);
+			});
+	    });
+
+
+
+
+
+	}else{
 		if (recsProdByUser[request.params.user]){
 			if (recsProdByUser[request.params.user][request.params.eid]){
 				recsProdByUser[request.params.user][request.params.eid].status = 'deleted'
@@ -424,6 +532,25 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 			recsProdByEid[request.params.eid].status = 'deleted'
 			result = true
 		}
+
+
+	    MongoClient.connect(uri, function(err, db) {
+	        if (err) throw err;
+	        var dbo = db.db("bfe2");	    
+	        if (err) throw err;	        
+			dbo.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(recsProdByUser[request.params.eid]._id)})
+			.then(function(doc) {
+				if(!doc) throw new Error('No record found.');
+				doc.index.status='deleted'				
+				dbo.collection('resourcesProduction').updateOne(
+				    {'_id':new mongo.ObjectID(recsProdByUser[request.params.eid]._id)}, 
+				    { $set: doc }
+				    
+				);
+			});
+	    });
+
+
 
 	}
 
@@ -773,8 +900,6 @@ app.get('/logs/posts', function(request, response){
 });
 
 
-
-
 app.get('/myrecords/staging/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsStageByUser[request.params.user]);
@@ -785,8 +910,88 @@ app.get('/myrecords/staging/:user', function(request, response){
 
 
 app.get('/allrecords/staging', function(request, response){
+	console.log(recsStageByEid)
+	console.log("recsStageByEid")
 	response.json(recsStageByEid);	
 });
+
+
+
+app.get('/allrecords/:env/:searchval/:user', function(request, response){
+
+
+	console.log("HEREERREREERER")
+	let env = 'resourcesProduction'
+	if (request.params.env === 'staging'){
+		env = 'resourcesStaging'		
+	}
+
+	let results = {}
+	let search = request.params.searchval.toLowerCase()
+
+	MongoClient.connect(uri, function(err, client) {
+
+	    const db = client.db('bfe2');
+
+		var searchCursor = db.collection(env).find({});
+
+		searchCursor.forEach((doc)=>{
+
+			if (doc.index){
+
+					console.log(doc.index.status)
+				
+					if (doc.index.eid){
+
+						if (request.params.user && request.params.user != 'all'){
+							if (doc.index.user != request.params.user){
+								return
+							}
+						}
+
+
+						if (doc.index.title && doc.index.title.toString().toLowerCase().includes(search)){
+							results[doc.index.eid] = doc.index
+						}else if (doc.index.eid.toLowerCase().includes(search)){
+							results[doc.index.eid] = doc.index
+						}else if (doc.index.lccn && doc.index.lccn.toString().includes(search)){
+							results[doc.index.eid] = doc.index							
+						}else if (doc.index.user && doc.index.user.toString().toLowerCase().includes(search)){
+							results[doc.index.eid] = doc.index							
+						}else if (doc.index.contributor && doc.index.contributor.toString().toLowerCase().includes(search)){
+
+							results[doc.index.eid] = doc.index							
+						}
+
+						// 
+
+
+
+					}				
+			}
+
+		}).then(function() {
+
+			// console.log(request.params.user, request.params.searchval)
+			response.json(results);	
+
+		})
+
+		
+
+		
+
+	})
+
+
+
+
+	
+
+});
+
+
+
 
 
 
