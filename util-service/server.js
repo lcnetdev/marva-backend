@@ -245,7 +245,7 @@ app.get('/version/editor/stage', function(request, response){
 app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
 
 	let correctlogin = 'yeet'
-	console.log('request.headers.authorization',request.headers.authorization)
+	
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -705,7 +705,7 @@ app.post('/publish/production', (request, response) => {
 		    }
 
 
-	        console.log(postResponse)
+	        
 	        let postStatus = {"status":"published"}
 
 	        if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
@@ -910,8 +910,7 @@ app.get('/myrecords/staging/:user', function(request, response){
 
 
 app.get('/allrecords/staging', function(request, response){
-	console.log(recsStageByEid)
-	console.log("recsStageByEid")
+
 	response.json(recsStageByEid);	
 });
 
@@ -920,7 +919,7 @@ app.get('/allrecords/staging', function(request, response){
 app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 
-	console.log("HEREERREREERER")
+	
 	let env = 'resourcesProduction'
 	if (request.params.env === 'staging'){
 		env = 'resourcesStaging'		
@@ -939,7 +938,7 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 			if (doc.index){
 
-					console.log(doc.index.status)
+					
 				
 					if (doc.index.eid){
 
