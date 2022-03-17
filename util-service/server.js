@@ -538,12 +538,12 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 	        if (err) throw err;
 	        var dbo = db.db("bfe2");	    
 	        if (err) throw err;	        
-			dbo.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(recsProdByUser[request.params.eid]._id)})
+			dbo.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)})
 			.then(function(doc) {
 				if(!doc) throw new Error('No record found.');
 				doc.index.status='deleted'				
 				dbo.collection('resourcesProduction').updateOne(
-				    {'_id':new mongo.ObjectID(recsProdByUser[request.params.eid]._id)}, 
+				    {'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)}, 
 				    { $set: doc }
 				    
 				);
