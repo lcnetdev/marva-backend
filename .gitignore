@@ -5,3 +5,4 @@ node_modules
 tmp
 dist/prod/*
 dist/staging/*
+dist/profile-editor/*
