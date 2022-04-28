@@ -1,0 +1,369 @@
+2022-04-26 02:59:16,617 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 02:59:16,632 INFO supervisord started with pid 1
+2022-04-26 02:59:17,640 INFO spawned: 'django_service' with pid 9
+2022-04-26 02:59:18,963 INFO success: django_service entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 02:59:41,060 WARN received SIGTERM indicating exit request
+2022-04-26 02:59:41,062 INFO waiting for django_service to die
+2022-04-26 02:59:41,088 INFO stopped: django_service (exit status 143)
+2022-04-26 16:46:02,214 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:46:02,226 INFO supervisord started with pid 1
+2022-04-26 16:46:03,237 INFO spawned: 'django_service' with pid 10
+2022-04-26 16:46:03,245 INFO spawned: 'redis_script' with pid 11
+2022-04-26 16:46:04,594 INFO success: django_service entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:46:04,595 INFO success: redis_script entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:46:56,858 WARN received SIGTERM indicating exit request
+2022-04-26 16:46:56,865 INFO waiting for django_service, redis_script to die
+2022-04-26 16:46:56,873 INFO stopped: redis_script (terminated by SIGTERM)
+2022-04-26 16:46:57,907 INFO stopped: django_service (exit status 143)
+2022-04-26 16:47:02,231 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:47:02,241 INFO supervisord started with pid 1
+2022-04-26 16:47:03,250 INFO spawned: 'express_server' with pid 9
+2022-04-26 16:47:03,258 INFO spawned: 'python_server' with pid 10
+2022-04-26 16:47:04,578 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:47:04,580 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:47:07,681 WARN received SIGTERM indicating exit request
+2022-04-26 16:47:07,688 INFO waiting for express_server, python_server to die
+2022-04-26 16:47:07,693 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 16:47:08,728 INFO stopped: express_server (exit status 143)
+2022-04-26 16:47:16,730 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:47:16,739 INFO supervisord started with pid 1
+2022-04-26 16:47:17,747 INFO spawned: 'express_server' with pid 10
+2022-04-26 16:47:17,756 INFO spawned: 'python_server' with pid 11
+2022-04-26 16:47:19,070 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:47:19,070 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:50:01,013 WARN received SIGTERM indicating exit request
+2022-04-26 16:50:01,015 INFO waiting for express_server, python_server to die
+2022-04-26 16:50:01,019 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 16:50:01,033 INFO stopped: express_server (exit status 143)
+2022-04-26 16:50:03,686 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:50:03,695 INFO supervisord started with pid 1
+2022-04-26 16:50:04,706 INFO spawned: 'express_server' with pid 10
+2022-04-26 16:50:04,714 INFO spawned: 'python_server' with pid 11
+2022-04-26 16:50:06,020 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:50:06,021 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:51:08,306 WARN received SIGTERM indicating exit request
+2022-04-26 16:51:08,315 INFO waiting for express_server, python_server to die
+2022-04-26 16:51:08,320 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 16:51:08,339 INFO stopped: express_server (exit status 143)
+2022-04-26 16:51:28,651 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:51:28,660 INFO supervisord started with pid 1
+2022-04-26 16:51:29,669 INFO spawned: 'express_server' with pid 10
+2022-04-26 16:51:29,678 INFO spawned: 'python_server' with pid 11
+2022-04-26 16:51:31,087 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:51:31,093 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:51:40,124 WARN received SIGTERM indicating exit request
+2022-04-26 16:51:40,131 INFO waiting for express_server, python_server to die
+2022-04-26 16:51:40,140 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 16:51:40,160 INFO stopped: express_server (exit status 143)
+2022-04-26 16:54:35,715 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 16:54:35,726 INFO supervisord started with pid 1
+2022-04-26 16:54:36,734 INFO spawned: 'express_server' with pid 10
+2022-04-26 16:54:36,741 INFO spawned: 'python_server' with pid 11
+2022-04-26 16:54:37,751 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 16:54:37,752 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:05:32,143 WARN received SIGTERM indicating exit request
+2022-04-26 17:05:32,155 INFO waiting for express_server, python_server to die
+2022-04-26 17:05:32,161 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 17:05:33,173 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 17:11:15,337 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 17:11:15,346 INFO supervisord started with pid 1
+2022-04-26 17:11:16,355 INFO spawned: 'express_server' with pid 9
+2022-04-26 17:11:16,364 INFO spawned: 'python_server' with pid 10
+2022-04-26 17:11:17,368 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:11:17,369 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:17:25,236 WARN received SIGTERM indicating exit request
+2022-04-26 17:17:25,242 INFO waiting for express_server, python_server to die
+2022-04-26 17:17:25,255 INFO stopped: python_server (terminated by SIGTERM)
+2022-04-26 17:17:26,262 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 17:18:21,012 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 17:18:21,022 INFO supervisord started with pid 1
+2022-04-26 17:18:22,029 INFO spawned: 'express_server' with pid 9
+2022-04-26 17:18:23,034 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:21:50,771 WARN received SIGTERM indicating exit request
+2022-04-26 17:21:50,774 INFO waiting for express_server to die
+2022-04-26 17:21:51,783 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 17:22:41,106 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 17:22:41,116 INFO supervisord started with pid 1
+2022-04-26 17:22:42,126 INFO spawned: 'express_server' with pid 11
+2022-04-26 17:22:43,133 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:27:06,695 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 17:27:06,706 INFO supervisord started with pid 1
+2022-04-26 17:27:07,715 INFO spawned: 'express_server' with pid 11
+2022-04-26 17:27:08,722 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 17:32:19,775 WARN received SIGTERM indicating exit request
+2022-04-26 17:32:19,782 INFO waiting for express_server to die
+2022-04-26 17:32:20,792 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 20:17:40,732 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 20:17:40,747 INFO supervisord started with pid 1
+2022-04-26 20:17:41,756 INFO spawned: 'express_server' with pid 10
+2022-04-26 20:17:42,762 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 20:19:49,288 WARN received SIGTERM indicating exit request
+2022-04-26 20:19:49,293 INFO waiting for express_server to die
+2022-04-26 20:19:50,303 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 20:20:09,824 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 20:20:09,833 INFO supervisord started with pid 1
+2022-04-26 20:20:10,842 INFO spawned: 'express_server' with pid 11
+2022-04-26 20:20:11,849 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 20:25:22,180 WARN received SIGTERM indicating exit request
+2022-04-26 20:25:22,182 INFO waiting for express_server to die
+2022-04-26 20:25:23,192 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 20:25:26,143 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 20:25:26,153 INFO supervisord started with pid 1
+2022-04-26 20:25:27,157 INFO spawned: 'express_server' with pid 10
+2022-04-26 20:25:28,160 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 20:26:03,669 WARN received SIGTERM indicating exit request
+2022-04-26 20:26:03,673 INFO waiting for express_server to die
+2022-04-26 20:26:04,684 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 20:26:07,147 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 20:26:07,156 INFO supervisord started with pid 1
+2022-04-26 20:26:08,160 INFO spawned: 'express_server' with pid 9
+2022-04-26 20:26:09,162 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 20:28:02,992 WARN received SIGTERM indicating exit request
+2022-04-26 20:28:02,998 INFO waiting for express_server to die
+2022-04-26 20:28:04,004 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 21:09:55,142 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 21:09:55,161 INFO supervisord started with pid 1
+2022-04-26 21:09:56,169 INFO spawned: 'express_server' with pid 10
+2022-04-26 21:09:57,176 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 21:10:15,262 WARN received SIGTERM indicating exit request
+2022-04-26 21:10:15,264 INFO waiting for express_server to die
+2022-04-26 21:10:16,273 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 21:11:08,086 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 21:11:08,097 INFO supervisord started with pid 1
+2022-04-26 21:11:09,108 INFO spawned: 'express_server' with pid 9
+2022-04-26 21:11:10,114 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 21:16:24,022 WARN received SIGTERM indicating exit request
+2022-04-26 21:16:24,029 INFO waiting for express_server to die
+2022-04-26 21:16:25,037 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 21:16:27,886 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 21:16:27,899 INFO supervisord started with pid 1
+2022-04-26 21:16:28,907 INFO spawned: 'express_server' with pid 10
+2022-04-26 21:16:28,917 INFO spawned: 'python_server' with pid 11
+2022-04-26 21:16:29,268 INFO exited: python_server (exit status 0; not expected)
+2022-04-26 21:16:30,270 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 21:16:30,273 INFO spawned: 'python_server' with pid 46
+2022-04-26 21:16:30,655 INFO exited: python_server (exit status 0; not expected)
+2022-04-26 21:16:33,215 INFO spawned: 'python_server' with pid 82
+2022-04-26 21:16:33,556 INFO exited: python_server (exit status 0; not expected)
+2022-04-26 21:16:34,560 WARN received SIGTERM indicating exit request
+2022-04-26 21:16:34,564 INFO waiting for express_server to die
+2022-04-26 21:16:36,579 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-26 21:19:02,854 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-26 21:19:02,865 INFO supervisord started with pid 1
+2022-04-26 21:19:03,871 INFO spawned: 'express_server' with pid 11
+2022-04-26 21:19:03,879 INFO spawned: 'python_server' with pid 12
+2022-04-26 21:19:05,313 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-26 21:19:05,315 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:16:39,984 WARN received SIGTERM indicating exit request
+2022-04-27 01:16:39,993 INFO waiting for express_server, python_server to die
+2022-04-27 01:16:40,041 INFO stopped: python_server (exit status 143)
+2022-04-27 01:16:41,045 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 01:16:44,406 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 01:16:44,419 INFO supervisord started with pid 1
+2022-04-27 01:16:45,423 INFO spawned: 'express_server' with pid 11
+2022-04-27 01:16:45,428 INFO spawned: 'python_server' with pid 12
+2022-04-27 01:16:46,703 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:16:46,705 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:18:00,391 WARN received SIGTERM indicating exit request
+2022-04-27 01:18:00,395 INFO waiting for express_server, python_server to die
+2022-04-27 01:18:00,444 INFO stopped: python_server (exit status 143)
+2022-04-27 01:18:01,453 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 01:18:04,223 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 01:18:04,233 INFO supervisord started with pid 1
+2022-04-27 01:18:05,240 INFO spawned: 'express_server' with pid 11
+2022-04-27 01:18:05,249 INFO spawned: 'python_server' with pid 12
+2022-04-27 01:18:06,575 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:18:06,579 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:18:11,150 WARN received SIGTERM indicating exit request
+2022-04-27 01:18:11,151 INFO waiting for express_server, python_server to die
+2022-04-27 01:18:11,183 INFO stopped: python_server (exit status 143)
+2022-04-27 01:18:12,186 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 01:18:31,064 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 01:18:31,078 INFO supervisord started with pid 1
+2022-04-27 01:18:32,095 INFO spawned: 'express_server' with pid 9
+2022-04-27 01:18:32,104 INFO spawned: 'python_server' with pid 10
+2022-04-27 01:18:33,333 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:18:33,335 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:23:00,195 WARN received SIGTERM indicating exit request
+2022-04-27 01:23:00,198 INFO waiting for express_server, python_server to die
+2022-04-27 01:23:00,313 INFO stopped: python_server (exit status 143)
+2022-04-27 01:23:01,327 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 01:23:06,264 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 01:23:06,276 INFO supervisord started with pid 1
+2022-04-27 01:23:07,285 INFO spawned: 'express_server' with pid 10
+2022-04-27 01:23:07,293 INFO spawned: 'python_server' with pid 11
+2022-04-27 01:23:08,357 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 01:23:08,358 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 15:36:07,047 INFO reaped unknown pid 43 (terminated by SIGUSR2)
+2022-04-27 15:36:13,711 INFO reaped unknown pid 303 (terminated by SIGUSR2)
+2022-04-27 15:36:16,852 INFO reaped unknown pid 523 (terminated by SIGUSR2)
+2022-04-27 15:38:15,582 WARN received SIGTERM indicating exit request
+2022-04-27 15:38:15,592 INFO waiting for express_server, python_server to die
+2022-04-27 15:38:15,635 INFO stopped: python_server (exit status 143)
+2022-04-27 15:38:16,645 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 15:39:27,081 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 15:39:27,093 INFO supervisord started with pid 1
+2022-04-27 15:39:28,100 INFO spawned: 'express_server' with pid 9
+2022-04-27 15:39:28,106 INFO spawned: 'python_server' with pid 10
+2022-04-27 15:39:29,244 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 15:39:29,248 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 15:46:28,660 INFO reaped unknown pid 42 (terminated by SIGUSR2)
+2022-04-27 18:10:33,485 INFO reaped unknown pid 85 (terminated by SIGUSR2)
+2022-04-27 18:11:33,841 WARN received SIGTERM indicating exit request
+2022-04-27 18:11:33,843 INFO waiting for express_server, python_server to die
+2022-04-27 18:11:33,880 INFO stopped: python_server (exit status 143)
+2022-04-27 18:11:34,889 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 18:11:37,630 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 18:11:37,645 INFO supervisord started with pid 1
+2022-04-27 18:11:38,654 INFO spawned: 'express_server' with pid 10
+2022-04-27 18:11:38,661 INFO spawned: 'python_server' with pid 11
+2022-04-27 18:11:39,664 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 18:11:39,666 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 18:14:30,534 INFO reaped unknown pid 75 (terminated by SIGUSR2)
+2022-04-27 18:16:56,382 INFO reaped unknown pid 112 (terminated by SIGUSR2)
+2022-04-27 18:17:23,916 INFO reaped unknown pid 126 (terminated by SIGUSR2)
+2022-04-27 18:19:00,456 WARN received SIGTERM indicating exit request
+2022-04-27 18:19:00,467 INFO waiting for express_server, python_server to die
+2022-04-27 18:19:00,542 INFO stopped: python_server (exit status 143)
+2022-04-27 18:19:01,546 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 18:19:04,355 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 18:19:04,368 INFO supervisord started with pid 1
+2022-04-27 18:19:05,373 INFO spawned: 'express_server' with pid 9
+2022-04-27 18:19:05,379 INFO spawned: 'python_server' with pid 10
+2022-04-27 18:19:06,374 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 18:19:06,382 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 18:19:55,742 INFO reaped unknown pid 74 (terminated by SIGUSR2)
+2022-04-27 18:20:19,107 INFO reaped unknown pid 84 (terminated by SIGUSR2)
+2022-04-27 18:22:59,256 INFO reaped unknown pid 95 (terminated by SIGUSR2)
+2022-04-27 18:27:19,894 INFO reaped unknown pid 106 (terminated by SIGUSR2)
+2022-04-27 18:29:09,017 INFO reaped unknown pid 120 (terminated by SIGUSR2)
+2022-04-27 18:51:39,931 INFO reaped unknown pid 164 (terminated by SIGUSR2)
+2022-04-27 18:56:31,712 INFO reaped unknown pid 176 (terminated by SIGUSR2)
+2022-04-27 18:56:59,378 INFO reaped unknown pid 188 (terminated by SIGUSR2)
+2022-04-27 19:00:20,331 INFO reaped unknown pid 198 (terminated by SIGUSR2)
+2022-04-27 20:13:13,860 INFO reaped unknown pid 212 (terminated by SIGUSR2)
+2022-04-27 20:17:27,871 INFO reaped unknown pid 410 (terminated by SIGUSR2)
+2022-04-27 20:24:08,725 INFO reaped unknown pid 445 (terminated by SIGUSR2)
+2022-04-27 20:26:01,054 INFO reaped unknown pid 470 (terminated by SIGUSR2)
+2022-04-27 20:38:13,730 INFO reaped unknown pid 486 (terminated by SIGUSR2)
+2022-04-27 20:39:43,228 WARN received SIGTERM indicating exit request
+2022-04-27 20:39:43,232 INFO waiting for express_server, python_server to die
+2022-04-27 20:39:43,277 INFO stopped: python_server (exit status 143)
+2022-04-27 20:39:43,280 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:39:46,854 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:39:46,867 INFO supervisord started with pid 1
+2022-04-27 20:39:47,872 INFO spawned: 'express_server' with pid 10
+2022-04-27 20:39:47,876 INFO spawned: 'python_server' with pid 11
+2022-04-27 20:39:49,407 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:39:49,413 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:40:36,157 WARN received SIGTERM indicating exit request
+2022-04-27 20:40:36,163 INFO waiting for express_server, python_server to die
+2022-04-27 20:40:36,214 INFO stopped: python_server (exit status 143)
+2022-04-27 20:40:37,220 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:40:42,038 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:40:42,047 INFO supervisord started with pid 1
+2022-04-27 20:40:43,054 INFO spawned: 'express_server' with pid 9
+2022-04-27 20:40:43,065 INFO spawned: 'python_server' with pid 10
+2022-04-27 20:40:44,499 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:40:44,503 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:41:41,231 WARN received SIGTERM indicating exit request
+2022-04-27 20:41:41,237 INFO waiting for express_server, python_server to die
+2022-04-27 20:41:41,281 INFO stopped: python_server (exit status 143)
+2022-04-27 20:41:42,289 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:42:02,143 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:42:02,154 INFO supervisord started with pid 1
+2022-04-27 20:42:03,161 INFO spawned: 'express_server' with pid 10
+2022-04-27 20:42:03,171 INFO spawned: 'python_server' with pid 11
+2022-04-27 20:42:04,829 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:42:04,832 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:42:39,376 WARN received SIGTERM indicating exit request
+2022-04-27 20:42:39,379 INFO waiting for express_server, python_server to die
+2022-04-27 20:42:39,418 INFO stopped: python_server (exit status 143)
+2022-04-27 20:42:40,421 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:43:04,747 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:43:04,778 INFO supervisord started with pid 1
+2022-04-27 20:43:05,791 INFO spawned: 'express_server' with pid 10
+2022-04-27 20:43:05,799 INFO spawned: 'python_server' with pid 11
+2022-04-27 20:43:06,820 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:43:06,827 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:43:07,169 INFO reaped unknown pid 35 (exit status 0)
+2022-04-27 20:43:26,617 WARN received SIGTERM indicating exit request
+2022-04-27 20:43:26,623 INFO waiting for express_server, python_server to die
+2022-04-27 20:43:26,665 INFO stopped: python_server (exit status 143)
+2022-04-27 20:43:27,672 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:43:48,754 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:43:48,769 INFO supervisord started with pid 1
+2022-04-27 20:43:49,776 INFO spawned: 'express_server' with pid 10
+2022-04-27 20:43:49,785 INFO spawned: 'python_server' with pid 11
+2022-04-27 20:43:50,779 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:43:50,783 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:43:51,037 INFO exited: express_server (exit status 1; not expected)
+2022-04-27 20:43:51,221 INFO spawned: 'express_server' with pid 49
+2022-04-27 20:43:52,089 INFO exited: express_server (exit status 1; not expected)
+2022-04-27 20:43:53,099 INFO spawned: 'express_server' with pid 63
+2022-04-27 20:43:53,991 INFO exited: express_server (exit status 1; not expected)
+2022-04-27 20:43:56,002 INFO spawned: 'express_server' with pid 75
+2022-04-27 20:43:56,875 INFO exited: express_server (exit status 1; not expected)
+2022-04-27 20:43:59,891 INFO spawned: 'express_server' with pid 87
+2022-04-27 20:44:00,738 INFO exited: express_server (exit status 1; not expected)
+2022-04-27 20:44:01,709 INFO gave up: express_server entered FATAL state, too many start retries too quickly
+2022-04-27 20:44:47,855 WARN received SIGTERM indicating exit request
+2022-04-27 20:44:47,861 INFO waiting for python_server to die
+2022-04-27 20:44:47,930 INFO stopped: python_server (exit status 143)
+2022-04-27 20:45:50,870 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:45:50,883 INFO supervisord started with pid 1
+2022-04-27 20:45:51,890 INFO spawned: 'express_server' with pid 10
+2022-04-27 20:45:51,900 INFO spawned: 'python_server' with pid 11
+2022-04-27 20:45:52,998 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:45:53,000 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:46:30,266 WARN received SIGTERM indicating exit request
+2022-04-27 20:46:30,268 INFO waiting for express_server, python_server to die
+2022-04-27 20:46:30,383 INFO stopped: python_server (exit status 143)
+2022-04-27 20:46:31,358 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 20:46:51,394 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 20:46:51,405 INFO supervisord started with pid 1
+2022-04-27 20:46:52,412 INFO spawned: 'express_server' with pid 9
+2022-04-27 20:46:52,421 INFO spawned: 'python_server' with pid 10
+2022-04-27 20:46:53,500 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:46:53,502 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 20:48:25,345 INFO reaped unknown pid 46 (terminated by SIGUSR2)
+2022-04-27 21:17:42,155 WARN received SIGTERM indicating exit request
+2022-04-27 21:17:42,161 INFO waiting for express_server, python_server to die
+2022-04-27 21:17:43,260 INFO stopped: python_server (exit status 143)
+2022-04-27 21:17:44,273 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-27 21:18:50,271 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-27 21:18:50,283 INFO supervisord started with pid 1
+2022-04-27 21:18:51,295 INFO spawned: 'express_server' with pid 11
+2022-04-27 21:18:51,302 INFO spawned: 'python_server' with pid 12
+2022-04-27 21:18:52,648 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 21:18:52,651 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-27 21:38:13,103 WARN received SIGTERM indicating exit request
+2022-04-27 21:38:13,106 INFO waiting for express_server, python_server to die
+2022-04-27 21:38:13,142 INFO stopped: python_server (exit status 143)
+2022-04-27 21:38:14,154 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-28 01:47:43,960 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-28 01:47:43,978 INFO supervisord started with pid 1
+2022-04-28 01:47:44,987 INFO spawned: 'express_server' with pid 9
+2022-04-28 01:47:45,004 INFO spawned: 'python_server' with pid 10
+2022-04-28 01:47:46,272 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-28 01:47:46,273 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-28 02:48:59,870 WARN received SIGTERM indicating exit request
+2022-04-28 02:48:59,877 INFO waiting for express_server, python_server to die
+2022-04-28 02:48:59,920 INFO stopped: python_server (exit status 143)
+2022-04-28 02:49:00,929 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-28 02:49:03,734 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-28 02:49:03,746 INFO supervisord started with pid 1
+2022-04-28 02:49:04,748 INFO spawned: 'express_server' with pid 11
+2022-04-28 02:49:04,754 INFO spawned: 'python_server' with pid 12
+2022-04-28 02:49:06,471 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-28 02:49:06,485 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-28 02:51:21,396 WARN received SIGTERM indicating exit request
+2022-04-28 02:51:21,402 INFO waiting for express_server, python_server to die
+2022-04-28 02:51:21,471 INFO stopped: python_server (exit status 143)
+2022-04-28 02:51:22,477 INFO stopped: express_server (terminated by SIGTERM)
+2022-04-28 02:51:36,393 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2022-04-28 02:51:36,409 INFO supervisord started with pid 1
+2022-04-28 02:51:37,415 INFO spawned: 'express_server' with pid 10
+2022-04-28 02:51:37,424 INFO spawned: 'python_server' with pid 11
+2022-04-28 02:51:38,438 INFO success: express_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2022-04-28 02:51:38,445 INFO success: python_server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

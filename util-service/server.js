@@ -227,8 +227,13 @@ app.get('/', function(request, response) {
 		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
 	}
 
+
+	// load the local deploy options
+	let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
+
+
 	// Access granted...
-	response.render('index', { editorVersionStage: editorVersionStage, editorVersion:editorVersion });
+	response.render('index', { editorVersionStage: editorVersionStage, editorVersion:editorVersion, config: config });
   
 });
 
@@ -533,7 +538,7 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 			result = true
 		}
 
-
+		// POTENTAIL ERROR HERE, IF THE RECORD IS NOT iN THE recsProdByEid object becase it is > 2weeks
 	    MongoClient.connect(uri, function(err, db) {
 	        if (err) throw err;
 	        var dbo = db.db("bfe2");	    
@@ -1027,6 +1032,26 @@ app.get('/deploy-staging', function(request, response){
 
   // Access granted...
 	let r = shell.exec('./deploy-staging.sh')		
+ 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	
+	console.log(r_html)
+
+  return response.status(200).send(r_html)
+
+});
+
+app.get('/deploy-profile-editor', function(request, response){
+
+	// let correctlogin = 'yeet'
+	// if (request.headers.authorization){
+	// 	correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	// }
+ //  if (  request.headers.authorization !== `Basic ${correctlogin}`){
+ //    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+ //  }
+
+  // Access granted...
+	let r = shell.exec('./deploy-profile-editor.sh')		
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 	
 	console.log(r_html)

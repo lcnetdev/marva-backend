@@ -1,6 +1,7 @@
 version: '3'
 services:
 
+
   util:
     build: 
       context: ./
@@ -10,6 +11,7 @@ services:
       - ./util-service:/app
       - ./dist/staging:/dist/staging
       - ./dist/prod:/dist/prod
+      - ./dist/profile-editor:/dist/profile-editor
       - ./tmp:/tmp
     environment:
       # 1 means to use nodmon and reload on change (dev)
@@ -24,6 +26,20 @@ services:
     # ports:
     #   - 5001:5001
 
+
+  util-lang:
+    build: 
+      context: ./
+      dockerfile: config/util-lang.docker
+    container_name: 'util-lang'
+    volumes:
+      - ./util-lang:/app
+      - ./tmp:/tmp
+    environment:
+      - PYTHONUNBUFFERED=1
+    #ports:
+    #  - 5002:7778
+    
 
   database:
     image: 'mongo:4.4.4'
@@ -85,11 +101,13 @@ services:
     depends_on:
       - 'ldpjs-staging'
       - 'util'
+      - 'util-lang'
     image: nginx:stable-alpine
     volumes:
       - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./dist/prod:/prod
       - ./dist/staging:/staging
+      - ./dist/profile-editor:/profile-editor
     ports:
       - 9401:8080
       - 9400:80
