@@ -6,3 +6,4 @@ tmp
 dist/prod/*
 dist/staging/*
 dist/profile-editor/*
+util-lang/supervisord.log
