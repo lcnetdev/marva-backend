@@ -16,7 +16,8 @@
     "mongodb": "^3.6.4",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "shelljs": "^0.8.4",
+    "shelljs": "^0.8.5",
+    "simple-git": "^3.7.1",
     "zip-a-folder": "^1.1.0"
   }
 }

@@ -1,0 +1,4 @@
+{
+  "verbose": true,
+  "ignore": ["*.json","*.xml","/app/tmp/","app/tmp/","tmp/","/tmp/"]
+}

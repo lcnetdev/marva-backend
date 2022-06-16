@@ -1,12 +1,8 @@
 {
 
-
-	// These control what prefix is added to the javascript and css 
-	// links in the <head> of the app page. If you have some proxy in front
-	// of the server and you want the editor to "run" on a sub directory this 
-	// setting should match those rules. 
-
 	"prodDeployPath" : "/bfe2/editor/",
-	"stageDeployPath" : "/bfe2/editor/"
+	"stageDeployPath" : "/bfe2/editor/",
+
+	"profileEditPushGit": false
 
 }

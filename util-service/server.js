@@ -5,7 +5,8 @@ const rp = require('request-promise');
 const fs = require('fs');
 const { auth } = require('express-openid-connect');
 const zip = require('zip-a-folder');
-
+const simpleGit = require('simple-git')();
+const shellJs = require('shelljs');
 
 
 const mongo = require('mongodb')
@@ -1179,6 +1180,456 @@ app.get('/dump/xml/prod', function(request, response){
 
 
 });
+
+
+
+// --- end points for templates / views
+// profile editor endpoints
+app.post('/templates', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+        // find the key to update
+		let doc = await dbo.collection('templates').findOne({id: request.body.id})
+		if (doc){
+
+			dbo.collection('templates').updateOne(
+			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    { $set: request.body }
+			);
+
+		}else{
+			console.log("creating")
+
+
+	        dbo.collection("templates").insertOne(request.body, 
+	        function(err, result) {
+	            if (err) {
+	            	console.log(err)
+	            }	            
+	        });
+		}
+
+		db.close();
+
+		// dbo.collection('profiles').collectionName.remove( { } )
+    });
+
+    return response.status(200).send("yeah :)")
+});
+
+
+app.get('/templates/:user', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+        dbo.collection('templates').find({},{"user":request.params.user}).toArray(function(err, result) {
+
+            return response.status(200).json(result)
+            db.close();
+        });
+
+
+		db.close();
+
+		// dbo.collection('profiles').collectionName.remove( { } )
+    });
+
+    
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// this is being rerouted from the profile editor
+app.get('/profiles/:doc', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+        let env='prod'
+
+    	if (request.headers.referer && request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
+    		env='stage'
+    	}
+        
+        let docName = request.params.doc
+
+        if (docName == 'index.resourceType:profile'){
+        	docName = 'profile'
+        }
+
+
+		let id = `${docName}-${env}`
+        console.log("idididididididid",id)
+
+
+		console.log("id = ",id)
+		let doc = await dbo.collection('profiles').findOne({type: id})
+		if (doc){
+			response.json(doc.data);
+			db.close();
+		}else{
+			response.status(404).json(null);
+		}
+	});
+});
+
+app.put('/profiles/:doc', async (request, response) => {
+
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("bfe2");
+
+		let docName = request.params.doc
+
+		let env='prod'
+		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
+			env='stage'
+		}
+
+		let id = `${docName}-${env}`
+		let doc = await dbo.collection('profiles').findOne({type: id})
+		if (doc){
+			// response.json(doc.data);
+			// db.close();
+			// post the update to the document
+			dbo.collection('profiles').updateOne(
+			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    { $set: {type:id, data:request.body} }
+			);
+
+			// and then find the main profile and update the part of it with the update part
+			let profileId = `profile-${env}`
+			let docMain = await dbo.collection('profiles').findOne({type: profileId})
+			if (docMain){
+
+				// find the id
+				for (let x in docMain.data){
+
+					if (docMain.data[x].id == docName){
+						console.log("updating")
+						docMain.data[x] = request.body
+						console.log(docMain.data[x])
+					}
+				}
+				console.log("docMain.data")
+				console.log(docMain.data)
+
+				dbo.collection('profiles').updateOne(
+				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    { $set: {type:profileId, data:docMain.data} }
+				);
+
+
+
+			}else{
+				response.status(500).send("Could not the main profile to update")
+			}
+
+
+
+		}else{
+			response.status(500).send("Could not find that ID to update")
+		}
+
+	});
+
+
+
+	return response.status(200).send("yeah :)")
+	
+});
+
+app.delete('/profiles/:doc', async (request, response) => {
+
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("bfe2");
+
+		let docName = request.params.doc
+
+		let env='prod'
+		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
+			env='stage'
+		}
+
+		let id = `${docName}-${env}`
+		let doc = await dbo.collection('profiles').findOne({type: id})
+		if (doc){
+			
+			// remove the piece of the profile
+			dbo.collection('profiles').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
+
+
+			// and then find in the main profile and remove it
+			let profileId = `profile-${env}`
+			let docMain = await dbo.collection('profiles').findOne({type: profileId})
+			if (docMain){
+
+				// filter out the part we want removed
+				docMain.data = docMain.data.filter((x)=>{ return (x.id != docName) })
+
+				dbo.collection('profiles').updateOne(
+				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    { $set: {type:profileId, data:docMain.data} }
+				);
+
+
+
+			}else{
+				response.status(500).send("Could not the main profile to update")
+			}
+
+
+
+		}else{
+			response.status(500).send("Could not find that ID to update")
+		}
+
+	});
+
+
+
+	return response.status(200).send("yeah :)")
+	
+});
+
+// this is for the /util/ interface        
+app.get('/profiles/:doc/:env', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+
+		let id = `${request.params.doc}-${request.params.env}`
+		console.log("id = ",id)
+		let doc = await dbo.collection('profiles').findOne({type: id})
+		if (doc){
+			response.json(doc.data);
+			db.close();
+		}else{
+			response.json(null);
+		}
+	});
+});
+
+
+// profile editor endpoints
+app.post('/profiles/save/:doc/:env', async (request, response) => {
+
+
+	let env = 'stage'
+	let docName = 'profile'
+
+	if (request.params.env && request.params.env == 'prod'){
+		env = 'prod'
+	}
+	if (request.params.env && request.params.env != 'profile'){
+		docName = request.params.doc
+	}
+
+	let id = `${docName}-${env}`
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+
+        // find the key to update
+		let doc = await dbo.collection('profiles').findOne({type: id})
+		if (doc){
+			dbo.collection('profiles').updateOne(
+			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    { $set: {type:id, data:request.body} }
+			);
+
+		}else{
+	        dbo.collection("profiles").insertOne({type:id, data:request.body}, 
+	        function(err, result) {
+	            if (err) {
+	            	console.log(err)
+	            }
+	            
+	        });
+		}
+
+
+		// we also populate the individual profiles from the main blob on inital load so do that
+		if (docName === 'profile'){
+
+			for (let p of request.body){
+				let id_sub = `${p.id}-${env}`
+				let doc = await dbo.collection('profiles').findOne({type: id_sub})
+				if (doc){
+					dbo.collection('profiles').updateOne(
+					    {'_id': new mongo.ObjectID(doc['_id'])}, 
+					    { $set: {type:id_sub, data:p} }
+					);
+				}else{
+			        dbo.collection("profiles").insertOne({type:id_sub, data:p}, 
+			        function(err, result) {
+			            if (err) {
+			            	console.log(err)
+			            }
+			        });
+				}
+
+			}
+
+
+
+		}
+
+
+
+		db.close();
+
+		// dbo.collection('profiles').collectionName.remove( { } )
+    });
+
+    // do the git stuff
+
+   	// load the local deploy options
+	let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
+
+	if (config.profileEditPushGit){
+
+
+	    fs.rmSync('/tmp/profiles/', { recursive: true, force: true });
+
+	    await fs.promises.mkdir( '/tmp/profiles/' );
+	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}` );
+	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}/src` );
+
+	    let gitConfig = JSON.parse(fs.readFileSync('gitconfig.json', 'utf8'));
+
+	    let userName = gitConfig.userName
+	    let password = gitConfig.password
+	    let org = gitConfig.org
+	    let repo = gitConfig.repo
+
+	    const gitHubUrl = `https://${userName}:${password}@github.com/${org}/${repo}`;
+
+		await simpleGit.cwd({ path: '/tmp/profiles/', root: true });
+
+		await simpleGit.init()
+
+		await simpleGit.addRemote('origin',gitHubUrl);
+
+		await simpleGit.addConfig('user.email','ndmso@loc.gov');
+		await simpleGit.addConfig('user.name','NDMSO');
+		await simpleGit.pull('origin','master')
+	    // write out the file
+		fs.writeFileSync( `/tmp/profiles/${docName}-${env}/data.json` , JSON.stringify(request.body,null,2))
+
+	    if (docName == 'profile'){
+
+	    	for (let p of request.body){
+	    		if (p.json && p.json.Profile && p.json.Profile.resourceTemplates){
+	    			for (let rt of p.json.Profile.resourceTemplates ){
+						fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${rt.id}.json` , JSON.stringify(rt,null,2))
+	    			}
+	    		}
+	    	}
+	    }
+
+
+		simpleGit.add('.')
+		.then(
+			(addSuccess) => {
+				console.log(addSuccess);
+				simpleGit.commit(`${docName}-${env} change`)
+					.then(
+						(successCommit) => {
+							console.log(successCommit);
+
+							simpleGit.push('origin','master')
+								.then((success) => {
+								   console.log('repo successfully pushed');
+								},(failed)=> {
+							       console.log(failed);
+								   console.log('repo push faileds');
+							});
+
+					}, (failed) => {
+						console.log(failed);
+						console.log('failed commmit');
+				});
+			}, (failedAdd) => {
+			  console.log(failedAdd)
+			  console.log('adding files failed');
+		});
+	}
+
+
+
+    return response.status(200).send("yeah :)")
+});
+
+
+
+// this is for the /util/ interface        
+app.get('/whichrt', async (request, response) => {
+
+	let uri = request.query.uri
+
+
+	if ( uri.indexOf('bibframe.example.org') > 0 ) {
+	    response.status(404).send();
+	} else {
+
+		var options = {
+		    method: 'GET',
+		    uri: uri,
+			headers: {
+			    "user-agent": "MARVA EDITOR"
+			 }
+
+
+		};
+		
+		rp(options)
+			 .then(function (r) {
+			 	
+			 	response.status(200).send(r);
+
+
+			 })
+			 .catch(function (err) {
+			 	console.log("-------------",uri)
+			 	console.log(err)
+			 	console.log("-------------")
+			 	response.status(500).send('Error fetching resource via whichrt.');
+			 })
+
+	}
+
+});
+
 
 
 
