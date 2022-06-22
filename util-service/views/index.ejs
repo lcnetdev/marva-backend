@@ -213,7 +213,13 @@
 	    <div id="jsoneditor" style="width: 100%; clear: both;"></div>
 
 
-
+	    <details style="margin-top:2em; background-color: whitesmoke;">
+	    	<summary>Bootstrap profile editor data (profiles, starting points, languages, etc) from github</summary>
+	    	<p>
+	    		This will load the latest version of the profiles <a href="https://github.com/lcnetdev/bfe-profiles">from github</a>
+	    	</p>
+	    	<br><a target="_blank" href="profiles/bootstrap">Click to start process.</a>
+	    </details>
 
 
 	    <script>
@@ -276,10 +282,6 @@
 
 
 
-
-
-
-	        
 	        document.getElementById('loadDataSelect').addEventListener('change',(event)=>{
 	        	load(event.target.value)
 	        });	
@@ -287,46 +289,6 @@
 	        document.getElementById('saveDataSelect').addEventListener('change',(event)=>{
 	        	save(event.target.value, editor.get())
 	        });	
-
-
-	        // document.getElementById('loadProdProfiles').addEventListener('click',()=>{
-	        // 	load('profile/prod')
-	        // });	
-	        // document.getElementById('loadStageProfiles').addEventListener('click',()=>{
-	        // 	load('profile/stage')
-	        // });
-
-	        // document.getElementById('loadProdStarting').addEventListener('click',()=>{
-	        // 	load('starting/prod')
-	        // });	
-	        // document.getElementById('loadStageStarting').addEventListener('click',()=>{
-	        // 	load('starting/stage')
-	        // });
-
-
-	        // document.getElementById('saveProdProfile').addEventListener('click',()=>{
-	        	
-	        // 	save('profile/prod',editor.get())
-	        // });
-	        // document.getElementById('saveStageProfile').addEventListener('click',()=>{
-	        	
-	        // 	save('profile/stage',editor.get())
-	        // });
-
-
-
-	        // document.getElementById('saveProdStarting').addEventListener('click',()=>{
-	        	
-	        // 	save('starting/prod',editor.get())
-	        // });
-	        // document.getElementById('saveStageStarting').addEventListener('click',()=>{
-	        	
-	        // 	save('starting/stage',editor.get())
-	        // });
-
-
-
-
 
 
 

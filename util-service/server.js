@@ -1259,6 +1259,172 @@ app.get('/templates/:user', async (request, response) => {
 
 
 // this is being rerouted from the profile editor
+
+
+
+const updateGit = async function(docName,env,jsonPayload){
+
+
+		
+
+	// otherMetadataKeys = [
+	// 	"index.resourceType:ontology",
+	// 	"index.resourceType:vocabulary",
+	// 	"index.resourceType:propertyTypes"
+	// ]
+
+
+  	// load the local deploy options
+	let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
+
+	if (config.profileEditPushGit){
+
+
+	    fs.rmSync('/tmp/profiles/', { recursive: true, force: true });
+
+	    await fs.promises.mkdir( '/tmp/profiles/' );
+	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}` );
+	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}/src` );
+
+	    let gitConfig = JSON.parse(fs.readFileSync('gitconfig.json', 'utf8'));
+
+	    let userName = gitConfig.userName
+	    let password = gitConfig.password
+	    let org = gitConfig.org
+	    let repo = gitConfig.repo
+
+	    const gitHubUrl = `https://${userName}:${password}@github.com/${org}/${repo}`;
+
+		await simpleGit.cwd({ path: '/tmp/profiles/', root: true });
+
+		await simpleGit.init()
+
+		await simpleGit.addRemote('origin',gitHubUrl);
+
+
+		await simpleGit.addConfig('user.email','ndmso@loc.gov');
+		await simpleGit.addConfig('user.name','NDMSO');
+		await simpleGit.pull('origin','main')
+		await simpleGit.checkout('main')
+
+
+	    // write out the file
+
+		fs.writeFileSync( `/tmp/profiles/${docName}-${env}/data.json` , JSON.stringify(jsonPayload,null,2))
+
+	    if (docName == 'profile' && jsonPayload){
+
+	    	for (let p of jsonPayload){
+	    		if (p.json && p.json.Profile){
+	    			fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${p.json.Profile.id}.json` , JSON.stringify(p.json.Profile,null,2))
+	    		}
+
+
+	    		if (p.json && p.json.Profile && p.json.Profile.resourceTemplates){
+
+	    			for (let rt of p.json.Profile.resourceTemplates ){
+	    				console.log('wrotomg ',rt.id)
+						fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${rt.id}.json` , JSON.stringify(rt,null,2))
+	    			}
+	    		}
+	    	}
+	    }
+
+
+		simpleGit.add('.')
+		.then(
+			(addSuccess) => {
+				console.log(addSuccess);
+				simpleGit.commit(`${docName}-${env} change`)
+					.then(
+						(successCommit) => {
+							console.log(successCommit);
+
+							simpleGit.push('origin','main')
+								.then((success) => {
+								   console.log('repo successfully pushed');
+								},(failed)=> {
+							       console.log(failed);
+								   console.log('repo push faileds');
+							});
+
+					}, (failed) => {
+						console.log(failed);
+						console.log('failed commmit');
+				});
+			}, (failedAdd) => {
+			  console.log(failedAdd)
+			  console.log('adding files failed');
+		});
+	}
+
+
+
+
+
+}
+
+
+
+app.get('/profiles/bootstrap', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bfe2");
+
+
+		let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
+
+		if (config.bootstrapLinks){
+
+			let bootstrapResults = []
+			for(let id in config.bootstrapLinks){
+
+				var options = {
+				    method: 'GET',
+				    uri: config.bootstrapLinks[id],
+					headers: {
+					    "user-agent": "MARVA EDITOR"
+					 }
+				};
+
+		        let r = await rp.get(options)
+		        r = JSON.parse(r)
+
+				let doc = await dbo.collection('profiles').findOne({type: id})
+				if (doc){
+					dbo.collection('profiles').updateOne(
+					    {'_id': new mongo.ObjectID(doc['_id'])}, 
+					    { $set: {type:id, data:r} }
+					);
+
+				}else{
+			        dbo.collection("profiles").insertOne({type:id, data:r}, 
+			        function(err, result) {
+			            if (err) {
+			            	console.log(err)
+			            }			            
+			        });
+				}
+
+			}
+
+			response.status(200).send("Updated from bootstrap source.");
+
+		}else{
+
+			response.status(500).send("The bootstrap links were not found");
+
+		}
+				
+
+
+
+	});
+});
+
+
+
 app.get('/profiles/:doc', async (request, response) => {
 
     MongoClient.connect(uri, async function(err, db) {
@@ -1279,10 +1445,9 @@ app.get('/profiles/:doc', async (request, response) => {
 
 
 		let id = `${docName}-${env}`
-        console.log("idididididididid",id)
 
 
-		console.log("id = ",id)
+
 		let doc = await dbo.collection('profiles').findOne({type: id})
 		if (doc){
 			response.json(doc.data);
@@ -1341,6 +1506,8 @@ app.put('/profiles/:doc', async (request, response) => {
 				    { $set: {type:profileId, data:docMain.data} }
 				);
 
+				await updateGit('profile',env,docMain.data)
+
 
 
 			}else{
@@ -1397,6 +1564,10 @@ app.delete('/profiles/:doc', async (request, response) => {
 				    { $set: {type:profileId, data:docMain.data} }
 				);
 
+				// do the git stuff
+				await updateGit('profile',env,docMain.data)
+
+
 
 
 			}else{
@@ -1436,6 +1607,8 @@ app.get('/profiles/:doc/:env', async (request, response) => {
 		}
 	});
 });
+
+
 
 
 // profile editor endpoints
@@ -1512,78 +1685,7 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
     });
 
     // do the git stuff
-
-   	// load the local deploy options
-	let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
-
-	if (config.profileEditPushGit){
-
-
-	    fs.rmSync('/tmp/profiles/', { recursive: true, force: true });
-
-	    await fs.promises.mkdir( '/tmp/profiles/' );
-	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}` );
-	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}/src` );
-
-	    let gitConfig = JSON.parse(fs.readFileSync('gitconfig.json', 'utf8'));
-
-	    let userName = gitConfig.userName
-	    let password = gitConfig.password
-	    let org = gitConfig.org
-	    let repo = gitConfig.repo
-
-	    const gitHubUrl = `https://${userName}:${password}@github.com/${org}/${repo}`;
-
-		await simpleGit.cwd({ path: '/tmp/profiles/', root: true });
-
-		await simpleGit.init()
-
-		await simpleGit.addRemote('origin',gitHubUrl);
-
-		await simpleGit.addConfig('user.email','ndmso@loc.gov');
-		await simpleGit.addConfig('user.name','NDMSO');
-		await simpleGit.pull('origin','master')
-	    // write out the file
-		fs.writeFileSync( `/tmp/profiles/${docName}-${env}/data.json` , JSON.stringify(request.body,null,2))
-
-	    if (docName == 'profile'){
-
-	    	for (let p of request.body){
-	    		if (p.json && p.json.Profile && p.json.Profile.resourceTemplates){
-	    			for (let rt of p.json.Profile.resourceTemplates ){
-						fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${rt.id}.json` , JSON.stringify(rt,null,2))
-	    			}
-	    		}
-	    	}
-	    }
-
-
-		simpleGit.add('.')
-		.then(
-			(addSuccess) => {
-				console.log(addSuccess);
-				simpleGit.commit(`${docName}-${env} change`)
-					.then(
-						(successCommit) => {
-							console.log(successCommit);
-
-							simpleGit.push('origin','master')
-								.then((success) => {
-								   console.log('repo successfully pushed');
-								},(failed)=> {
-							       console.log(failed);
-								   console.log('repo push faileds');
-							});
-
-					}, (failed) => {
-						console.log(failed);
-						console.log('failed commmit');
-				});
-			}, (failedAdd) => {
-			  console.log(failedAdd)
-			  console.log('adding files failed');
-		});
-	}
+	await updateGit(docName,env,request.body)
 
 
 

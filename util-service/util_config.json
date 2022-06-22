@@ -3,6 +3,21 @@
 	"prodDeployPath" : "/bfe2/editor/",
 	"stageDeployPath" : "/bfe2/editor/",
 
-	"profileEditPushGit": false
+	"profileEditPushGit": true,
+
+	"bootstrapLinks":{
+		"index.label:propertyTypes-prod":"https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.label%3ApropertyTypes-prod/data.json",
+		"index.label:propertyTypes-stage":"https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.label%3ApropertyTypes-stage/data.json",
+		"index.resourceType:ontology-prod": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.resourceType%3Aontology-prod/data.json",
+		"index.resourceType:ontology-stage": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.resourceType%3Aontology-stage/data.json",
+		"index.resourceType:vocabulary-prod": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.resourceType%3Avocabulary-prod/data.json",
+		"index.resourceType:vocabulary-stage": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.resourceType%3Avocabulary-stage/data.json",
+		"profile-prod":"https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/profile-prod/data.json",
+		"profile-stage":"https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/profile-stage/data.json",
+		"starting-prod": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/starting-prod/data.json",
+		"starting-stage": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/starting-stage/data.json"
+	}
+
+	
 
 }
