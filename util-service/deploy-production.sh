@@ -8,6 +8,8 @@ then
     cd production-deploy
 	cd bfe2test
 	git pull
+	git checkout vue.config.js
+	node /app/deploy-helper.js --action="deploy_marva_prod"	
 	npm install
 	npm run build
 else
@@ -16,6 +18,7 @@ else
 	cd production-deploy	
 	git clone https://github.com/thisismattmiller/bfe2test.git
 	cd bfe2test
+	node /app/deploy-helper.js --action="deploy_marva_prod"
 	npm install
 	npm run build    
 

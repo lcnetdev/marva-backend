@@ -8,6 +8,9 @@ then
     cd staging-deploy
 	cd bfe2test
 	git pull
+	rm vue.config.js
+	git checkout vue.config.js
+	node /app/deploy-helper.js --action="deploy_marva_stage"
 	npm install
 	npm run build
 else
@@ -16,6 +19,7 @@ else
 	cd staging-deploy	
 	git clone https://github.com/thisismattmiller/bfe2test.git
 	cd bfe2test
+	node /app/deploy-helper.js --action="deploy_marva_stage"
 	npm install
 	npm run build    
 

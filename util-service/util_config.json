@@ -3,7 +3,7 @@
 	"prodDeployPath" : "/bfe2/editor/",
 	"stageDeployPath" : "/bfe2/editor/",
 
-	"profileEditPushGit": true,
+	"profileEditPushGit": false,
 
 	"bootstrapLinks":{
 		"index.label:propertyTypes-prod":"https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/index.label%3ApropertyTypes-prod/data.json",
@@ -18,6 +18,6 @@
 		"starting-stage": "https://raw.githubusercontent.com/lcnetdev/bfe-profiles/main/starting-stage/data.json"
 	}
 
-	
+
 
 }
