@@ -28,8 +28,8 @@ if (argv('action') == 'deploy_marva_stage'){
 		const result = data.replace(/<REPLACE>/g, config['stageDeployPath']);
 		await fs.writeFile('/tmp/staging-deploy/bfe2test/vue.config.js', result,'utf8');
 
-		const data = await fs.readFile('/tmp/staging-deploy/bfe2test/src/assets/main.css', 'utf8');
-		const result = data.replace(/<REPLACE>/g, config['prodDeployPath']);
+		const dataCss = await fs.readFile('/tmp/staging-deploy/bfe2test/src/assets/main.css', 'utf8');
+		const result = dataCss.replace(/<REPLACE>/g, config['prodDeployPath']);
 		await fs.writeFile('/tmp/staging-deploy/bfe2test/src/assets/main.css', result,'utf8');
 
 
@@ -54,8 +54,8 @@ if (argv('action') == 'deploy_marva_prod'){
 		const result = data.replace(/<REPLACE>/g, config['prodDeployPath']);
 		await fs.writeFile('/tmp/production-deploy/bfe2test/vue.config.js', result,'utf8');
 
-		const data = await fs.readFile('/tmp/production-deploy/bfe2test/src/assets/main.css', 'utf8');
-		const result = data.replace(/<REPLACE>/g, config['prodDeployPath']);
+		const dataCss = await fs.readFile('/tmp/production-deploy/bfe2test/src/assets/main.css', 'utf8');
+		const result = dataCss.replace(/<REPLACE>/g, config['prodDeployPath']);
 		await fs.writeFile('/tmp/production-deploy/bfe2test/src/assets/main.css', result,'utf8');
 
 
