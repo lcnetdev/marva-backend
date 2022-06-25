@@ -10,6 +10,7 @@ then
 	git pull
 	rm vue.config.js
 	git checkout vue.config.js
+	git checkout src/assets/main.css
 	node /app/deploy-helper.js --action="deploy_marva_stage"
 	npm install
 	npm run build

@@ -8,6 +8,7 @@ then
     cd production-deploy
 	cd bfe2test
 	git pull
+	git checkout src/assets/main.css
 	git checkout vue.config.js
 	node /app/deploy-helper.js --action="deploy_marva_prod"	
 	npm install
