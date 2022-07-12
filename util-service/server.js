@@ -7,7 +7,7 @@ const { auth } = require('express-openid-connect');
 const zip = require('zip-a-folder');
 const simpleGit = require('simple-git')();
 const shellJs = require('shelljs');
-
+const crypto = require('crypto');
 
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
@@ -1227,22 +1227,82 @@ app.get('/templates/:user', async (request, response) => {
         if (err) throw err;
         var dbo = db.db("bfe2");
 
-        dbo.collection('templates').find({},{"user":request.params.user}).toArray(function(err, result) {
+        dbo.collection('templates').find({"user":request.params.user}).toArray(function(err, result) {
 
             return response.status(200).json(result)
             db.close();
         });
-
-
 		db.close();
-
-		// dbo.collection('profiles').collectionName.remove( { } )
-    });
-
-    
+    });   
 });
 
 
+app.get('/copytemplate/:user/:id', async (request, response) => {
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("bfe2");
+
+		let id = request.params.id
+		let doc = await dbo.collection('templates').findOne({id: id})
+		if (doc){
+		
+
+
+			// remove the _id change the id and change the user name
+			delete doc['_id']
+			doc.id = crypto.createHash('md5').update(`${new Date().getTime().toString()}${request.params.user}`).digest("hex");
+			doc.user = request.params.user
+			doc.timestamp = new Date().getTime() / 1000
+
+			dbo.collection("templates").insertOne(doc, 
+			function(err, result) {
+			    if (err) {
+			    	console.log(err)
+			    	response.status(500).send("Could save copy of template")
+			    }
+			    return response.status(200).send("Template copied")			            
+			});
+
+
+
+			db.close();
+			
+			
+
+		}else{
+			response.status(500).send("Could not find that ID to copy")
+		}
+	
+
+	});
+
+
+});
+
+app.delete('/templates/:doc', async (request, response) => {
+
+
+    MongoClient.connect(uri, async function(err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("bfe2");
+
+		let docName = request.params.doc
+		let doc = await dbo.collection('templates').findOne({id: docName})
+		if (doc){
+		
+			// remove the piece of the profile
+			dbo.collection('templates').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
+		}else{
+			response.status(500).send("Could not find that ID to remove")
+		}
+	});
+
+	return response.status(200).send("yeah :)")
+	
+});
 
 
 
