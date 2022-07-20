@@ -2,6 +2,8 @@
 
 	"prodDeployPath" : "/bfe2/editor/",
 	"stageDeployPath" : "/bfe2/editor/",
+	
+	"profileEditorBasePath": "/bfe2/",
 
 	"profileEditPushGit": false,
 
