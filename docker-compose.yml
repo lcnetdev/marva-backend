@@ -26,6 +26,18 @@ services:
     # ports:
     #   - 5001:5001
 
+  scriptshifter:
+    build: 
+      context: ./scriptshifter/
+      dockerfile: Dockerfile
+    container_name: 'scriptshifter'
+    volumes:
+      - ./tmp:/tmp
+    environment:
+      - TXL_FLASK_SECRET=1234567890
+    # ports:
+    #  - 5003:8000
+
 
   util-lang:
     build: 

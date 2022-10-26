@@ -12,6 +12,9 @@ const crypto = require('crypto');
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
 
+const { promisify } = require('util');
+const exec = promisify(require('child_process').exec)
+
 var recsStageByEid = {}
 var recsProdByEid = {}
 
@@ -1793,7 +1796,36 @@ app.get('/whichrt', async (request, response) => {
 });
 
 
+app.post('/marcpreview', async (request, response) => {
 
+
+	var rdfxml = request.body.rdfxml; 
+
+	// write out the contents to a file
+	let tmpfilename = crypto.createHash('md5').update(new Date().getTime().toString()).digest("hex")
+	tmpfilename = `/tmp/${tmpfilename}.xml`
+	fs.writeFileSync( tmpfilename , request.body.rdfxml)
+
+	const xslts = fs.readdirSync('/app/lib/bibframe2marc/', {withFileTypes: true})
+	.filter(item => !item.isDirectory())
+	.map((item) => {
+		return {
+			fullPath: `/app/lib/bibframe2marc/${item.name}`,
+			version: item.name.split('_')[1].split('.xsl')[0]
+		}
+	})
+
+	let results = []
+
+	for (let xslt of xslts){
+		const marcxml = await exec(`xsltproc ${xslt.fullPath} ${tmpfilename}`)
+		results.push({'version':xslt.version, results: marcxml})
+	}
+
+	response.set('Content-Type', 'application/json');
+	response.status(200).json(results);
+
+});
 
 
 console.log('listending on 5200')
