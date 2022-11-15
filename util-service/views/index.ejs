@@ -308,10 +308,52 @@
 
 
 
+		<hr>
+
+		<h2>Error Reports</h2>	    
 
 
+		<div id="error-reports-div">
+
+			<ul id="error-reports-ul">
 
 
+			</ul>
+			
+
+		</div>
+
+		<script>
+
+	        let loadErrorReports = async function(where){
+
+				const getit = await fetch(`errorlog/`, {
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json'
+					}						
+				});
+
+				let data = await getit.json()
+				
+				document.getElementById('error-reports-ul').innerHTML = ''
+
+				for (let k in data){
+
+					let el = document.createElement('li')
+
+					el.innerHTML = `<a href="errordoc/${k}" target="_blank">${data[k]}</a>`
+
+					document.getElementById('error-reports-ul').appendChild(el)
+				}
+
+
+	        }
+
+	        loadErrorReports()
+
+		</script>
 
 
 	</body>

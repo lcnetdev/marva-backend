@@ -588,6 +588,62 @@ app.post('/error/report', (request, response) => {
     });
 });
 
+
+app.get('/errordoc/:hash', (request, response) => {
+
+	let found = false
+	fs.readdirSync('/tmp/marva_error_reports/').forEach(file => {
+		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")){
+
+			response.type('text/plain').status(200).send(fs.readFileSync('/tmp/marva_error_reports/'+file,{encoding:'utf8', flag:'r'}));
+			found=true
+		}
+	})
+
+	if (!found){
+		response.status(404).send('not found')
+	}
+});
+
+app.get('/errorlog', (request, response) => {
+
+	let files = {}
+
+	fs.readdirSync('/tmp/marva_error_reports/').forEach(file => {
+	  let s = file.split('_')
+	  files[s[0]] = file
+	})
+
+	let keys = Object.keys(files).sort().reverse().slice(0, 50);
+
+	let names = {}
+	for (let k of keys){
+
+		names[crypto.createHash('md5').update(`${files[k]}`).digest("hex")] = files[k]
+
+	}
+
+
+	response.json(names)
+
+
+});
+
+app.post('/errorlog', (request, response) => {
+
+
+	if (!fs.existsSync('/tmp/marva_error_reports/')){
+		fs.mkdirSync('/tmp/marva_error_reports/');
+	}
+
+	let filename = request.body.filename.replace(/\//g,'')
+
+	fs.writeFileSync(`/tmp/marva_error_reports/${filename}`, request.body.log);
+
+	response.status(200).send('ok');
+
+
+});
 app.get('/error/report', (request, response) => {
 
     MongoClient.connect(uri, function(err, db) {
