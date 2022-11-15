@@ -644,6 +644,80 @@ app.post('/errorlog', (request, response) => {
 
 
 });
+
+
+
+app.get('/sourcelog/:hash', (request, response) => {
+
+	let found = false
+	fs.readdirSync('/tmp/marva_source_log/').forEach(file => {
+		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")){
+
+			response.type('text/plain').status(200).send(fs.readFileSync('/tmp/marva_source_log/'+file,{encoding:'utf8', flag:'r'}));
+			found=true
+		}
+	})
+
+	if (!found){
+		response.status(404).send('not found')
+	}
+});
+
+app.get('/sourcelog', (request, response) => {
+
+	let files = {}
+
+	fs.readdirSync('/tmp/marva_source_log/').forEach(file => {
+	  let s = file.split('_')
+	  files[s[0]] = file
+	})
+
+	let keys = Object.keys(files).sort().reverse().slice(0, 100);
+
+	let names = {}
+	for (let k of keys){
+
+		names[crypto.createHash('md5').update(`${files[k]}`).digest("hex")] = files[k]
+
+	}
+
+
+	response.json(names)
+
+
+});
+
+app.post('/sourcelog', (request, response) => {
+
+
+	if (!fs.existsSync('/tmp/marva_source_log/')){
+		fs.mkdirSync('/tmp/marva_source_log/');
+	}
+
+	let stamp = Math.floor(Date.now() / 1000)
+
+	let filename = `${stamp}_${request.body.eid}_${request.body.user}_${request.body.date}.xml`
+
+	fs.writeFileSync(`/tmp/marva_source_log/${filename}`, request.body.xml);
+
+	response.status(200).send('ok');
+
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get('/error/report', (request, response) => {
 
     MongoClient.connect(uri, function(err, db) {

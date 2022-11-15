@@ -310,18 +310,19 @@
 
 		<hr>
 
-		<h2>Error Reports</h2>	    
+		<div style="flex">
 
+			<div style="flex:1" id="error-reports-div">
+				<h2>Error Reports</h2>	
+				<ul id="error-reports-ul">
+				</ul>		
+			</div>
+			<div style="flex:1" id="source-log-div">
+				<h2>Source Log</h2>	
+				<ul id="source-log-ul">
+				</ul>		
+			</div>
 
-		<div id="error-reports-div">
-
-			<ul id="error-reports-ul">
-
-
-			</ul>
-			
-
-		</div>
 
 		<script>
 
@@ -343,6 +344,10 @@
 
 					let el = document.createElement('li')
 
+					data[k] = data[k].split('_')
+					data[k].shift()
+					data[k] = data[k].join('_')
+
 					el.innerHTML = `<a href="errordoc/${k}" target="_blank">${data[k]}</a>`
 
 					document.getElementById('error-reports-ul').appendChild(el)
@@ -352,6 +357,47 @@
 	        }
 
 	        loadErrorReports()
+
+
+
+
+	        let loadSourceLog = async function(where){
+
+				const getit = await fetch(`sourcelog/`, {
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json'
+					}						
+				});
+
+				let data = await getit.json()
+				
+				document.getElementById('source-log-ul').innerHTML = ''
+
+				for (let k in data){
+
+					let el = document.createElement('li')
+					data[k] = data[k].split('_')
+					data[k].shift()
+					data[k] = data[k].join('_')
+
+					el.innerHTML = `<a href="sourcelog/${k}" target="_blank">${data[k]}</a>`
+
+					document.getElementById('source-log-ul').appendChild(el)
+				}
+
+
+	        }
+
+	        loadSourceLog()
+
+
+
+
+
+
+
 
 		</script>
 
