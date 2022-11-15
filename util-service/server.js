@@ -595,7 +595,14 @@ app.get('/errordoc/:hash', (request, response) => {
 	fs.readdirSync('/tmp/marva_error_reports/').forEach(file => {
 		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")){
 
-			response.type('text/plain').status(200).send(fs.readFileSync('/tmp/marva_error_reports/'+file,{encoding:'utf8', flag:'r'}));
+
+			let txt = fs.readFileSync('/tmp/marva_error_reports/'+file,{encoding:'utf8', flag:'r'})
+			if (fs.existsSync('/tmp/marva_error_reports/'+file.replace('.txt','.json'))){
+				txt = txt + '-------------------------------------\n'+fs.readFileSync('/tmp/marva_error_reports/'+file.replace('.txt','.json'),{encoding:'utf8', flag:'r'})
+			}
+
+
+			response.type('text/plain').status(200).send(txt);
 			found=true
 		}
 	})
@@ -639,6 +646,7 @@ app.post('/errorlog', (request, response) => {
 	let filename = request.body.filename.replace(/\//g,'')
 
 	fs.writeFileSync(`/tmp/marva_error_reports/${filename}`, request.body.log);
+	fs.writeFileSync(`/tmp/marva_error_reports/${filename.replace('.txt','.json')}`, request.body.profile);
 
 	response.status(200).send('ok');
 
