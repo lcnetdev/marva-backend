@@ -27,16 +27,22 @@ services:
     #   - 5001:5001
 
   scriptshifter:
-    build: 
-      context: ./scriptshifter/
-      dockerfile: Dockerfile
-    container_name: 'scriptshifter'
+    image: lcnetdev/scriptshifter:latest
     volumes:
       - ./tmp:/tmp
     environment:
       - TXL_FLASK_SECRET=1234567890
-    # ports:
-    #  - 5003:8000
+
+    # build: 
+    #   context: ./scriptshifter/
+    #   dockerfile: Dockerfile
+    # container_name: 'scriptshifter'
+    # volumes:
+    #   - ./tmp:/tmp
+    # environment:
+    #   - TXL_FLASK_SECRET=1234567890
+    # # ports:
+    # #  - 5003:8000
 
 
   util-lang:
@@ -44,6 +50,8 @@ services:
       context: ./
       dockerfile: config/util-lang.docker
     container_name: 'util-lang'
+    platform: linux/amd64
+
     volumes:
       - ./util-lang:/app
       - ./tmp:/tmp
@@ -78,6 +86,7 @@ services:
       context: ./
       dockerfile: config/ldpjs.docker
     container_name: 'ldpjs-staging'
+    platform: linux/amd64
     depends_on:
       - 'database'    
     volumes:      
@@ -94,6 +103,7 @@ services:
       context: ./
       dockerfile: config/ldpjs.docker
     container_name: 'ldpjs-production'
+    platform: linux/amd64
     depends_on:
       - 'database'    
     volumes:      
