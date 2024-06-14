@@ -8,6 +8,7 @@ const zip = require('zip-a-folder');
 const simpleGit = require('simple-git')();
 const shellJs = require('shelljs');
 const crypto = require('crypto');
+const { Marc } = require('marcjs');
 
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
@@ -1947,6 +1948,7 @@ app.post('/marcpreview', async (request, response) => {
 	const xslts = fs.readdirSync('/app/lib/bibframe2marc/', {withFileTypes: true})
 	.filter(item => !item.isDirectory())
 	.map((item) => {
+
 		return {
 			fullPath: `/app/lib/bibframe2marc/${item.name}`,
 			version: item.name.split('_')[1].split('.xsl')[0]
@@ -1956,10 +1958,53 @@ app.post('/marcpreview', async (request, response) => {
 	let results = []
 
 	for (let xslt of xslts){
-		const marcxml = await exec(`xsltproc ${xslt.fullPath} ${tmpfilename}`)
+
+		if (xslt.fullPath.toLowerCase().indexOf('.xsl') == -1){
+			continue
+		}
+		let marcxml
+		try{
+			marcxml = await exec(`xsltproc ${xslt.fullPath} ${tmpfilename}`)
+		}catch(err){
+			marcxml = err.toString()
+		}
 		results.push({'version':xslt.version, results: marcxml})
 	}
 
+
+	for (let r of results){
+		let marcRecord
+		try{
+			let x
+			if (r.results){
+				x = r.results
+			}
+			if (r.results.stdout){
+				x = r.results.stdout
+			}
+
+			x = x.trim()
+			x = x.replace('<?xml version="1.0" encoding="UTF-8"?>','')
+			
+			x = x.replace(/\s+xml:space="preserve">/g,'>')
+			x = x.replace(/\s+xml:space="preserve"\s+/g,' ')
+			x = x.replace(/<marc:/g,'<')
+			x = x.replace(/<\/marc:/g,'</')
+			
+			const record = Marc.parse(x, 'marcxml');			
+			marcRecord = Marc.format(record, 'Text')
+			
+		}catch(err){
+			marcRecord = err.toString()
+		}
+
+		r.marcRecord = marcRecord.trim()
+		
+
+	}
+
+
+	
 	response.set('Content-Type', 'application/json');
 	response.status(200).json(results);
 
