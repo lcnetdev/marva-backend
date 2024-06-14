@@ -6,7 +6,7 @@ if [ -d "production-quartz" ]
 then
     echo "pulllllin"
     cd production-quartz
-	cd mrava-quartz
+	cd marva-quartz
 	git pull
 	# git checkout src/assets/main.css
 	# git checkout vue.config.js

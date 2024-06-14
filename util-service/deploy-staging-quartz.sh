@@ -2,11 +2,11 @@
 
 cd /tmp
 
-if [ -d "production-quartz" ] 
+if [ -d "stage-quartz" ] 
 then
     echo "pulllllin"
-    cd production-quartz
-	cd mrava-quartz
+    cd stage-quartz
+	cd marva-quartz
 	git pull
 	# git checkout src/assets/main.css
 	# git checkout vue.config.js
@@ -15,8 +15,8 @@ then
 	npm run build
 else
 
-	mkdir production-quartz
-	cd production-quartz	
+	mkdir stage-quartz
+	cd stage-quartz	
 	git clone https://github.com/lcnetdev/marva-quartz.git
 	cd marva-quartz
 	# node /app/deploy-helper.js --action="deploy_marva_prod"
@@ -25,11 +25,11 @@ else
 
 fi
 
-FILE=/tmp/production-quartz/marva-quartz/dist/index.html
+FILE=/tmp/stage-quartz/marva-quartz/dist/index.html
 if test -f "$FILE"; then
     echo "$FILE exists."
-	rm -fr /dist/prod-quartz/*
-	cp -R /tmp/production-quartz/marva-quartz/dist/* /dist/prod-quartz/
+	rm -fr /dist/stage-quartz/*
+	cp -R /tmp/stage-quartz/marva-quartz/dist/* /dist/stage-quartz/
 
 fi
 
