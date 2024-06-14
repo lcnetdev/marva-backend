@@ -1162,6 +1162,26 @@ app.get('/deploy-production', function(request, response){
 
 });
 
+app.get('/deploy-production-quartz', function(request, response){
+
+	let correctlogin = 'yeet'
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+  if (  request.headers.authorization !== `Basic ${correctlogin}`){
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+  }
+
+  // Access granted...
+	let r = shell.exec('./deploy-production-quartz.sh')		
+ 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	
+	console.log(r_html)
+
+  return response.status(200).send(r_html)
+
+});
+
 
 app.get('/deploy-staging', function(request, response){
 
@@ -1175,6 +1195,25 @@ app.get('/deploy-staging', function(request, response){
 
   // Access granted...
 	let r = shell.exec('./deploy-staging.sh')		
+ 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	
+	console.log(r_html)
+
+  return response.status(200).send(r_html)
+
+});
+app.get('/deploy-staging-quartz', function(request, response){
+
+	let correctlogin = 'yeet'
+	if (request.headers.authorization){
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	}
+  if (  request.headers.authorization !== `Basic ${correctlogin}`){
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+  }
+
+  // Access granted...
+	let r = shell.exec('./deploy-staging-quartz.sh')		
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 	
 	console.log(r_html)
