@@ -12,6 +12,8 @@ services:
       - ./dist/staging:/dist/staging
       - ./dist/prod:/dist/prod
       - ./dist/profile-editor:/dist/profile-editor
+      - ./dist/prod-quartz:/dist/prod-quartz
+      - ./dist/stage-quartz:/dist/stage-quartz
       - ./tmp:/tmp
     environment:
       # 1 means to use nodmon and reload on change (dev)
@@ -43,23 +45,7 @@ services:
     #   - TXL_FLASK_SECRET=1234567890
     # # ports:
     # #  - 5003:8000
-
-
-  util-lang:
-    build: 
-      context: ./
-      dockerfile: config/util-lang.docker
-    container_name: 'util-lang'
-    platform: linux/amd64
-
-    volumes:
-      - ./util-lang:/app
-      - ./tmp:/tmp
-    environment:
-      - PYTHONUNBUFFERED=1
-    #ports:
-    #  - 5002:7778
-    
+  
 
   database:
     image: 'mongo:4.4.4'
