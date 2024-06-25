@@ -10,15 +10,15 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "ejs": "^3.1.6",
-    "express": "^4.17.1",
-    "express-openid-connect": "^2.7.1",
-    "mongodb": "^3.6.4",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "got": "^14.4.1",
     "marcjs": "^2.0.1",
+    
+    "mongodb": "^3.6.4",
     "shelljs": "^0.8.5",
-    "simple-git": "^3.7.1",
-    "zip-a-folder": "^1.1.0"
+    "simple-git": "^3.25.0",
+    "tslib": "^2.6.3",
+    "zip-a-folder": "^3.1.7"
   }
 }

@@ -1,16 +1,9 @@
 #!/bin/sh
 
 npm install
+echo "----Mode----"
 echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo "$MODE"
-echo $MODE
+echo "------------"
 
 
 if [ $MODE = 1 ]

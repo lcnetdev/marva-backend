@@ -1,17 +1,22 @@
 const express = require('express');
 const shell = require('shelljs')
 const cors = require('cors')
-const rp = require('request-promise');
+// const rp = require('request-promise');
 const fs = require('fs');
-const { auth } = require('express-openid-connect');
 const zip = require('zip-a-folder');
 const simpleGit = require('simple-git')();
-const shellJs = require('shelljs');
 const crypto = require('crypto');
 const { Marc } = require('marcjs');
-
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
+
+var got
+
+(async function () {
+	got = await import('got');    
+	got = got.got
+})();
+
 
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
@@ -65,6 +70,9 @@ let ageLimitForAllRecords = 15 //days
 
 const uri = 'mongodb://mongo:27017/';
 MongoClient.connect(uri, function(err, client) {
+
+	console.log("err", err)
+	console.log("client", client)
 
     const db = client.db('bfe2');
 
@@ -254,7 +262,7 @@ app.get('/version/editor/stage', function(request, response){
 
 app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
@@ -286,7 +294,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.STATSPW.replace(/"/g,'')}:${process.env.STATSPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -792,7 +800,7 @@ app.get('/error/:errorId', (request, response) => {
 
 
 
-app.post('/publish/production', (request, response) => {
+app.post('/publish/production', async (request, response) => {
 
 	// var shortuuid = require('short-uuid');
 	// var decimaltranslator = shortuuid("0123456789");
@@ -825,85 +833,135 @@ app.post('/publish/production', (request, response) => {
 	}
 
 
+	// try{
 
-	var options = {
-	    method: 'POST',
-	    uri: url,
-	    body: rdfxml,
-	    resolveWithFullResponse: true,
-	    headers: { "Content-type": "application/xml" },
-	    auth: {
-	            'user': MLUSER,
-	            'pass': MLPASS,
-	        },
-	    json: false // Takes JSON as string and converts to Object
-	};
-	rp(options)
-	    .then(function (postResponse) {
-	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
-	        // "publish": {"status": "success","message": "posted"}}
+		const postResponse = await got.post(url, {
+			body: rdfxml,
+			username:MLUSER,
+			password:MLPASS,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}		
+		
+		});
 
-	        postLogEntry['postingStatus'] = 'success'
-	        postLogEntry['postingStatusCode'] = postResponse.statusCode
-	        postLogEntry['postingBodyResponse'] = postResponse.body
-	        postLogEntry['postingName'] = request.body.name
-		    postLog.push(postLogEntry)
-		    if (postLogEntry.length>50){
-		    	postLogEntry.shift()
-		    }
+		postLogEntry['postingStatus'] = 'success'
+		postLogEntry['postingStatusCode'] = postResponse.statusCode
+		postLogEntry['postingBodyResponse'] = postResponse.body
+		postLogEntry['postingName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}		
+		let postStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+
+		let resp_data = {
+			name: request.body.name, 
+			// "url": resources + name, 
+			//"objid": data.objid, 
+			// "lccn": lccn, 
+			publish: postStatus
+		}
+		
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+
+
+
+	// }catch(error){
+
+
+
+
+
+	// }
+
+
+
+	// var options = {
+	//     method: 'POST',
+	//     uri: url,
+	//     body: rdfxml,
+	//     resolveWithFullResponse: true,
+	//     headers: { "Content-type": "application/xml" },
+	//     auth: {
+	//             'user': MLUSER,
+	//             'pass': MLPASS,
+	//         },
+	//     json: false // Takes JSON as string and converts to Object
+	// };
+	// rp(options)
+	//     .then(function (postResponse) {
+	//         // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
+	//         // "publish": {"status": "success","message": "posted"}}
+
+	//         postLogEntry['postingStatus'] = 'success'
+	//         postLogEntry['postingStatusCode'] = postResponse.statusCode
+	//         postLogEntry['postingBodyResponse'] = postResponse.body
+	//         postLogEntry['postingName'] = request.body.name
+	// 	    postLog.push(postLogEntry)
+	// 	    if (postLogEntry.length>50){
+	// 	    	postLogEntry.shift()
+	// 	    }
 
 
 	        
-	        let postStatus = {"status":"published"}
+	//         let postStatus = {"status":"published"}
 
-	        if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-	        	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
-	        }
+	//         if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+	//         	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+	//         }
 
-			let resp_data = {
-                name: request.body.name, 
-                // "url": resources + name, 
-                //"objid": data.objid, 
-                // "lccn": lccn, 
-                publish: postStatus
-            }
+	// 		let resp_data = {
+    //             name: request.body.name, 
+    //             // "url": resources + name, 
+    //             //"objid": data.objid, 
+    //             // "lccn": lccn, 
+    //             publish: postStatus
+    //         }
 	        
 	        
-	        response.set('Content-Type', 'application/json');
-	        response.status(200).send(resp_data);
-	    })
-	    .catch(function (err) {
-	        // POST failed...
-	        console.log(err)
+	//         response.set('Content-Type', 'application/json');
+	//         response.status(200).send(resp_data);
+	//     })
+	//     .catch(function (err) {
+	//         // POST failed...
+	//         console.log(err)
 
-	        postLogEntry['postingStatus'] = 'error'
-	        postLogEntry['postingStatusCode'] =  err.StatusCodeError
-	        postLogEntry['postingBodyResponse'] = err
-	        postLogEntry['postingBodyName'] = request.body.name
-	        postLogEntry['postingEid'] = request.body.eid
+	//         postLogEntry['postingStatus'] = 'error'
+	//         postLogEntry['postingStatusCode'] =  err.StatusCodeError
+	//         postLogEntry['postingBodyResponse'] = err
+	//         postLogEntry['postingBodyName'] = request.body.name
+	//         postLogEntry['postingEid'] = request.body.eid
 	        
-	        postLog.push(postLogEntry)
-	        if (postLogEntry.length>50){
-	        	postLogEntry.shift()
-	        }
+	//         postLog.push(postLogEntry)
+	//         if (postLogEntry.length>50){
+	//         	postLogEntry.shift()
+	//         }
 
 
-	        errString = JSON.stringify(err)
-			let replace = `${MLUSER}|${MLPASS}`;
-			let re = new RegExp(replace,"g");
-			errString = errString.replace(re, ",'****')");
-	        err = JSON.parse(errString)
+	//         errString = JSON.stringify(err)
+	// 		let replace = `${MLUSER}|${MLPASS}`;
+	// 		let re = new RegExp(replace,"g");
+	// 		errString = errString.replace(re, ",'****')");
+	//         err = JSON.parse(errString)
 
 
 
-	        resp_data = {
-	                "name": request.body.name, 
-	                "objid":  "objid", 
-	                "publish": {"status": "error","server": url,"message": err }
-	            }
-	        response.set('Content-Type', 'application/json');
-	        response.status(500).send(resp_data);
-	    });
+	//         resp_data = {
+	//                 "name": request.body.name, 
+	//                 "objid":  "objid", 
+	//                 "publish": {"status": "error","server": url,"message": err }
+	//             }
+	//         response.set('Content-Type', 'application/json');
+	//         response.status(500).send(resp_data);
+	//     });
 
 
    
@@ -911,7 +969,7 @@ app.post('/publish/production', (request, response) => {
 
 
 
-app.post('/publish/staging', (request, response) => {
+app.post('/publish/staging', async (request, response) => {
 
 	// var shortuuid = require('short-uuid');
 	// var decimaltranslator = shortuuid("0123456789");
@@ -944,85 +1002,137 @@ app.post('/publish/staging', (request, response) => {
 
 	}
 
+	// try{
+	console.log("got")
+	console.log(got)
+		const postResponse = await got.post(url, {
+			body: rdfxml,
+			username:MLUSERSTAGE,
+			password:MLPASSSTAGE,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}		
+		
+		});
+
+		postLogEntry['postingStatus'] = 'success'
+		postLogEntry['postingStatusCode'] = postResponse.statusCode
+		postLogEntry['postingBodyResponse'] = postResponse.body
+		postLogEntry['postingName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}		
+		let postStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+
+		let resp_data = {
+			name: request.body.name, 
+			// "url": resources + name, 
+			//"objid": data.objid, 
+			// "lccn": lccn, 
+			publish: postStatus
+		}
+		
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
 
 
 
-	var options = {
-	    method: 'POST',
-	    uri: url,
-	    body: rdfxml,
-	    resolveWithFullResponse: true,
-	    headers: { "Content-type": "application/xml" },
-	    auth: {
-	            'user': MLUSERSTAGE,
-	            'pass': MLPASSSTAGE,
-	        },
-	    json: false // Takes JSON as string and converts to Object
-	};
-	rp(options)
-	    .then(function (postResponse) {
-	        // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
-	        // "publish": {"status": "success","message": "posted"}}
 
-	        postLogEntry['postingStatus'] = 'success'
-	        postLogEntry['postingStatusCode'] = postResponse.statusCode
-	        postLogEntry['postingBodyResponse'] = postResponse.body
-	        postLogEntry['postingName'] = request.body.name
+	// }catch(error){
 
-		    postLog.push(postLogEntry)
-		    if (postLogEntry.length>50){
-		    	postLogEntry.shift()
-		    }
 
-	        console.log(postResponse)
-	        let postStatus = {"status":"published"}
 
-	        if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-	        	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
-	        }
 
-			let resp_data = {
-                name: request.body.name, 
-                // "url": resources + name, 
-                //"objid": data.objid, 
-                // "lccn": lccn, 
-                publish: postStatus
-            }
+
+	// }
+
+
+
+
+	// var options = {
+	//     method: 'POST',
+	//     uri: url,
+	//     body: rdfxml,
+	//     resolveWithFullResponse: true,
+	//     headers: { "Content-type": "application/xml" },
+	//     auth: {
+	//             'user': MLUSERSTAGE,
+	//             'pass': MLPASSSTAGE,
+	//         },
+	//     json: false // Takes JSON as string and converts to Object
+	// };
+	// rp(options)
+	//     .then(function (postResponse) {
+	//         // {"name": "72a0a1b6-2eb8-4ee6-8bdf-cd89760d9f9a.rdf","objid": "/resources/instances/c0209952430001",
+	//         // "publish": {"status": "success","message": "posted"}}
+
+	//         postLogEntry['postingStatus'] = 'success'
+	//         postLogEntry['postingStatusCode'] = postResponse.statusCode
+	//         postLogEntry['postingBodyResponse'] = postResponse.body
+	//         postLogEntry['postingName'] = request.body.name
+
+	// 	    postLog.push(postLogEntry)
+	// 	    if (postLogEntry.length>50){
+	// 	    	postLogEntry.shift()
+	// 	    }
+
+	//         console.log(postResponse)
+	//         let postStatus = {"status":"published"}
+
+	//         if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+	//         	postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+	//         }
+
+	// 		let resp_data = {
+    //             name: request.body.name, 
+    //             // "url": resources + name, 
+    //             //"objid": data.objid, 
+    //             // "lccn": lccn, 
+    //             publish: postStatus
+    //         }
 	        
 
-	        response.set('Content-Type', 'application/json');
-	        response.status(200).send(resp_data);
-	    })
-	    .catch(function (err) {
-	        // POST failed...
+	//         response.set('Content-Type', 'application/json');
+	//         response.status(200).send(resp_data);
+	//     })
+	//     .catch(function (err) {
+	//         // POST failed...
 
-	        errString = JSON.stringify(err)
-			let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
-			let re = new RegExp(replace,"g");
-			errString = errString.replace(re, ",'****')");
-	        err = JSON.parse(errString)
-
-
-
-	        postLogEntry['postingStatus'] = 'error'
-	        postLogEntry['postingStatusCode'] =  err.StatusCodeError
-	        postLogEntry['postingBodyResponse'] = err
-	        postLogEntry['postingBodyName'] = request.body.name
-	        postLogEntry['postingEid'] = request.body.eid
-		    postLog.push(postLogEntry)
-		    if (postLogEntry.length>50){
-		    	postLogEntry.shift()
-		    }
+	//         errString = JSON.stringify(err)
+	// 		let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
+	// 		let re = new RegExp(replace,"g");
+	// 		errString = errString.replace(re, ",'****')");
+	//         err = JSON.parse(errString)
 
 
-	        resp_data = {
-	                "name": request.body.name, 
-	                "objid":  "objid", 
-	                "publish": {"status": "error","server": url,"message": err }
-	            }
-	        response.set('Content-Type', 'application/json');
-	        response.status(500).send(resp_data);
-	    });
+
+	//         postLogEntry['postingStatus'] = 'error'
+	//         postLogEntry['postingStatusCode'] =  err.StatusCodeError
+	//         postLogEntry['postingBodyResponse'] = err
+	//         postLogEntry['postingBodyName'] = request.body.name
+	//         postLogEntry['postingEid'] = request.body.eid
+	// 	    postLog.push(postLogEntry)
+	// 	    if (postLogEntry.length>50){
+	// 	    	postLogEntry.shift()
+	// 	    }
+
+
+	//         resp_data = {
+	//                 "name": request.body.name, 
+	//                 "objid":  "objid", 
+	//                 "publish": {"status": "error","server": url,"message": err }
+	//             }
+	//         response.set('Content-Type', 'application/json');
+	//         response.status(500).send(resp_data);
+	//     });
+
+
 
 
    
@@ -1144,7 +1254,7 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 app.get('/deploy-production', function(request, response){
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -1164,7 +1274,7 @@ app.get('/deploy-production', function(request, response){
 
 app.get('/deploy-production-quartz', function(request, response){
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -1185,7 +1295,7 @@ app.get('/deploy-production-quartz', function(request, response){
 
 app.get('/deploy-staging', function(request, response){
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -1204,7 +1314,7 @@ app.get('/deploy-staging', function(request, response){
 });
 app.get('/deploy-staging-quartz', function(request, response){
 
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
@@ -1224,7 +1334,7 @@ app.get('/deploy-staging-quartz', function(request, response){
 
 app.get('/deploy-profile-editor', function(request, response){
 
-	// let correctlogin = 'yeet'
+	// let correctlogin = 'INCORRECTLOGINVALUE'
 	// if (request.headers.authorization){
 	// 	correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	// }
@@ -1246,21 +1356,13 @@ app.get('/deploy-profile-editor', function(request, response){
 
 app.get('/dump/xml/prod', function(request, response){
 
-
-
-	
-
-
-
-	let correctlogin = 'yeet'
+	let correctlogin = 'INCORRECTLOGINVALUE'
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
 	if (  request.headers.authorization !== `Basic ${correctlogin}`){
 		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
 	}
-
-
 
 	fs.rmdirSync('/tmp/dumps/', { recursive: true });
 	fs.mkdirSync('/tmp/dumps/');

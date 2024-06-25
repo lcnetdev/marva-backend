@@ -1,5 +1,8 @@
 # FROM node:14.16.0-alpine3.12
-FROM node:18.15.0-alpine3.17
+# FROM node:18.15.0-alpine3.17
+
+# NODE VERSION is 20.14.0
+FROM node:lts-alpine3.20 
 
 RUN apk add --no-cache git
 RUN apk add --no-cache libxslt

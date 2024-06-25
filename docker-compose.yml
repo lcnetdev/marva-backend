@@ -109,7 +109,6 @@ services:
     depends_on:
       - 'ldpjs-staging'
       - 'util'
-      - 'util-lang'
     image: nginx:stable-alpine
     volumes:
       - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
