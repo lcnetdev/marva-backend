@@ -1003,8 +1003,7 @@ app.post('/publish/staging', async (request, response) => {
 	}
 
 	try{
-	console.log("got")
-	console.log(got)
+
 		const postResponse = await got.post(url, {
 			body: rdfxml,
 			username:MLUSERSTAGE,
@@ -1054,7 +1053,8 @@ app.post('/publish/staging', async (request, response) => {
 		errString = errString.replace(re, ",'****')");
 		err = JSON.parse(errString)
 
-
+		console.log("-----errString------")
+		console.log(errString)
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  err.StatusCodeError
