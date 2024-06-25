@@ -1002,7 +1002,7 @@ app.post('/publish/staging', async (request, response) => {
 
 	}
 
-	// try{
+	try{
 	console.log("got")
 	console.log(got)
 		const postResponse = await got.post(url, {
@@ -1044,13 +1044,40 @@ app.post('/publish/staging', async (request, response) => {
 
 
 
-	// }catch(error){
+	}catch(err){
 
 
 
+		errString = JSON.stringify(err)
+		let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		err = JSON.parse(errString)
 
 
-	// }
+
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.StatusCodeError
+		postLogEntry['postingBodyResponse'] = err
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		resp_data = {
+				"name": request.body.name, 
+				"objid":  "objid", 
+				"publish": {"status": "error","server": url,"message": err }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+
+
+
+	}
 
 
 
