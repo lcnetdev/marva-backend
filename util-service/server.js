@@ -818,10 +818,10 @@ app.post('/publish/production', async (request, response) => {
 	}
 
 	var url = "https://" + PRODUCTIONPOSTURL.trim() + endpoint;
-	console.log('------')
-	console.log(request.body.rdfxml)
-	console.log('------')
-	console.log('posting to',url)
+	// console.log('------')
+	// console.log(request.body.rdfxml)
+	// console.log('------')
+	// console.log('posting to',url)
 
 
 	let postLogEntry = {
@@ -833,7 +833,7 @@ app.post('/publish/production', async (request, response) => {
 	}
 
 
-	// try{
+	try{
 
 		const postResponse = await got.post(url, {
 			body: rdfxml,
@@ -874,13 +874,39 @@ app.post('/publish/production', async (request, response) => {
 
 
 
-	// }catch(error){
+	}catch(error){
+
+
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.StatusCodeError
+		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+		
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		errString = JSON.stringify(err)
+		let replace = `${MLUSER}|${MLPASS}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		err = JSON.parse(errString)
 
 
 
+		resp_data = {
+				"name": request.body.name, 
+				"objid":  "objid", 
+				"publish": {"status": "error","server": url,"message": err.response.body }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
 
 
-	// }
+	}
 
 
 
@@ -1046,9 +1072,6 @@ app.post('/publish/staging', async (request, response) => {
 	}catch(err){
 		console.error(err)
 
-		console.log(err.response)
-
-		console.log(err.response.body)
 
 
 		errString = JSON.stringify(err)
@@ -1064,7 +1087,7 @@ app.post('/publish/staging', async (request, response) => {
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  err.StatusCodeError
-		postLogEntry['postingBodyResponse'] = err
+		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
@@ -1076,7 +1099,7 @@ app.post('/publish/staging', async (request, response) => {
 		resp_data = {
 				"name": request.body.name, 
 				"objid":  "objid", 
-				"publish": {"status": "error","server": url,"message": err }
+				"publish": {"status": "error","server": url,"message": err.response.body }
 			}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
@@ -1757,15 +1780,17 @@ app.get('/profiles/bootstrap', async (request, response) => {
 			for(let id in config.bootstrapLinks){
 
 				var options = {
-				    method: 'GET',
-				    uri: config.bootstrapLinks[id],
 					headers: {
 					    "user-agent": "MARVA EDITOR"
 					 }
 				};
 
-		        let r = await rp.get(options)
-		        r = JSON.parse(r)
+		        // let r = await rp.get(options)
+		        // r = JSON.parse(r)
+
+				r = await got(config.bootstrapLinks[id], options).json();
+
+
 
 				let doc = await dbo.collection('profiles').findOne({type: id})
 				if (doc){
@@ -2081,31 +2106,19 @@ app.get('/whichrt', async (request, response) => {
 	} else {
 
 		var options = {
-		    method: 'GET',
-		    uri: uri,
 			headers: {
-			    "user-agent": "MARVA EDITOR"
+				"user-agent": "MARVA EDITOR"
 			 }
-
-
 		};
-		
-		rp(options)
-			 .then(function (r) {
-			 	
-			 	response.status(200).send(r);
 
+		try{
+			let r = await got(uri, options)
+			response.status(200).send(r.body);
 
-			 })
-			 .catch(function (err) {
-			 	console.log("-------------",uri)
-			 	console.log(err)
-			 	console.log("-------------")
-			 	response.status(500).send('Error fetching resource via whichrt.');
-			 })
-
+		}catch{
+			response.status(500).send('Error fetching resource via whichrt.');
+		}
 	}
-
 });
 
 
