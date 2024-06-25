@@ -1044,7 +1044,11 @@ app.post('/publish/staging', async (request, response) => {
 
 
 	}catch(err){
+		console.error(err)
 
+		console.log(err.response)
+
+		console.log(err.response.body)
 
 
 		errString = JSON.stringify(err)
@@ -1055,6 +1059,8 @@ app.post('/publish/staging', async (request, response) => {
 
 		console.log("-----errString------")
 		console.log(errString)
+		console.log("----------------------")
+		console.log("ERror code", err.StatusCodeError)
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  err.StatusCodeError
