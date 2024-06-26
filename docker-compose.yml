@@ -115,6 +115,8 @@ services:
       - ./dist/prod:/prod
       - ./dist/staging:/staging
       - ./dist/profile-editor:/profile-editor
+      - ./dist/prod-quartz:/prod-quartz
+      - ./dist/stage-quartz:/stage-quartz            
     ports:
       - 9401:8080
       - 9400:80
