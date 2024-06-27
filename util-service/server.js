@@ -34,6 +34,8 @@ const MLUSERSTAGE = process.env.MLUSERSTAGE;
 const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
+// disable some features when running in bibframe.org mode
+const BFORGMODE = process.env.BFORGMODE;
 
 let postLog = []
 
@@ -1908,7 +1910,8 @@ app.put('/profiles/:doc', async (request, response) => {
 				);
 
 				await updateGit('profile',env,docMain.data)
-
+				
+				response.status(200).send("Updated :)")
 
 
 			}else{
@@ -1918,14 +1921,42 @@ app.put('/profiles/:doc', async (request, response) => {
 
 
 		}else{
-			response.status(500).send("Could not find that ID to update")
+
+			// if it could not find the doc then they are creating a new one
+			// insert the doc as new
+			
+			const doc = { type:id, data:request.body };
+			const result = await dbo.collection('profiles').insertOne(doc);
+
+			// and then find the main profile and update the part of it with the update part
+			let profileId = `profile-${env}`
+			let docMain = await dbo.collection('profiles').findOne({type: profileId})
+			if (docMain){
+
+				// add it to the data
+				docMain.data.push(request.body)
+				// find the id
+				console.log("docMain.data")
+				console.log(docMain.data)
+
+				dbo.collection('profiles').updateOne(
+				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    { $set: {type:profileId, data:docMain.data} }
+				);
+
+				await updateGit('profile',env,docMain.data)
+				
+				response.status(200).send("Updated :)")
+
+			}
+
+
+
 		}
 
 	});
 
 
-
-	return response.status(200).send("yeah :)")
 	
 });
 
@@ -2098,7 +2129,12 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 // this is for the /util/ interface        
 app.get('/whichrt', async (request, response) => {
 
-	let uri = request.query.uri
+	if (BFORGMODE){
+		response.status(403).send();
+		return false
+	}
+
+	let uri = request.query.uri	
 
 
 	if ( uri.indexOf('bibframe.example.org') > 0 ) {
