@@ -849,7 +849,7 @@ app.post('/publish/production', async (request, response) => {
 		});
 
 		postLogEntry['postingStatus'] = 'success'
-		postLogEntry['postingStatusCode'] = postResponse.statusCode
+		postLogEntry['postingStatusCode'] = 200
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
@@ -876,7 +876,7 @@ app.post('/publish/production', async (request, response) => {
 
 
 
-	}catch(error){
+	}catch(err){
 
 
 		postLogEntry['postingStatus'] = 'error'
@@ -1624,7 +1624,6 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 
 app.delete('/templates/:doc', async (request, response) => {
 
-
     MongoClient.connect(uri, async function(err, db) {
         if (err) throw err;
 
@@ -1962,6 +1961,10 @@ app.put('/profiles/:doc', async (request, response) => {
 
 app.delete('/profiles/:doc', async (request, response) => {
 
+	if (BFORGMODE){
+		response.status(403).send();
+		return false
+	}	
 
     MongoClient.connect(uri, async function(err, db) {
         if (err) throw err;
