@@ -880,7 +880,7 @@ app.post('/publish/production', async (request, response) => {
 
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.StatusCodeError
+		postLogEntry['postingStatusCode'] =  err.response.statusCode
 		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
@@ -891,18 +891,18 @@ app.post('/publish/production', async (request, response) => {
 		}
 
 
-		errString = JSON.stringify(err)
+		errString = JSON.stringify(err.response.body)
 		let replace = `${MLUSER}|${MLPASS}`;
 		let re = new RegExp(replace,"g");
 		errString = errString.replace(re, ",'****')");
-		err = JSON.parse(errString)
+		errString = JSON.parse(errString)
 
 
 
 		resp_data = {
 				"name": request.body.name, 
 				"objid":  "objid", 
-				"publish": {"status": "error","server": url,"message": err.response.body }
+				"publish": {"status": "error","server": url,"message": errString }
 			}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
