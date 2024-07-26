@@ -13,7 +13,7 @@ const MongoClient = mongo.MongoClient;
 var got
 
 (async function () {
-	got = await import('got');    
+	got = await import('got');
 	got = got.got
 })();
 
@@ -34,6 +34,7 @@ const MLUSERSTAGE = process.env.MLUSERSTAGE;
 const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
+const VALIDATIONURL = process.env.VALIDATIONURL;
 // disable some features when running in bibframe.org mode
 const BFORGMODE = process.env.BFORGMODE;
 
@@ -44,7 +45,7 @@ let editorVersion = {'major':0,'minor':0,'patch':0}
 try{
 	editorVersion = JSON.parse(fs.readFileSync('ver_prod.json', 'utf8'));
 }catch{
-	console.error("Missing ver_prod.json")	
+	console.error("Missing ver_prod.json")
 }
 
 
@@ -53,7 +54,7 @@ let editorVersionStage = {'major':0,'minor':0,'patch':0}
 try{
 	editorVersionStage = JSON.parse(fs.readFileSync('ver_stage.json', 'utf8'));
 }catch{
-	console.error("Missing ver_stage.json")	
+	console.error("Missing ver_stage.json")
 }
 
 
@@ -96,7 +97,7 @@ MongoClient.connect(uri, function(err, client) {
 
 
  			if (doc.index){
- 				
+
  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
 
 	 				if (doc.index.eid){
@@ -115,7 +116,7 @@ MongoClient.connect(uri, function(err, client) {
  		})
 
 
-    db.collection('resourcesStaging').watch().on('change', data => 
+    db.collection('resourcesStaging').watch().on('change', data =>
     {
 
         // get the doc
@@ -165,15 +166,15 @@ MongoClient.connect(uri, function(err, client) {
 	 					if (!recsProdByUser[doc.index.user]){
 	 						recsProdByUser[doc.index.user] = {}
 	 					}
-	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index				
-	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id			
+	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
 	 				}
 	 			}
  			}
  		})
 
 
-    db.collection('resourcesProduction').watch().on('change', data => 
+    db.collection('resourcesProduction').watch().on('change', data =>
     {
 
         // get the doc
@@ -213,7 +214,7 @@ MongoClient.connect(uri, function(err, client) {
 
 
 
- 
+
 
 var app = express();
 
@@ -239,7 +240,7 @@ app.get('/', function(request, response) {
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
 	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 
@@ -249,7 +250,7 @@ app.get('/', function(request, response) {
 
 	// Access granted...
 	response.render('index', { editorVersionStage: editorVersionStage, editorVersion:editorVersion, config: config });
-  
+
 });
 
 
@@ -265,12 +266,12 @@ app.get('/version/editor/stage', function(request, response){
 app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	
+
 	if (request.headers.authorization){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
 	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 
@@ -301,7 +302,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 		correctlogin = Buffer.from(`${process.env.STATSPW.replace(/"/g,'')}:${process.env.STATSPW.replace(/"/g,'')}`).toString('base64')
 	}
 	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 	var chunk = function(arr, chunkSize) {
@@ -363,7 +364,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
   	let report = {}
 
   	for (let day_chunk of day_chunks){
-  		
+
 
   		report[day_chunk[0].toISOString().split('T')[0]] = {
   			// label: day_chunk[0].toISOString().split('T')[0],
@@ -409,14 +410,14 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 
 						}
-						
+
 
 					}
 
 
 				}
 
-				
+
 
 			}
 
@@ -497,7 +498,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 
 
-		
+
 
 	});
 
@@ -507,7 +508,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 app.post('/delete/:stage/:user/:eid', (request, response) => {
 
-	let result = false 
+	let result = false
 
 	if (request.params.stage == 'staging'){
 		if (recsStageByUser[request.params.user]){
@@ -523,14 +524,14 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 
 	    MongoClient.connect(uri, function(err, db) {
 	        if (err) throw err;
-	        var dbo = db.db("bfe2");	    
-	        if (err) throw err;	        
+	        var dbo = db.db("bfe2");
+	        if (err) throw err;
 			dbo.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)})
 			.then(function(doc) {
 				if(!doc) throw new Error('No record found.');
-				doc.index.status='deleted'				
+				doc.index.status='deleted'
 				dbo.collection('resourcesStaging').updateOne(
-				    {'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)}, 
+				    {'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)},
 				    { $set: doc }
 
 				);
@@ -556,16 +557,16 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 		// POTENTAIL ERROR HERE, IF THE RECORD IS NOT iN THE recsProdByEid object becase it is > 2weeks
 	    MongoClient.connect(uri, function(err, db) {
 	        if (err) throw err;
-	        var dbo = db.db("bfe2");	    
-	        if (err) throw err;	        
+	        var dbo = db.db("bfe2");
+	        if (err) throw err;
 			dbo.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)})
 			.then(function(doc) {
 				if(!doc) throw new Error('No record found.');
-				doc.index.status='deleted'				
+				doc.index.status='deleted'
 				dbo.collection('resourcesProduction').updateOne(
-				    {'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)}, 
+				    {'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)},
 				    { $set: doc }
-				    
+
 				);
 			});
 	    });
@@ -588,7 +589,7 @@ app.post('/error/report', (request, response) => {
 
         // turn it back into a string for storage because mongo is fusssy about key IDs
         request.body.activeProfile = JSON.stringify(request.body.activeProfile)
-        dbo.collection("errorReports").insertOne(request.body, 
+        dbo.collection("errorReports").insertOne(request.body,
         function(err, result) {
             if (err) {
             	response.json({'result':false,'error':err});
@@ -746,7 +747,7 @@ app.get('/error/report', (request, response) => {
 		    let results = []
 		 		cursor.forEach((doc)=>{
 		 			results.push({id:doc._id,eId:doc.eId,desc:doc.desc,contact:doc.contact})
-		 		}, function(err) {			 		
+		 		}, function(err) {
 			 		response.json(results.reverse())
 				})
 
@@ -793,7 +794,7 @@ app.get('/error/:errorId', (request, response) => {
 						}
 
 
-						
+
 					}
 				});
     });
@@ -811,12 +812,12 @@ app.post('/publish/production', async (request, response) => {
 	// var dirname = __dirname + resources;
 
 	var name = request.body.name + ".rdf";
-	var rdfxml = request.body.rdfxml; 
+	var rdfxml = request.body.rdfxml;
 
 	let endpoint = "/controllers/ingest/bf-bib.xqy"
 
 	if (request.body.hub === true){
-		endpoint = "/controllers/ingest/bf-hub.xqy"		
+		endpoint = "/controllers/ingest/bf-hub.xqy"
 	}
 
 	var url = "https://" + PRODUCTIONPOSTURL.trim() + endpoint;
@@ -844,8 +845,8 @@ app.post('/publish/production', async (request, response) => {
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
-			}		
-		
+			}
+
 		});
 
 		postLogEntry['postingStatus'] = 'success'
@@ -855,7 +856,7 @@ app.post('/publish/production', async (request, response) => {
 		postLog.push(postLogEntry)
 		if (postLogEntry.length>50){
 			postLogEntry.shift()
-		}		
+		}
 		let postStatus = {"status":"published"}
 
 		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
@@ -863,13 +864,13 @@ app.post('/publish/production', async (request, response) => {
 		}
 
 		let resp_data = {
-			name: request.body.name, 
-			// "url": resources + name, 
-			//"objid": data.objid, 
-			// "lccn": lccn, 
+			name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
 			publish: postStatus
 		}
-		
+
 		response.set('Content-Type', 'application/json');
 		response.status(200).send(resp_data);
 
@@ -884,7 +885,7 @@ app.post('/publish/production', async (request, response) => {
 		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
-		
+
 		postLog.push(postLogEntry)
 		if (postLogEntry.length>50){
 			postLogEntry.shift()
@@ -900,8 +901,8 @@ app.post('/publish/production', async (request, response) => {
 
 
 		resp_data = {
-				"name": request.body.name, 
-				"objid":  "objid", 
+				"name": request.body.name,
+				"objid":  "objid",
 				"publish": {"status": "error","server": url,"message": errString }
 			}
 		response.set('Content-Type', 'application/json');
@@ -939,7 +940,7 @@ app.post('/publish/production', async (request, response) => {
 	// 	    }
 
 
-	        
+
 	//         let postStatus = {"status":"published"}
 
 	//         if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
@@ -947,14 +948,14 @@ app.post('/publish/production', async (request, response) => {
 	//         }
 
 	// 		let resp_data = {
-    //             name: request.body.name, 
-    //             // "url": resources + name, 
-    //             //"objid": data.objid, 
-    //             // "lccn": lccn, 
+    //             name: request.body.name,
+    //             // "url": resources + name,
+    //             //"objid": data.objid,
+    //             // "lccn": lccn,
     //             publish: postStatus
     //         }
-	        
-	        
+
+
 	//         response.set('Content-Type', 'application/json');
 	//         response.status(200).send(resp_data);
 	//     })
@@ -967,7 +968,7 @@ app.post('/publish/production', async (request, response) => {
 	//         postLogEntry['postingBodyResponse'] = err
 	//         postLogEntry['postingBodyName'] = request.body.name
 	//         postLogEntry['postingEid'] = request.body.eid
-	        
+
 	//         postLog.push(postLogEntry)
 	//         if (postLogEntry.length>50){
 	//         	postLogEntry.shift()
@@ -983,8 +984,8 @@ app.post('/publish/production', async (request, response) => {
 
 
 	//         resp_data = {
-	//                 "name": request.body.name, 
-	//                 "objid":  "objid", 
+	//                 "name": request.body.name,
+	//                 "objid":  "objid",
 	//                 "publish": {"status": "error","server": url,"message": err }
 	//             }
 	//         response.set('Content-Type', 'application/json');
@@ -992,7 +993,7 @@ app.post('/publish/production', async (request, response) => {
 	//     });
 
 
-   
+
 });
 
 
@@ -1006,7 +1007,7 @@ app.post('/publish/staging', async (request, response) => {
 	// var dirname = __dirname + resources;
 
 	var name = request.body.name + ".rdf";
-	var rdfxml = request.body.rdfxml; 
+	var rdfxml = request.body.rdfxml;
 
 	let endpoint = "/controllers/ingest/bf-bib.xqy"
 
@@ -1039,8 +1040,8 @@ app.post('/publish/staging', async (request, response) => {
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
-			}		
-		
+			}
+
 		});
 
 		postLogEntry['postingStatus'] = 'success'
@@ -1050,7 +1051,7 @@ app.post('/publish/staging', async (request, response) => {
 		postLog.push(postLogEntry)
 		if (postLogEntry.length>50){
 			postLogEntry.shift()
-		}		
+		}
 		let postStatus = {"status":"published"}
 
 		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
@@ -1058,13 +1059,13 @@ app.post('/publish/staging', async (request, response) => {
 		}
 
 		let resp_data = {
-			name: request.body.name, 
-			// "url": resources + name, 
-			//"objid": data.objid, 
-			// "lccn": lccn, 
+			name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
 			publish: postStatus
 		}
-		
+
 		response.set('Content-Type', 'application/json');
 		response.status(200).send(resp_data);
 
@@ -1099,8 +1100,8 @@ app.post('/publish/staging', async (request, response) => {
 
 
 		resp_data = {
-				"name": request.body.name, 
-				"objid":  "objid", 
+				"name": request.body.name,
+				"objid":  "objid",
 				"publish": {"status": "error","server": url,"message": err.response.body }
 			}
 		response.set('Content-Type', 'application/json');
@@ -1148,13 +1149,13 @@ app.post('/publish/staging', async (request, response) => {
 	//         }
 
 	// 		let resp_data = {
-    //             name: request.body.name, 
-    //             // "url": resources + name, 
-    //             //"objid": data.objid, 
-    //             // "lccn": lccn, 
+    //             name: request.body.name,
+    //             // "url": resources + name,
+    //             //"objid": data.objid,
+    //             // "lccn": lccn,
     //             publish: postStatus
     //         }
-	        
+
 
 	//         response.set('Content-Type', 'application/json');
 	//         response.status(200).send(resp_data);
@@ -1182,8 +1183,8 @@ app.post('/publish/staging', async (request, response) => {
 
 
 	//         resp_data = {
-	//                 "name": request.body.name, 
-	//                 "objid":  "objid", 
+	//                 "name": request.body.name,
+	//                 "objid":  "objid",
 	//                 "publish": {"status": "error","server": url,"message": err }
 	//             }
 	//         response.set('Content-Type', 'application/json');
@@ -1193,7 +1194,7 @@ app.post('/publish/staging', async (request, response) => {
 
 
 
-   
+
 });
 
 
@@ -1201,18 +1202,18 @@ app.get('/myrecords/production/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
 	}else{
-		response.json({});	
+		response.json({});
 	}
 });
 
 
 app.get('/allrecords/production', function(request, response){
-	response.json(recsProdByEid);	
+	response.json(recsProdByEid);
 });
 
 
 app.get('/logs/posts', function(request, response){
-	response.json(postLog);	
+	response.json(postLog);
 });
 
 
@@ -1220,14 +1221,14 @@ app.get('/myrecords/staging/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsStageByUser[request.params.user]);
 	}else{
-		response.json({});	
+		response.json({});
 	}
 });
 
 
 app.get('/allrecords/staging', function(request, response){
 
-	response.json(recsStageByEid);	
+	response.json(recsStageByEid);
 });
 
 
@@ -1235,10 +1236,10 @@ app.get('/allrecords/staging', function(request, response){
 app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 
-	
+
 	let env = 'resourcesProduction'
 	if (request.params.env === 'staging'){
-		env = 'resourcesStaging'		
+		env = 'resourcesStaging'
 	}
 
 	let results = {}
@@ -1254,8 +1255,8 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 			if (doc.index){
 
-					
-				
+
+
 					if (doc.index.eid){
 
 						if (request.params.user && request.params.user != 'all'){
@@ -1270,38 +1271,38 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 						}else if (doc.index.eid.toLowerCase().includes(search)){
 							results[doc.index.eid] = doc.index
 						}else if (doc.index.lccn && doc.index.lccn.toString().includes(search)){
-							results[doc.index.eid] = doc.index							
+							results[doc.index.eid] = doc.index
 						}else if (doc.index.user && doc.index.user.toString().toLowerCase().includes(search)){
-							results[doc.index.eid] = doc.index							
+							results[doc.index.eid] = doc.index
 						}else if (doc.index.contributor && doc.index.contributor.toString().toLowerCase().includes(search)){
 
-							results[doc.index.eid] = doc.index							
+							results[doc.index.eid] = doc.index
 						}
 
-						// 
+						//
 
 
 
-					}				
+					}
 			}
 
 		}).then(function() {
 
 			// console.log(request.params.user, request.params.searchval)
-			response.json(results);	
+			response.json(results);
 
 		})
 
-		
 
-		
+
+
 
 	})
 
 
 
 
-	
+
 
 });
 
@@ -1317,13 +1318,13 @@ app.get('/deploy-production', function(request, response){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
   if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
   }
 
   // Access granted...
-	let r = shell.exec('./deploy-production.sh')		
+	let r = shell.exec('./deploy-production.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
-	
+
 	console.log(r_html)
 
   return response.status(200).send(r_html)
@@ -1337,13 +1338,13 @@ app.get('/deploy-production-quartz', function(request, response){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
   if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
   }
 
   // Access granted...
-	let r = shell.exec('./deploy-production-quartz.sh')		
+	let r = shell.exec('./deploy-production-quartz.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
-	
+
 	console.log(r_html)
 
   return response.status(200).send(r_html)
@@ -1358,13 +1359,13 @@ app.get('/deploy-staging', function(request, response){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
   if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
   }
 
   // Access granted...
-	let r = shell.exec('./deploy-staging.sh')		
+	let r = shell.exec('./deploy-staging.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
-	
+
 	console.log(r_html)
 
   return response.status(200).send(r_html)
@@ -1377,13 +1378,13 @@ app.get('/deploy-staging-quartz', function(request, response){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
   if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
   }
 
   // Access granted...
-	let r = shell.exec('./deploy-staging-quartz.sh')		
+	let r = shell.exec('./deploy-staging-quartz.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
-	
+
 	console.log(r_html)
 
   return response.status(200).send(r_html)
@@ -1397,13 +1398,13 @@ app.get('/deploy-profile-editor', function(request, response){
 	// 	correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	// }
  //  if (  request.headers.authorization !== `Basic ${correctlogin}`){
- //    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+ //    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
  //  }
 
   // Access granted...
-	let r = shell.exec('./deploy-profile-editor.sh')		
+	let r = shell.exec('./deploy-profile-editor.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
-	
+
 	console.log(r_html)
 
   return response.status(200).send(r_html)
@@ -1419,7 +1420,7 @@ app.get('/dump/xml/prod', function(request, response){
 		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	}
 	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.   
+		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 	fs.rmdirSync('/tmp/dumps/', { recursive: true });
@@ -1435,7 +1436,7 @@ app.get('/dump/xml/prod', function(request, response){
 		let all_users = {}
 		cursor.forEach((doc)=>{
 
-			
+
 			let lastone = doc.versions.length-1
 
 
@@ -1463,35 +1464,35 @@ app.get('/dump/xml/prod', function(request, response){
 
 
 			if (err){
-				response.status(500).send(err);	
+				response.status(500).send(err);
 			}else{
-				
+
 				(async() => {
 
 					await zip.zip('/tmp/dumps/', '/tmp/dumps.zip');
 
 					let date_ob = new Date();
 
-					
-					
+
+
 					let date = ("0" + date_ob.getDate()).slice(-2);
 
-					
+
 					let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
 
-					
+
 					let year = date_ob.getFullYear();
 
-					
+
 					let hours = date_ob.getHours();
 
-					
+
 					let minutes = date_ob.getMinutes();
 
-					
+
 					let seconds = date_ob.getSeconds();
 
-					
+
 
 
 
@@ -1515,7 +1516,7 @@ app.get('/dump/xml/prod', function(request, response){
 
 
 
-		
+
 
 	});
 
@@ -1537,7 +1538,7 @@ app.post('/templates', async (request, response) => {
 		if (doc){
 
 			dbo.collection('templates').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    {'_id': new mongo.ObjectID(doc['_id'])},
 			    { $set: request.body }
 			);
 
@@ -1545,11 +1546,11 @@ app.post('/templates', async (request, response) => {
 			console.log("creating")
 
 
-	        dbo.collection("templates").insertOne(request.body, 
+	        dbo.collection("templates").insertOne(request.body,
 	        function(err, result) {
 	            if (err) {
 	            	console.log(err)
-	            }	            
+	            }
 	        });
 		}
 
@@ -1574,7 +1575,7 @@ app.get('/templates/:user', async (request, response) => {
             db.close();
         });
 		db.close();
-    });   
+    });
 });
 
 
@@ -1588,7 +1589,7 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 		let id = request.params.id
 		let doc = await dbo.collection('templates').findOne({id: id})
 		if (doc){
-		
+
 
 
 			// remove the _id change the id and change the user name
@@ -1597,25 +1598,25 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 			doc.user = request.params.user
 			doc.timestamp = new Date().getTime() / 1000
 
-			dbo.collection("templates").insertOne(doc, 
+			dbo.collection("templates").insertOne(doc,
 			function(err, result) {
 			    if (err) {
 			    	console.log(err)
 			    	response.status(500).send("Could save copy of template")
 			    }
-			    return response.status(200).send("Template copied")			            
+			    return response.status(200).send("Template copied")
 			});
 
 
 
 			db.close();
-			
-			
+
+
 
 		}else{
 			response.status(500).send("Could not find that ID to copy")
 		}
-	
+
 
 	});
 
@@ -1632,7 +1633,7 @@ app.delete('/templates/:doc', async (request, response) => {
 		let docName = request.params.doc
 		let doc = await dbo.collection('templates').findOne({id: docName})
 		if (doc){
-		
+
 			// remove the piece of the profile
 			dbo.collection('templates').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
 		}else{
@@ -1641,11 +1642,88 @@ app.delete('/templates/:doc', async (request, response) => {
 	});
 
 	return response.status(200).send("yeah :)")
-	
+
 });
 
 
 
+app.post("/validate", async (request, response) => {
+	var rdfxml = request.body.rdfxml;
+
+	let endpoint = "/controllers/xqapi-validate-resource.xqy"
+
+	var url = "https://" + VALIDATIONURL.trim() + endpoint;
+
+	let postLogEntry = {
+		'postingDate': new Date(),
+		'postingEnv': 'production',
+		'postingTo': url,
+		'postingXML': request.body.rdfxml,
+
+	}
+
+	try {
+		const postResponse = await got.post(url, {
+			body: rdfxml,
+			username:MLUSER,
+			password:MLPASS,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}
+		});
+
+		postLogEntry['postingStatus'] = 'success'
+		postLogEntry['postingStatusCode'] = 200
+		postLogEntry['postingBodyResponse'] = postResponse.body
+		postLogEntry['postingName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+		let postStatus = {"status":"validated"}
+
+		if (postResponse.statusCode != 200){
+			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+
+		let data = postResponse.body.replace(/(\r\n|\n|\r)/gm, "");
+		const msg = data.replace(/.*<!--(.*?)-->.*/g, "$1");
+		const validationMSG = JSON.parse(msg)
+
+		let resp_data = {
+			status: postStatus,
+			validation: validationMSG
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+	} catch(err) {
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.response.statusCode
+		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+		errString = JSON.stringify(err.response.body)
+		let replace = `${MLUSER}|${MLPASS}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		errString = JSON.parse(errString)
+
+		resp_data = {
+				"validated": {"status": "error","server": url,"message": errString }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+	}
+});
 
 
 
@@ -1665,7 +1743,7 @@ app.delete('/templates/:doc', async (request, response) => {
 const updateGit = async function(docName,env,jsonPayload){
 
 
-		
+
 
 	// otherMetadataKeys = [
 	// 	"index.resourceType:ontology",
@@ -1796,16 +1874,16 @@ app.get('/profiles/bootstrap', async (request, response) => {
 				let doc = await dbo.collection('profiles').findOne({type: id})
 				if (doc){
 					dbo.collection('profiles').updateOne(
-					    {'_id': new mongo.ObjectID(doc['_id'])}, 
+					    {'_id': new mongo.ObjectID(doc['_id'])},
 					    { $set: {type:id, data:r} }
 					);
 
 				}else{
-			        dbo.collection("profiles").insertOne({type:id, data:r}, 
+			        dbo.collection("profiles").insertOne({type:id, data:r},
 			        function(err, result) {
 			            if (err) {
 			            	console.log(err)
-			            }			            
+			            }
 			        });
 				}
 
@@ -1818,7 +1896,7 @@ app.get('/profiles/bootstrap', async (request, response) => {
 			response.status(500).send("The bootstrap links were not found");
 
 		}
-				
+
 
 
 
@@ -1838,7 +1916,7 @@ app.get('/profiles/:doc', async (request, response) => {
     	if (request.headers.referer && request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
     		env='stage'
     	}
-        
+
         let docName = request.params.doc
 
         if (docName == 'index.resourceType:profile'){
@@ -1882,7 +1960,7 @@ app.put('/profiles/:doc', async (request, response) => {
 			// db.close();
 			// post the update to the document
 			dbo.collection('profiles').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    {'_id': new mongo.ObjectID(doc['_id'])},
 			    { $set: {type:id, data:request.body} }
 			);
 
@@ -1904,12 +1982,12 @@ app.put('/profiles/:doc', async (request, response) => {
 				console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    {'_id': new mongo.ObjectID(docMain['_id'])},
 				    { $set: {type:profileId, data:docMain.data} }
 				);
 
 				await updateGit('profile',env,docMain.data)
-				
+
 				response.status(200).send("Updated :)")
 
 
@@ -1923,7 +2001,7 @@ app.put('/profiles/:doc', async (request, response) => {
 
 			// if it could not find the doc then they are creating a new one
 			// insert the doc as new
-			
+
 			const doc = { type:id, data:request.body };
 			const result = await dbo.collection('profiles').insertOne(doc);
 
@@ -1939,12 +2017,12 @@ app.put('/profiles/:doc', async (request, response) => {
 				console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    {'_id': new mongo.ObjectID(docMain['_id'])},
 				    { $set: {type:profileId, data:docMain.data} }
 				);
 
 				await updateGit('profile',env,docMain.data)
-				
+
 				response.status(200).send("Updated :)")
 
 			}
@@ -1956,7 +2034,7 @@ app.put('/profiles/:doc', async (request, response) => {
 	});
 
 
-	
+
 });
 
 app.delete('/profiles/:doc', async (request, response) => {
@@ -1964,7 +2042,7 @@ app.delete('/profiles/:doc', async (request, response) => {
 	if (BFORGMODE){
 		response.status(403).send();
 		return false
-	}	
+	}
 
     MongoClient.connect(uri, async function(err, db) {
         if (err) throw err;
@@ -1981,7 +2059,7 @@ app.delete('/profiles/:doc', async (request, response) => {
 		let id = `${docName}-${env}`
 		let doc = await dbo.collection('profiles').findOne({type: id})
 		if (doc){
-			
+
 			// remove the piece of the profile
 			dbo.collection('profiles').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
 
@@ -1995,7 +2073,7 @@ app.delete('/profiles/:doc', async (request, response) => {
 				docMain.data = docMain.data.filter((x)=>{ return (x.id != docName) })
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])}, 
+				    {'_id': new mongo.ObjectID(docMain['_id'])},
 				    { $set: {type:profileId, data:docMain.data} }
 				);
 
@@ -2020,10 +2098,10 @@ app.delete('/profiles/:doc', async (request, response) => {
 
 
 	return response.status(200).send("yeah :)")
-	
+
 });
 
-// this is for the /util/ interface        
+// this is for the /util/ interface
 app.get('/profiles/:doc/:env', async (request, response) => {
 
     MongoClient.connect(uri, async function(err, db) {
@@ -2071,17 +2149,17 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 		let doc = await dbo.collection('profiles').findOne({type: id})
 		if (doc){
 			dbo.collection('profiles').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])}, 
+			    {'_id': new mongo.ObjectID(doc['_id'])},
 			    { $set: {type:id, data:request.body} }
 			);
 
 		}else{
-	        dbo.collection("profiles").insertOne({type:id, data:request.body}, 
+	        dbo.collection("profiles").insertOne({type:id, data:request.body},
 	        function(err, result) {
 	            if (err) {
 	            	console.log(err)
 	            }
-	            
+
 	        });
 		}
 
@@ -2094,11 +2172,11 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 				let doc = await dbo.collection('profiles').findOne({type: id_sub})
 				if (doc){
 					dbo.collection('profiles').updateOne(
-					    {'_id': new mongo.ObjectID(doc['_id'])}, 
+					    {'_id': new mongo.ObjectID(doc['_id'])},
 					    { $set: {type:id_sub, data:p} }
 					);
 				}else{
-			        dbo.collection("profiles").insertOne({type:id_sub, data:p}, 
+			        dbo.collection("profiles").insertOne({type:id_sub, data:p},
 			        function(err, result) {
 			            if (err) {
 			            	console.log(err)
@@ -2129,7 +2207,7 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 
 
 
-// this is for the /util/ interface        
+// this is for the /util/ interface
 app.get('/whichrt', async (request, response) => {
 
 	if (BFORGMODE){
@@ -2137,7 +2215,7 @@ app.get('/whichrt', async (request, response) => {
 		return false
 	}
 
-	let uri = request.query.uri	
+	let uri = request.query.uri
 
 
 	if ( uri.indexOf('bibframe.example.org') > 0 ) {
@@ -2164,7 +2242,7 @@ app.get('/whichrt', async (request, response) => {
 app.post('/marcpreview', async (request, response) => {
 
 
-	var rdfxml = request.body.rdfxml; 
+	var rdfxml = request.body.rdfxml;
 
 	// write out the contents to a file
 	let tmpfilename = crypto.createHash('md5').update(new Date().getTime().toString()).digest("hex")
@@ -2211,26 +2289,26 @@ app.post('/marcpreview', async (request, response) => {
 
 			x = x.trim()
 			x = x.replace('<?xml version="1.0" encoding="UTF-8"?>','')
-			
+
 			x = x.replace(/\s+xml:space="preserve">/g,'>')
 			x = x.replace(/\s+xml:space="preserve"\s+/g,' ')
 			x = x.replace(/<marc:/g,'<')
 			x = x.replace(/<\/marc:/g,'</')
-			
-			const record = Marc.parse(x, 'marcxml');			
+
+			const record = Marc.parse(x, 'marcxml');
 			marcRecord = Marc.format(record, 'Text')
-			
+
 		}catch(err){
 			marcRecord = err.toString()
 		}
 
 		r.marcRecord = marcRecord.trim()
-		
+
 
 	}
 
 
-	
+
 	response.set('Content-Type', 'application/json');
 	response.status(200).json(results);
 
