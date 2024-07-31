@@ -72,144 +72,144 @@ let ageLimitForAllRecords = 15 //days
 
 
 const uri = 'mongodb://mongo:27017/';
-// MongoClient.connect(uri, function(err, client) {
+MongoClient.connect(uri, function(err, client) {
 
-// 	console.log("err", err)
-// 	console.log("client", client)
+	console.log("err", err)
+	console.log("client", client)
 
-//     const db = client.db('bfe2');
-
-
-//     // build an intial index
-//     // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
-//     //     if(err){
-//     //         throw err;
-//     //     }
-//     //     console.log(col);
-//     //     docs.forEach(console.log);
-//     // });
+    const db = client.db('bfe2');
 
 
-
-//     var cursor = db.collection('resourcesStaging').find({});
-
-//  		cursor.forEach((doc)=>{
-
-
-//  			if (doc.index){
-
-//  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-// 	 				if (doc.index.eid){
-// 	 					recsStageByEid[doc.index.eid] = doc.index
-// 	 					recsStageByEid[doc.index.eid]._id = doc._id
-// 	 				}
-// 	 				if (doc.index.user && doc.index.eid){
-// 	 					if (!recsStageByUser[doc.index.user]){
-// 	 						recsStageByUser[doc.index.user] = {}
-// 	 					}
-// 	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-// 	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
-// 	 				}
-// 	 			}
-//  			}
-//  		})
-
-
-//     db.collection('resourcesStaging').watch().on('change', data =>
-//     {
-
-//         // get the doc
-// 				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-// 				.then(function(doc) {
-//         if(!doc)
-//             throw new Error('No record found.');
-
-// 			      // add it to the list or update it whatever
-// 		 				if (doc.index.eid){
-// 		 					recsStageByEid[doc.index.eid] = doc.index
-// 		 					recsStageByEid[doc.index.eid]._id = doc._id
-// 		 				}
-
-// 			      if (doc.index.user && doc.index.eid){
-// 		 					if (!recsStageByUser[doc.index.user]){
-// 		 						recsStageByUser[doc.index.user] = {}
-// 		 					}
-// 		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-// 		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
-// 			      }
+    // build an intial index
+    // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
+    //     if(err){
+    //         throw err;
+    //     }
+    //     console.log(col);
+    //     docs.forEach(console.log);
+    // });
 
 
 
+    var cursor = db.collection('resourcesStaging').find({});
 
-// 			  });
+ 		cursor.forEach((doc)=>{
 
 
-//     });
+ 			if (doc.index){
+
+ 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+	 				if (doc.index.eid){
+	 					recsStageByEid[doc.index.eid] = doc.index
+	 					recsStageByEid[doc.index.eid]._id = doc._id
+	 				}
+	 				if (doc.index.user && doc.index.eid){
+	 					if (!recsStageByUser[doc.index.user]){
+	 						recsStageByUser[doc.index.user] = {}
+	 					}
+	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 				}
+	 			}
+ 			}
+ 		})
+
+
+    db.collection('resourcesStaging').watch().on('change', data =>
+    {
+
+        // get the doc
+				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
+				.then(function(doc) {
+        if(!doc)
+            throw new Error('No record found.');
+
+			      // add it to the list or update it whatever
+		 				if (doc.index.eid){
+		 					recsStageByEid[doc.index.eid] = doc.index
+		 					recsStageByEid[doc.index.eid]._id = doc._id
+		 				}
+
+			      if (doc.index.user && doc.index.eid){
+		 					if (!recsStageByUser[doc.index.user]){
+		 						recsStageByUser[doc.index.user] = {}
+		 					}
+		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+			      }
 
 
 
 
-//     var cursor = db.collection('resourcesProduction').find({});
-
-//  		cursor.forEach((doc)=>{
-
-//  			if (doc.index){
-
-//  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-// 	 				if (doc.index.eid){
-// 	 					recsProdByEid[doc.index.eid] = doc.index
-// 	 					recsProdByEid[doc.index.eid]._id = doc._id
-// 	 				}
-// 	 				if (doc.index.user && doc.index.eid){
-// 	 					if (!recsProdByUser[doc.index.user]){
-// 	 						recsProdByUser[doc.index.user] = {}
-// 	 					}
-// 	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-// 	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
-// 	 				}
-// 	 			}
-//  			}
-//  		})
+			  });
 
 
-//     db.collection('resourcesProduction').watch().on('change', data =>
-//     {
-
-//         // get the doc
-// 				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-// 				.then(function(doc) {
-//         if(!doc)
-//             throw new Error('No record found.');
-
-// 			      // add it to the list or update it whatever
-// 		 				if (doc.index.eid){
-// 		 					recsProdByEid[doc.index.eid] = doc.index
-// 		 					recsProdByEid[doc.index.eid]._id = doc._id
-// 		 				}
-
-// 			      if (doc.index.user && doc.index.eid){
-// 		 					if (!recsProdByUser[doc.index.user]){
-// 		 						recsProdByUser[doc.index.user] = {}
-// 		 					}
-// 		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-// 		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
-// 			      }
+    });
 
 
 
 
-// 			  });
+    var cursor = db.collection('resourcesProduction').find({});
+
+ 		cursor.forEach((doc)=>{
+
+ 			if (doc.index){
+
+ 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+	 				if (doc.index.eid){
+	 					recsProdByEid[doc.index.eid] = doc.index
+	 					recsProdByEid[doc.index.eid]._id = doc._id
+	 				}
+	 				if (doc.index.user && doc.index.eid){
+	 					if (!recsProdByUser[doc.index.user]){
+	 						recsProdByUser[doc.index.user] = {}
+	 					}
+	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 				}
+	 			}
+ 			}
+ 		})
 
 
-//     });
+    db.collection('resourcesProduction').watch().on('change', data =>
+    {
+
+        // get the doc
+				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
+				.then(function(doc) {
+        if(!doc)
+            throw new Error('No record found.');
+
+			      // add it to the list or update it whatever
+		 				if (doc.index.eid){
+		 					recsProdByEid[doc.index.eid] = doc.index
+		 					recsProdByEid[doc.index.eid]._id = doc._id
+		 				}
+
+			      if (doc.index.user && doc.index.eid){
+		 					if (!recsProdByUser[doc.index.user]){
+		 						recsProdByUser[doc.index.user] = {}
+		 					}
+		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+			      }
+
+
+
+
+			  });
+
+
+    });
 
 
 
 
 
-// });
+});
 
 
 
