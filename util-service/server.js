@@ -1689,7 +1689,17 @@ app.post("/validate", async (request, response) => {
 
 		let data = postResponse.body.replace(/(\r\n|\n|\r)/gm, "");
 		const msg = data.replace(/.*<!--(.*?)-->.*/g, "$1");
-		const validationMSG = JSON.parse(msg)
+
+		let validationMSG = null
+		try {
+			validationMSG = JSON.parse(msg)
+		} catch(error) { //If there's no matches, there are no errors
+			if (error instanceof SyntaxError){
+				validationMSG = [{"level": "SUCCESS", "message": "No issues found."}]
+			} else {
+				validationMSG = [{"level": "ERROR", "message": "Something when wrong: " + error.message}]
+			}
+		}
 
 		let resp_data = {
 			status: postStatus,
@@ -1700,9 +1710,12 @@ app.post("/validate", async (request, response) => {
 		response.status(200).send(resp_data);
 
 	} catch(err) {
+		console.log("----------------------")
+		console.log("Error: ", err)
+		console.log("::::::::::::::::::::::")
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.response.statusCode
-		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingStatusCode'] =  err.code
+		postLogEntry['postingBodyResponse'] = err.message
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 
@@ -1711,7 +1724,7 @@ app.post("/validate", async (request, response) => {
 			postLogEntry.shift()
 		}
 
-		errString = JSON.stringify(err.response.body)
+		errString = JSON.stringify(err.message)
 		let replace = `${MLUSER}|${MLPASS}`;
 		let re = new RegExp(replace,"g");
 		errString = errString.replace(re, ",'****')");
