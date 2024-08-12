@@ -24,7 +24,7 @@
   <xsl:variable name="xslProcessor">
     <xsl:value-of select="system-property('xsl:vendor')"/>
   </xsl:variable>
-  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v2.6.0</xsl:variable>
+  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v2.7.0</xsl:variable>
   <xsl:variable name="df880script">
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>arab</lang>
@@ -3196,10 +3196,10 @@
             <xsl:choose>
               <xsl:when test="count($vAdminMetadata[bf:status/bf:Status[@rdf:about='http://id.loc.gov/vocabulary/mstatus/c']]) &gt; 0">
                 <xsl:variable name="modifierCodePreNS">
-                  <codes xmlns="http://www.loc.gov/bf2marc">
+                  <marc:codes>
                     <xsl:if test="$vAdminMetadata/bflc:marcKey[starts-with(., '040')]">
                       <xsl:variable name="df040sfsPreNS">
-                        <subfields>
+                        <subfields xmlns="http://www.loc.gov/bf2marc">
                           <xsl:call-template name="tParseMarcKey">
                             <xsl:with-param name="pString" select="substring($vAdminMetadata/bflc:marcKey[starts-with(., '040')], 6)"/>
                           </xsl:call-template>
@@ -3207,9 +3207,9 @@
                       </xsl:variable>
                       <xsl:variable name="df040sfs" select="exsl:node-set($df040sfsPreNS)"/>
                       <xsl:for-each select="$df040sfs//marc:subfield[@code='d']">
-                        <modifierCode>
+                        <marc:modifierCode>
                           <xsl:value-of select="."/>
-                        </modifierCode>
+                        </marc:modifierCode>
                       </xsl:for-each>
                     </xsl:if>
                     <xsl:for-each select="$vAdminMetadata[bf:status/bf:Status[@rdf:about='http://id.loc.gov/vocabulary/mstatus/c']]">
@@ -3232,9 +3232,25 @@
                               <xsl:with-param name="pUri" select="bf:agent//@rdf:*[1]"/>
                             </xsl:call-template>
                           </xsl:when>
+                          <xsl:when test="preceding::bf:AdminMetadata//bf:descriptionModifier//bf:code">
+                            <xsl:value-of select="preceding::bf:AdminMetadata//bf:descriptionModifier//bf:code"/>
+                          </xsl:when>
+                          <xsl:when test="preceding::bf:AdminMetadata//bf:agent//bf:code">
+                            <xsl:value-of select="preceding::bf:AdminMetadata//bf:agent//bf:code"/>
+                          </xsl:when>
+                          <xsl:when test="preceding::bf:AdminMetadata//bf:descriptionModifier//@rdf:*[1]">
+                            <xsl:call-template name="tUriCode">
+                              <xsl:with-param name="pUri" select="preceding::bf:AdminMetadata//bf:descriptionModifier//@rdf:*[1]"/>
+                            </xsl:call-template>
+                          </xsl:when>
+                          <xsl:when test="preceding::bf:AdminMetadata//bf:agent//@rdf:*[1]">
+                            <xsl:call-template name="tUriCode">
+                              <xsl:with-param name="pUri" select="preceding::bf:AdminMetadata//bf:agent//@rdf:*[1]"/>
+                            </xsl:call-template>
+                          </xsl:when>
                         </xsl:choose>
                       </xsl:variable>
-                      <modifierCode>
+                      <marc:modifierCode>
                         <xsl:choose>
                           <xsl:when test="$mCode = 'dlc'">DLC</xsl:when>
                           <xsl:when test="$mCode = 'dlcmrc'">DLCMRC</xsl:when>
@@ -3242,12 +3258,12 @@
                             <xsl:value-of select="$mCode"/>
                           </xsl:otherwise>
                         </xsl:choose>
-                      </modifierCode>
+                      </marc:modifierCode>
                     </xsl:for-each>
-                  </codes>
+                  </marc:codes>
                 </xsl:variable>
                 <xsl:variable name="modifierCodes" select="exsl:node-set($modifierCodePreNS)"/>
-                <xsl:for-each select="$modifierCodes//*:modifierCode[not(.=preceding::*[1])]">
+                <xsl:for-each select="$modifierCodes//marc:modifierCode[not(.=preceding::*[1])]">
                   <marc:subfield code="d">
                     <xsl:value-of select="."/>
                   </marc:subfield>
@@ -6229,6 +6245,15 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
+                    <xsl:variable name="vEndsWith">
+                      <xsl:call-template name="tEndsWith">
+                        <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
+                        <xsl:with-param name="pEndChar" select="'.'"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:if test="$vEndsWith = '0'">
+                      <xsl:text>.</xsl:text>
+                    </xsl:if>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -6558,7 +6583,13 @@
                         <xsl:text>,</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:if test="not(ends-with(., '.'))">
+                        <xsl:variable name="vEndsWith">
+                          <xsl:call-template name="tEndsWith">
+                            <xsl:with-param name="pStr" select="."/>
+                            <xsl:with-param name="pEndChar" select="'.'"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$vEndsWith = '0'">
                           <xsl:text>.</xsl:text>
                         </xsl:if>
                       </xsl:if>
@@ -6696,7 +6727,13 @@
                             <xsl:text>,</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:if test="not(ends-with(., '.'))">
+                            <xsl:variable name="vEndsWith">
+                              <xsl:call-template name="tEndsWith">
+                                <xsl:with-param name="pStr" select="."/>
+                                <xsl:with-param name="pEndChar" select="'.'"/>
+                              </xsl:call-template>
+                            </xsl:variable>
+                            <xsl:if test="$vEndsWith = '0'">
                               <xsl:text>.</xsl:text>
                             </xsl:if>
                           </xsl:if>
@@ -8623,7 +8660,7 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="$vSubjectTag = '630'">
+                    <xsl:when test="$vSubjectTag = '630' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != '' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != ' '">
                       <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2">
                         <xsl:choose>
                           <xsl:when test="position() = 1">
@@ -8634,6 +8671,9 @@
                           </xsl:otherwise>
                         </xsl:choose>
                       </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="$vSubjectTag = '630' and ($vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = '' or $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = ' ')">
+                      <xsl:value-of select="'0'"/>
                     </xsl:when>
                     <xsl:otherwise>
                       <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
@@ -8960,7 +9000,7 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="$vSubjectTag = '630'">
+                    <xsl:when test="$vSubjectTag = '630' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != '' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != ' '">
                       <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2">
                         <xsl:choose>
                           <xsl:when test="position() = 1">
@@ -8971,6 +9011,9 @@
                           </xsl:otherwise>
                         </xsl:choose>
                       </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="$vSubjectTag = '630' and ($vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = '' or $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = ' ')">
+                      <xsl:value-of select="'0'"/>
                     </xsl:when>
                     <xsl:otherwise>
                       <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
@@ -11001,11 +11044,6 @@
                         <xsl:call-template name="tChopPunct">
                           <xsl:with-param name="pString" select="."/>
                         </xsl:call-template>
-                      </marc:subfield>
-                    </xsl:for-each>
-                    <xsl:for-each select="bf:source/bf:Source/bf:code">
-                      <marc:subfield code="2">
-                        <xsl:value-of select="."/>
                       </marc:subfield>
                     </xsl:for-each>
                     <xsl:for-each select="bflc:relationship/bflc:Relationship/bflc:relation/bflc:Relation/rdfs:label">
@@ -15118,16 +15156,26 @@
               </xsl:if>
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
-                    <xsl:choose>
-                      <xsl:when test="position() = 1">
-                        <xsl:value-of select="."/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1 != ''">
+                      <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <xsl:value-of select="."/>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="$vAddedEntryNameMarcKeyTag='710'">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="' '"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
                   <xsl:when test="$vInd != ''">
@@ -15321,16 +15369,26 @@
               </xsl:if>
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
-                    <xsl:choose>
-                      <xsl:when test="position() = 1">
-                        <xsl:value-of select="."/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1 != ''">
+                      <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <xsl:value-of select="."/>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="$vAddedEntryNameMarcKeyTag='710'">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="' '"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
                   <xsl:when test="$vInd != ''">
@@ -16406,8 +16464,8 @@
         </xsl:otherwise>
       </xsl:choose>
       <xsl:choose>
-        <xsl:when test="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:when test="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="vNameAuthPreNS">
               <xsl:choose>
                 <xsl:when test="bflc:marcKey">
@@ -17148,7 +17206,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*">
+          <xsl:for-each select="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*">
             <xsl:variable name="vNameAuthPreNS">
               <xsl:choose>
                 <xsl:when test="bflc:marcKey">
@@ -19157,7 +19215,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'subseries') or contains(bf:Relationship/@rdf:about, 'subseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'series') or contains(bf:Relationship/@rdf:about, 'series')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationof') or contains(bf:Relationship/@rdf:about, 'translationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translatedas') or contains(bf:Relationship/@rdf:about, 'translatedas')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementto') or contains(bf:Relationship/@rdf:about, 'supplementto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partof') or contains(bf:Relationship/@rdf:about, 'partof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'part') or contains(bf:Relationship/@rdf:about, 'part')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otheredition') or contains(bf:Relationship/@rdf:about, 'otheredition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherphysicalformat') or contains(bf:Relationship/@rdf:about, 'otherphysicalformat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedwith') or contains(bf:Relationship/@rdf:about, 'issuedwith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededby') or contains(bf:Relationship/@rdf:about, 'precededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerof') or contains(bf:Relationship/@rdf:about, 'mergerof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedby') or contains(bf:Relationship/@rdf:about, 'absorbedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorptionof') or contains(bf:Relationship/@rdf:about, 'absorptionof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedby') or contains(bf:Relationship/@rdf:about, 'separatedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedby') or contains(bf:Relationship/@rdf:about, 'continuedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpartby') or contains(bf:Relationship/@rdf:about, 'continuedinpartby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededby') or contains(bf:Relationship/@rdf:about, 'succeededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitinto') or contains(bf:Relationship/@rdf:about, 'splitinto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedtoform') or contains(bf:Relationship/@rdf:about, 'mergedtoform')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'datasource') or contains(bf:Relationship/@rdf:about, 'datasource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedwork') or contains(bf:Relationship/@rdf:about, 'relatedwork')]]/bf:associatedResource/bf:*[bf:hasInstance] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSubseries') or contains(bf:Relationship/@rdf:about, 'hasSubseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationOf') or contains(bf:Relationship/@rdf:about, 'translationOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translation') or contains(bf:Relationship/@rdf:about, 'translation')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementTo') or contains(bf:Relationship/@rdf:about, 'supplementTo')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partOf') or contains(bf:Relationship/@rdf:about, 'partOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasPart') or contains(bf:Relationship/@rdf:about, 'hasPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherEdition') or contains(bf:Relationship/@rdf:about, 'otherEdition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherPhysicalFormat') or contains(bf:Relationship/@rdf:about, 'otherPhysicalFormat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedWith') or contains(bf:Relationship/@rdf:about, 'issuedWith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuesInPart') or contains(bf:Relationship/@rdf:about, 'continuesInPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededBy') or contains(bf:Relationship/@rdf:about, 'precededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerOf') or contains(bf:Relationship/@rdf:about, 'mergerOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedBy') or contains(bf:Relationship/@rdf:about, 'absorbedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbed') or contains(bf:Relationship/@rdf:about, 'absorbed')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedBy') or contains(bf:Relationship/@rdf:about, 'separatedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedBy') or contains(bf:Relationship/@rdf:about, 'continuedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedInPartBy') or contains(bf:Relationship/@rdf:about, 'continuedInPartBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededBy') or contains(bf:Relationship/@rdf:about, 'succeededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitInto') or contains(bf:Relationship/@rdf:about, 'splitInto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedToForm') or contains(bf:Relationship/@rdf:about, 'mergedToForm')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'dataSource') or contains(bf:Relationship/@rdf:about, 'dataSource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedTo') or contains(bf:Relationship/@rdf:about, 'relatedTo')]]/bf:associatedResource/bf:*[bf:hasInstance]       " mode="generate-vLinkTagFromWork2">
+      <xsl:apply-templates select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'subseries') or contains(bf:Relationship/@rdf:about, 'subseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'series') or contains(bf:Relationship/@rdf:about, 'series')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationof') or contains(bf:Relationship/@rdf:about, 'translationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translatedas') or contains(bf:Relationship/@rdf:about, 'translatedas')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementto') or contains(bf:Relationship/@rdf:about, 'supplementto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partof') or contains(bf:Relationship/@rdf:about, 'partof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/part') or contains(bf:Relationship/@rdf:about, '/part')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otheredition') or contains(bf:Relationship/@rdf:about, 'otheredition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherphysicalformat') or contains(bf:Relationship/@rdf:about, 'otherphysicalformat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedwith') or contains(bf:Relationship/@rdf:about, 'issuedwith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuationof') or contains(bf:Relationship/@rdf:about, 'continuationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededby') or contains(bf:Relationship/@rdf:about, 'precededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerof') or contains(bf:Relationship/@rdf:about, 'mergerof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedby') or contains(bf:Relationship/@rdf:about, 'absorbedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorptionof') or contains(bf:Relationship/@rdf:about, 'absorptionof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedby') or contains(bf:Relationship/@rdf:about, 'separatedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedby') or contains(bf:Relationship/@rdf:about, 'continuedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpartby') or contains(bf:Relationship/@rdf:about, 'continuedinpartby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededby') or contains(bf:Relationship/@rdf:about, 'succeededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitinto') or contains(bf:Relationship/@rdf:about, 'splitinto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedtoform') or contains(bf:Relationship/@rdf:about, 'mergedtoform')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'datasource') or contains(bf:Relationship/@rdf:about, 'datasource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedwork') or contains(bf:Relationship/@rdf:about, 'relatedwork')]]/bf:associatedResource/bf:*[bf:hasInstance] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSubseries') or contains(bf:Relationship/@rdf:about, 'hasSubseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationOf') or contains(bf:Relationship/@rdf:about, 'translationOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translation') or contains(bf:Relationship/@rdf:about, 'translation')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementTo') or contains(bf:Relationship/@rdf:about, 'supplementTo')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partOf') or contains(bf:Relationship/@rdf:about, 'partOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasPart') or contains(bf:Relationship/@rdf:about, 'hasPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherEdition') or contains(bf:Relationship/@rdf:about, 'otherEdition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherPhysicalFormat') or contains(bf:Relationship/@rdf:about, 'otherPhysicalFormat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedWith') or contains(bf:Relationship/@rdf:about, 'issuedWith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuesInPart') or contains(bf:Relationship/@rdf:about, 'continuesInPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededBy') or contains(bf:Relationship/@rdf:about, 'precededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerOf') or contains(bf:Relationship/@rdf:about, 'mergerOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedBy') or contains(bf:Relationship/@rdf:about, 'absorbedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbed') or contains(bf:Relationship/@rdf:about, 'absorbed')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedBy') or contains(bf:Relationship/@rdf:about, 'separatedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedBy') or contains(bf:Relationship/@rdf:about, 'continuedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedInPartBy') or contains(bf:Relationship/@rdf:about, 'continuedInPartBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededBy') or contains(bf:Relationship/@rdf:about, 'succeededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitInto') or contains(bf:Relationship/@rdf:about, 'splitInto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedToForm') or contains(bf:Relationship/@rdf:about, 'mergedToForm')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'dataSource') or contains(bf:Relationship/@rdf:about, 'dataSource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedTo') or contains(bf:Relationship/@rdf:about, 'relatedTo')]]/bf:associatedResource/bf:*[bf:hasInstance]       " mode="generate-vLinkTagFromWork2">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -21304,7 +21362,7 @@
         <xsl:choose>
           <xsl:when test="$pGenerationUri">
             <xsl:variable name="v884-u">
-              <xsl:value-of select="$pGenerationUri"/>
+              <xsl:value-of select="concat($pGenerationUri, '/releases/tag/', substring-after($vCurrentVersion, 'DLC bibframe2marc '))"/>
             </xsl:variable>
             <xsl:if test="$v884-u != ''">
               <marc:subfield code="u">
@@ -23277,7 +23335,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -23334,7 +23392,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='canceled'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='canceled'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -23396,7 +23454,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='canceled'] or           bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or           bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or           bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or           bf:status/bf:Status/rdfs:label[text()='canceled'] or           bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or           bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -23487,7 +23545,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -23689,7 +23747,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -23807,7 +23865,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -24197,7 +24255,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or                     bf:status/bf:Status/rdfs:label[text()='invalid'] or                     bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:variable name="v035-z">
             <xsl:value-of select="concat($vAssignerString,rdf:value)"/>
           </xsl:variable>
@@ -24232,7 +24290,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/bf:Status/rdfs:label[text()='invalid'] or           bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or           bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
+        <xsl:when test="bf:status//@rdf:*[1]='http://id.loc.gov/vocabulary/mstatus/cancinv' or           bf:status/bf:Status/rdfs:label[text()='canceled or invalid'] or           bf:status/bf:Status/rdfs:label[text()='invalid'] or           bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/invalid' or           bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/invalid'">
           <xsl:variable name="v035-z">
             <xsl:value-of select="concat('(OCoLC)',rdf:value)"/>
           </xsl:variable>
@@ -25144,7 +25202,7 @@
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     translate(bf:status/bf:Status/rdfs:label,$upper,$lower)='invalid'">
+        <xsl:when test="bf:status/@rdf:resource='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     bf:status/bf:Status/@rdf:about='http://id.loc.gov/vocabulary/mstatus/cancinv' or                     translate(bf:status/bf:Status/rdfs:label,$upper,$lower)='canceled or invalid'">
           <xsl:for-each select="rdf:value">
             <marc:subfield code="z">
               <xsl:value-of select="."/>
@@ -27145,6 +27203,15 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="vEndsWith">
+                  <xsl:call-template name="tEndsWith">
+                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]"/>
+                    <xsl:with-param name="pEndChar" select="'.'"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:if test="$vEndsWith = '0'">
+                  <xsl:text>.</xsl:text>
+                </xsl:if>
               </xsl:when>
               <xsl:when test="count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
                 <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
@@ -27157,6 +27224,15 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="vEndsWith">
+                  <xsl:call-template name="tEndsWith">
+                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]"/>
+                    <xsl:with-param name="pEndChar" select="'.'"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:if test="$vEndsWith = '0'">
+                  <xsl:text>.</xsl:text>
+                </xsl:if>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -27714,9 +27790,7 @@
       </xsl:if>
       <xsl:for-each select="rdfs:label">
         <marc:subfield code="a">
-          <xsl:call-template name="tChopPunct">
-            <xsl:with-param name="pString" select="."/>
-          </xsl:call-template>
+          <xsl:value-of select="."/>
         </marc:subfield>
       </xsl:for-each>
       <xsl:for-each select="../../bf:note/bf:Note[translate(bf:noteType,$upper,$lower)='physical details' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/physical']/rdfs:label">
@@ -31162,7 +31236,7 @@
       <xsl:attribute name="ind1">
         <xsl:variable name="vInd">
           <xsl:choose>
-            <xsl:when test="$vSubjectTag = '630'">
+            <xsl:when test="$vSubjectTag = '630' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != '' and $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 != ' '">
               <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
@@ -31173,6 +31247,9 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+            </xsl:when>
+            <xsl:when test="$vSubjectTag = '630' and ($vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = '' or $vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind2 = ' ')">
+              <xsl:value-of select="'0'"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
@@ -32294,16 +32371,26 @@
       </xsl:if>
       <xsl:attribute name="ind1">
         <xsl:variable name="vInd">
-          <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
-            <xsl:choose>
-              <xsl:when test="position() = 1">
-                <xsl:value-of select="."/>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:for-each>
+          <xsl:choose>
+            <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1 != ''">
+              <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                <xsl:choose>
+                  <xsl:when test="position() = 1">
+                    <xsl:value-of select="."/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:when test="$vAddedEntryNameMarcKeyTag='710'">
+              <xsl:text>2</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="' '"/>
+            </xsl:otherwise>
+          </xsl:choose>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="$vInd != ''">
@@ -32652,7 +32739,7 @@
       </xsl:if>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*" mode="generate-vAddEntryTag">
+  <xsl:template match="bf:Work/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Work/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     bf:Instance/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:contribution/*[not(local-name()='PrimaryContribution') and not(rdf:type[contains(@rdf:resource, '/PrimaryContribution')])]/bf:agent/*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)] |                     //bf:Item/bf:relatedTo/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/* |                     //bf:Item/bf:hasPart/bf:*[(not(contains(@rdf:about, 'id.loc.gov')) or contains(@rdf:about, 'REPLACE')) and not(bflc:marcKey)]/bf:contribution/*/bf:agent/*" mode="generate-vAddEntryTag">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vNameAuthPreNS">
@@ -34228,7 +34315,7 @@
       </marc:subfield>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'subseries') or contains(bf:Relationship/@rdf:about, 'subseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'series') or contains(bf:Relationship/@rdf:about, 'series')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationof') or contains(bf:Relationship/@rdf:about, 'translationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translatedas') or contains(bf:Relationship/@rdf:about, 'translatedas')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementto') or contains(bf:Relationship/@rdf:about, 'supplementto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partof') or contains(bf:Relationship/@rdf:about, 'partof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'part') or contains(bf:Relationship/@rdf:about, 'part')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otheredition') or contains(bf:Relationship/@rdf:about, 'otheredition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherphysicalformat') or contains(bf:Relationship/@rdf:about, 'otherphysicalformat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedwith') or contains(bf:Relationship/@rdf:about, 'issuedwith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededby') or contains(bf:Relationship/@rdf:about, 'precededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerof') or contains(bf:Relationship/@rdf:about, 'mergerof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedby') or contains(bf:Relationship/@rdf:about, 'absorbedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorptionof') or contains(bf:Relationship/@rdf:about, 'absorptionof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedby') or contains(bf:Relationship/@rdf:about, 'separatedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedby') or contains(bf:Relationship/@rdf:about, 'continuedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpartby') or contains(bf:Relationship/@rdf:about, 'continuedinpartby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededby') or contains(bf:Relationship/@rdf:about, 'succeededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitinto') or contains(bf:Relationship/@rdf:about, 'splitinto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedtoform') or contains(bf:Relationship/@rdf:about, 'mergedtoform')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'datasource') or contains(bf:Relationship/@rdf:about, 'datasource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedwork') or contains(bf:Relationship/@rdf:about, 'relatedwork')]]/bf:associatedResource/bf:*[bf:hasInstance] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSubseries') or contains(bf:Relationship/@rdf:about, 'hasSubseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationOf') or contains(bf:Relationship/@rdf:about, 'translationOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translation') or contains(bf:Relationship/@rdf:about, 'translation')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementTo') or contains(bf:Relationship/@rdf:about, 'supplementTo')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partOf') or contains(bf:Relationship/@rdf:about, 'partOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasPart') or contains(bf:Relationship/@rdf:about, 'hasPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherEdition') or contains(bf:Relationship/@rdf:about, 'otherEdition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherPhysicalFormat') or contains(bf:Relationship/@rdf:about, 'otherPhysicalFormat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedWith') or contains(bf:Relationship/@rdf:about, 'issuedWith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuesInPart') or contains(bf:Relationship/@rdf:about, 'continuesInPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededBy') or contains(bf:Relationship/@rdf:about, 'precededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerOf') or contains(bf:Relationship/@rdf:about, 'mergerOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedBy') or contains(bf:Relationship/@rdf:about, 'absorbedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbed') or contains(bf:Relationship/@rdf:about, 'absorbed')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedBy') or contains(bf:Relationship/@rdf:about, 'separatedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedBy') or contains(bf:Relationship/@rdf:about, 'continuedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedInPartBy') or contains(bf:Relationship/@rdf:about, 'continuedInPartBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededBy') or contains(bf:Relationship/@rdf:about, 'succeededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitInto') or contains(bf:Relationship/@rdf:about, 'splitInto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedToForm') or contains(bf:Relationship/@rdf:about, 'mergedToForm')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'dataSource') or contains(bf:Relationship/@rdf:about, 'dataSource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedTo') or contains(bf:Relationship/@rdf:about, 'relatedTo')]]/bf:associatedResource/bf:*[bf:hasInstance]       " mode="generate-vLinkTagFromWork2">
+  <xsl:template match="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'subseries') or contains(bf:Relationship/@rdf:about, 'subseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'series') or contains(bf:Relationship/@rdf:about, 'series')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationof') or contains(bf:Relationship/@rdf:about, 'translationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translatedas') or contains(bf:Relationship/@rdf:about, 'translatedas')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementto') or contains(bf:Relationship/@rdf:about, 'supplementto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partof') or contains(bf:Relationship/@rdf:about, 'partof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/part') or contains(bf:Relationship/@rdf:about, '/part')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otheredition') or contains(bf:Relationship/@rdf:about, 'otheredition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherphysicalformat') or contains(bf:Relationship/@rdf:about, 'otherphysicalformat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedwith') or contains(bf:Relationship/@rdf:about, 'issuedwith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuationof') or contains(bf:Relationship/@rdf:about, 'continuationof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededby') or contains(bf:Relationship/@rdf:about, 'precededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerof') or contains(bf:Relationship/@rdf:about, 'mergerof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedby') or contains(bf:Relationship/@rdf:about, 'absorbedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorptionof') or contains(bf:Relationship/@rdf:about, 'absorptionof')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedby') or contains(bf:Relationship/@rdf:about, 'separatedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedby') or contains(bf:Relationship/@rdf:about, 'continuedby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedinpartby') or contains(bf:Relationship/@rdf:about, 'continuedinpartby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededby') or contains(bf:Relationship/@rdf:about, 'succeededby')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitinto') or contains(bf:Relationship/@rdf:about, 'splitinto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedtoform') or contains(bf:Relationship/@rdf:about, 'mergedtoform')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'datasource') or contains(bf:Relationship/@rdf:about, 'datasource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedwork') or contains(bf:Relationship/@rdf:about, 'relatedwork')]]/bf:associatedResource/bf:*[bf:hasInstance] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSubseries') or contains(bf:Relationship/@rdf:about, 'hasSubseries')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translationOf') or contains(bf:Relationship/@rdf:about, 'translationOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'translation') or contains(bf:Relationship/@rdf:about, 'translation')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplementTo') or contains(bf:Relationship/@rdf:about, 'supplementTo')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'supplement') or contains(bf:Relationship/@rdf:about, 'supplement')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'partOf') or contains(bf:Relationship/@rdf:about, 'partOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasPart') or contains(bf:Relationship/@rdf:about, 'hasPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherEdition') or contains(bf:Relationship/@rdf:about, 'otherEdition')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'otherPhysicalFormat') or contains(bf:Relationship/@rdf:about, 'otherPhysicalFormat')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'issuedWith') or contains(bf:Relationship/@rdf:about, 'issuedWith')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuesInPart') or contains(bf:Relationship/@rdf:about, 'continuesInPart')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'precededBy') or contains(bf:Relationship/@rdf:about, 'precededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergerOf') or contains(bf:Relationship/@rdf:about, 'mergerOf')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbedBy') or contains(bf:Relationship/@rdf:about, 'absorbedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'absorbed') or contains(bf:Relationship/@rdf:about, 'absorbed')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'separatedBy') or contains(bf:Relationship/@rdf:about, 'separatedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedBy') or contains(bf:Relationship/@rdf:about, 'continuedBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'continuedInPartBy') or contains(bf:Relationship/@rdf:about, 'continuedInPartBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'succeededBy') or contains(bf:Relationship/@rdf:about, 'succeededBy')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'splitInto') or contains(bf:Relationship/@rdf:about, 'splitInto')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'mergedToForm') or contains(bf:Relationship/@rdf:about, 'mergedToForm')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'dataSource') or contains(bf:Relationship/@rdf:about, 'dataSource')]]/bf:associatedResource/bf:*[bf:hasInstance] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'relatedTo') or contains(bf:Relationship/@rdf:about, 'relatedTo')]]/bf:associatedResource/bf:*[bf:hasInstance]       " mode="generate-vLinkTagFromWork2">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vLinkTagFromWork2">
@@ -34254,7 +34341,7 @@
         <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'partof') or contains(bf:Relationship/@rdf:about, 'partof')]">
           <xsl:text>773</xsl:text>
         </xsl:when>
-        <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'part') or contains(bf:Relationship/@rdf:about, 'part')]">
+        <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, '/part') or contains(bf:Relationship/@rdf:about, '/part')]">
           <xsl:text>774</xsl:text>
         </xsl:when>
         <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'otheredition') or contains(bf:Relationship/@rdf:about, 'otheredition')]">
@@ -34341,6 +34428,9 @@
         <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continuesInPart') or contains(bf:Relationship/@rdf:about, 'continuesInPart')]">
           <xsl:text>780</xsl:text>
         </xsl:when>
+        <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continuationof') or contains(bf:Relationship/@rdf:about, 'continuationof')]">
+          <xsl:text>780</xsl:text>
+        </xsl:when>
         <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]">
           <xsl:text>780</xsl:text>
         </xsl:when>
@@ -34422,6 +34512,9 @@
           <xsl:choose>
             <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]">
               <xsl:text>1</xsl:text>
+            </xsl:when>
+            <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continuationof') or contains(bf:Relationship/@rdf:about, 'continuationof')]">
+              <xsl:text>0</xsl:text>
             </xsl:when>
             <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continues') or contains(bf:Relationship/@rdf:about, 'continues')]">
               <xsl:text>0</xsl:text>
@@ -36083,6 +36176,14 @@
         <xsl:value-of select="$pJoinChar"/>
       </xsl:if>
     </xsl:for-each>
+  </xsl:template>
+  <xsl:template name="tEndsWith">
+    <xsl:param name="pStr"/>
+    <xsl:param name="pEndChar"/>
+    <xsl:choose>
+      <xsl:when test="substring($pStr, string-length($pStr)) = $pEndChar">1</xsl:when>
+      <xsl:otherwise>0</xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template name="EDTF-Date1">
     <xsl:param name="pEDTFDate"/>
