@@ -6245,15 +6245,6 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
-                    <xsl:variable name="vEndsWith">
-                      <xsl:call-template name="tEndsWith">
-                        <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
-                        <xsl:with-param name="pEndChar" select="'.'"/>
-                      </xsl:call-template>
-                    </xsl:variable>
-                    <xsl:if test="$vEndsWith = '0'">
-                      <xsl:text>.</xsl:text>
-                    </xsl:if>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -6582,17 +6573,19 @@
                       <xsl:if test="following-sibling::bflc:simpleDate[not(@xml:lang)]">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="position() = last()">
+                      <!--
+                    <xsl:if test="position() = last()">
                         <xsl:variable name="vEndsWith">
-                          <xsl:call-template name="tEndsWith">
-                            <xsl:with-param name="pStr" select="."/>
-                            <xsl:with-param name="pEndChar" select="'.'"/>
-                          </xsl:call-template>
+                            <xsl:call-template name="tEndsWith">
+                                <xsl:with-param name="pStr" select="."/>
+                                <xsl:with-param name="pEndChar" select="'.'"/>
+                            </xsl:call-template>
                         </xsl:variable>
                         <xsl:if test="$vEndsWith = '0'">
-                          <xsl:text>.</xsl:text>
+                            <xsl:text>.</xsl:text>
                         </xsl:if>
-                      </xsl:if>
+                    </xsl:if>
+                    -->
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
@@ -6726,17 +6719,19 @@
                           <xsl:if test="following-sibling::bflc:simpleDate[@xml:lang]">
                             <xsl:text>,</xsl:text>
                           </xsl:if>
-                          <xsl:if test="position() = last()">
+                          <!--
+                        <xsl:if test="position() = last()">
                             <xsl:variable name="vEndsWith">
-                              <xsl:call-template name="tEndsWith">
-                                <xsl:with-param name="pStr" select="."/>
-                                <xsl:with-param name="pEndChar" select="'.'"/>
-                              </xsl:call-template>
+                                <xsl:call-template name="tEndsWith">
+                                    <xsl:with-param name="pStr" select="."/>
+                                    <xsl:with-param name="pEndChar" select="'.'"/>
+                                </xsl:call-template>
                             </xsl:variable>
                             <xsl:if test="$vEndsWith = '0'">
-                              <xsl:text>.</xsl:text>
+                                <xsl:text>.</xsl:text>
                             </xsl:if>
-                          </xsl:if>
+                        </xsl:if>
+                        -->
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
@@ -7124,7 +7119,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |                  bf:Work/bf:hasSeries/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']]">
+      <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |                  bf:Work/bf:hasSeries/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']]">
         <xsl:variable name="vScriptSubtag">
           <xsl:call-template name="tScriptCode">
             <xsl:with-param name="pXmlLang" select="rdfs:label/@xml:lang"/>
@@ -19710,7 +19705,7 @@
                   </xsl:call-template>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:for-each select="../bf:seriesEnumeration">
+              <xsl:for-each select="../../bf:seriesEnumeration">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="v">
@@ -19887,7 +19882,7 @@
                   </xsl:call-template>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:for-each select="../bf:seriesEnumeration">
+              <xsl:for-each select="../../bf:seriesEnumeration">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="v">
@@ -25267,7 +25262,7 @@
             <xsl:value-of select="$vInd"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text> </xsl:text>
+            <xsl:text>4</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
@@ -27203,15 +27198,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="vEndsWith">
-                  <xsl:call-template name="tEndsWith">
-                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]"/>
-                    <xsl:with-param name="pEndChar" select="'.'"/>
-                  </xsl:call-template>
-                </xsl:variable>
-                <xsl:if test="$vEndsWith = '0'">
-                  <xsl:text>.</xsl:text>
-                </xsl:if>
               </xsl:when>
               <xsl:when test="count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
                 <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
@@ -27224,15 +27210,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="vEndsWith">
-                  <xsl:call-template name="tEndsWith">
-                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]"/>
-                    <xsl:with-param name="pEndChar" select="'.'"/>
-                  </xsl:call-template>
-                </xsl:variable>
-                <xsl:if test="$vEndsWith = '0'">
-                  <xsl:text>.</xsl:text>
-                </xsl:if>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -35687,7 +35664,7 @@
           </xsl:call-template>
         </marc:subfield>
       </xsl:for-each>
-      <xsl:for-each select="../bf:seriesEnumeration">
+      <xsl:for-each select="../../bf:seriesEnumeration">
         <xsl:choose>
           <xsl:when test="position() = 1">
             <marc:subfield code="v">
