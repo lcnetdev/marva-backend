@@ -2791,8 +2791,8 @@
         <xslt:text> a22     </xslt:text>
         <xslt:variable name="vPosition-6">
           <xslt:choose>
-            <xslt:when test="$vAdminMetadata/bflc:encodingLevel[@rdf:resource] or                       $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel[@rdf:about] or                        $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel[bf:code]">
-              <xslt:for-each select="$vAdminMetadata/bflc:encodingLevel/@rdf:resource |                            $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel/@rdf:about |                             $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel/bf:code">
+            <xslt:when test="$vAdminMetadata/bflc:encodingLevel[@rdf:resource] or                       $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel[@rdf:about] or                        $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel[not(@rdf:about) and bf:code]">
+              <xslt:for-each select="$vAdminMetadata/bflc:encodingLevel/@rdf:resource |                            $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel/@rdf:about |                             $vAdminMetadata/bflc:encodingLevel/bflc:EncodingLevel[not(@rdf:about)]/bf:code">
                 <xslt:choose>
                   <xslt:when test="position() = 1">
                     <xslt:variable name="vLdr17" select="substring(.,string-length(.))" />
@@ -3048,15 +3048,15 @@
         </xslt:when>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="$vAdminMetadata[bf:descriptionConventions]">
+        <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]">
           <marc:datafield>
             <xslt:attribute name="tag">040</xslt:attribute>
             <xslt:variable name="vLanguageUri">
               <xslt:choose>
-                <xslt:when test="$vAdminMetadata[bf:descriptionConventions]/bf:descriptionLanguage/@rdf:resource">
+                <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/@rdf:resource">
                   <xsl:value-of select="$vAdminMetadata/bf:descriptionLanguage/@rdf:resource" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:when>
-                <xslt:when test="$vAdminMetadata[bf:descriptionConventions]/bf:descriptionLanguage/*/@rdf:about">
+                <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/*/@rdf:about">
                   <xsl:value-of select="$vAdminMetadata/bf:descriptionLanguage/*/@rdf:about" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:when>
               </xslt:choose>
@@ -3108,7 +3108,11 @@
               </xslt:when>
               <xslt:when test="$vAcode != ''">
                 <xslt:variable name="v040-a">
-                  <xsl:value-of select="$vAcode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                    <xsl:with-param name="pInput" select="$vAcode" />
+                    <xsl:with-param name="pPadChar" select="'@'" />
+                    <xsl:with-param name="pStringLength" select="3" />
+                  </xsl:call-template>
                 </xslt:variable>
                 <xslt:if test="$v040-a != ''">
                   <marc:subfield code="a">
@@ -3130,9 +3134,9 @@
                   </marc:subfield>
                 </xslt:if>
               </xslt:when>
-              <xslt:when test="$vAdminMetadata[bf:descriptionConventions]/bf:descriptionLanguage/*/*[local-name()='code']">
+              <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/*/*[local-name()='code']">
                 <xslt:variable name="v040-b">
-                  <xsl:value-of select="$vAdminMetadata[bf:descriptionConventions]/bf:descriptionLanguage/*/*[local-name()='code']" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  <xsl:value-of select="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/*/*[local-name()='code']" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:variable>
                 <xslt:if test="$v040-b != ''">
                   <marc:subfield code="b">
@@ -3141,7 +3145,7 @@
                 </xslt:if>
               </xslt:when>
             </xslt:choose>
-            <xslt:for-each select="$vAdminMetadata[bf:descriptionConventions]/bf:descriptionConventions[not(contains(@rdf:resource,'isbd')) and                           not(contains(*/@rdf:about,'isbd')) and                           not(*/rdf:value='isbd') and                           not(*/*[local-name()='code']='isbd') and                           not(*/rdfs:label='isbd') and                           not(contains(@rdf:resource,'aacr')) and                           not(contains(*/@rdf:about,'aacr')) and                           not(*/rdf:value='aacr') and                           not(*/*[local-name()='code']='aacr') and                           not(*/rdfs:label='aacr')]">
+            <xslt:for-each select="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionConventions[not(contains(@rdf:resource,'isbd')) and                           not(contains(*/@rdf:about,'isbd')) and                           not(*/rdf:value='isbd') and                           not(*/*[local-name()='code']='isbd') and                           not(*/rdfs:label='isbd') and                           not(contains(@rdf:resource,'aacr')) and                           not(contains(*/@rdf:about,'aacr')) and                           not(*/rdf:value='aacr') and                           not(*/*[local-name()='code']='aacr') and                           not(*/rdfs:label='aacr')]">
               <marc:subfield code="e">
                 <xslt:variable name="vConvUri">
                   <xslt:choose>
@@ -3184,7 +3188,11 @@
               </xslt:when>
               <xslt:when test="$vAcode != ''">
                 <xslt:variable name="v040-c">
-                  <xsl:value-of select="$vAcode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                    <xsl:with-param name="pInput" select="$vAcode" />
+                    <xsl:with-param name="pPadChar" select="'@'" />
+                    <xsl:with-param name="pStringLength" select="3" />
+                  </xsl:call-template>
                 </xslt:variable>
                 <xslt:if test="$v040-c != ''">
                   <marc:subfield code="c">
@@ -3255,7 +3263,13 @@
                           <xsl:when test="$mCode = 'dlc'">DLC</xsl:when>
                           <xsl:when test="$mCode = 'dlcmrc'">DLCMRC</xsl:when>
                           <xsl:otherwise>
-                            <xsl:value-of select="$mCode" />
+                            <transform xmlns="http://www.loc.gov/bf2marc">
+                              <xsl:call-template name="tPadRight">
+                                <xsl:with-param name="pInput" select="$mCode" />
+                                <xsl:with-param name="pPadChar" select="'@'" />
+                                <xsl:with-param name="pStringLength" select="3" />
+                              </xsl:call-template>
+                            </transform>
                           </xsl:otherwise>
                         </xsl:choose>
                       </marc:modifierCode>
@@ -3308,7 +3322,11 @@
                   </xslt:when>
                   <xslt:when test="$vModifierCode != ''">
                     <xslt:variable name="v040-d">
-                      <xsl:value-of select="$vModifierCode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                        <xsl:with-param name="pInput" select="$vModifierCode" />
+                        <xsl:with-param name="pPadChar" select="'@'" />
+                        <xsl:with-param name="pStringLength" select="3" />
+                      </xsl:call-template>
                     </xslt:variable>
                     <xslt:if test="$v040-d != ''">
                       <marc:subfield code="d">
@@ -3460,7 +3478,7 @@
         </xslt:when>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="bf:Work/bf:language//@rdf:*[not(contains(., 'id.loc.gov/vocabulary/languages'))] or bf:Work/bf:language/*/bf:source">
+        <xslt:when test="bf:Work/bf:language//@rdf:*[(local-name='resource' or local-name='about') and not(contains(., 'id.loc.gov/vocabulary/languages'))] or bf:Work/bf:language/*/bf:source">
           <marc:datafield>
             <xslt:attribute name="tag">041</xslt:attribute>
             <xslt:attribute name="ind1">
@@ -4330,7 +4348,7 @@
                   </xslt:choose>
                   <xslt:choose>
                     <xslt:when test="$vMainEntryTag='100' or $vMainEntryTag='110'">
-                      <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+                      <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                         <marc:subfield code="e">
                           <xslt:choose>
                             <xslt:when test="madsrdf:authoritativeLabel">
@@ -4371,7 +4389,7 @@
                   </xslt:choose>
                   <xslt:choose>
                     <xslt:when test="$vMainEntryTag='111'">
-                      <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+                      <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                         <marc:subfield code="j">
                           <xslt:choose>
                             <xslt:when test="madsrdf:authoritativeLabel">
@@ -4407,7 +4425,7 @@
                       </xslt:for-each>
                     </xslt:when>
                   </xslt:choose>
-                  <xslt:for-each select="../../bf:role/*[madsrdf:code or bf:code]|../bf:role/*[madsrdf:code or bf:code]">
+                  <xslt:for-each select="../../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]|../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]">
                     <marc:subfield code="4">
                       <xslt:choose>
                         <xslt:when test="madsrdf:code">
@@ -4437,7 +4455,7 @@
                       </xslt:choose>
                     </marc:subfield>
                   </xslt:for-each>
-                  <xslt:for-each select="../../bf:role/*/@rdf:about|../bf:role/*/@rdf:about|../../bf:role/@rdf:resource|../bf:role/@rdf:resource">
+                  <xslt:for-each select="                 ../../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))] |                  ../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
@@ -4879,7 +4897,7 @@
                   </xslt:choose>
                   <xslt:choose>
                     <xslt:when test="$vMainEntryTag='100' or $vMainEntryTag='110'">
-                      <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+                      <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                         <marc:subfield code="e">
                           <xslt:choose>
                             <xslt:when test="madsrdf:authoritativeLabel">
@@ -4920,7 +4938,7 @@
                   </xslt:choose>
                   <xslt:choose>
                     <xslt:when test="$vMainEntryTag='111'">
-                      <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+                      <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                         <marc:subfield code="j">
                           <xslt:choose>
                             <xslt:when test="madsrdf:authoritativeLabel">
@@ -4956,7 +4974,7 @@
                       </xslt:for-each>
                     </xslt:when>
                   </xslt:choose>
-                  <xslt:for-each select="../../bf:role/*[madsrdf:code or bf:code]|../bf:role/*[madsrdf:code or bf:code]">
+                  <xslt:for-each select="../../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]|../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]">
                     <marc:subfield code="4">
                       <xslt:choose>
                         <xslt:when test="madsrdf:code">
@@ -4986,7 +5004,7 @@
                       </xslt:choose>
                     </marc:subfield>
                   </xslt:for-each>
-                  <xslt:for-each select="../../bf:role/*/@rdf:about|../bf:role/*/@rdf:about|../../bf:role/@rdf:resource|../bf:role/@rdf:resource">
+                  <xslt:for-each select="                 ../../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))] |                  ../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
@@ -14898,12 +14916,12 @@
                   </xsl:for-each>
                 </xslt:when>
               </xslt:choose>
-              <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
+              <xslt:for-each select="             ancestor::node()/bf:role/bf:Role/rdfs:label[.!='Contributor']|             ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel[.!='Contributor']">
                 <marc:subfield code="e">
                   <xslt:value-of select="." />
                 </marc:subfield>
               </xslt:for-each>
-              <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
+              <xslt:for-each select="           ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] |            ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                 <xslt:variable name="vRelationURI">
                   <xslt:choose>
                     <xslt:when test="contains(.,'id.loc.gov/')">
@@ -14928,14 +14946,14 @@
                 </xslt:if>
               </xslt:for-each>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
@@ -15071,12 +15089,12 @@
                   </xsl:for-each>
                 </xslt:when>
               </xslt:choose>
-              <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
+              <xslt:for-each select="             ancestor::node()/bf:role/bf:Role/rdfs:label[.!='Contributor']|             ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel[.!='Contributor']">
                 <marc:subfield code="e">
                   <xslt:value-of select="." />
                 </marc:subfield>
               </xslt:for-each>
-              <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
+              <xslt:for-each select="           ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] |            ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                 <xslt:variable name="vRelationURI">
                   <xslt:choose>
                     <xslt:when test="contains(.,'id.loc.gov/')">
@@ -15101,14 +15119,14 @@
                 </xslt:if>
               </xslt:for-each>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
@@ -15266,7 +15284,7 @@
                 </xslt:when>
               </xslt:choose>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label or madsrdf:authoritativeLabel]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
                     <xslt:variable name="vvAddedEntryNameMarcKeyTag-e">
                       <xsl:value-of select="translate(., $upper, $lower)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
@@ -15278,7 +15296,7 @@
                     </xslt:if>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <xslt:variable name="vRelationURI">
                       <xslt:choose>
@@ -15306,14 +15324,14 @@
                 </xslt:when>
               </xslt:choose>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
@@ -15479,7 +15497,7 @@
                 </xslt:when>
               </xslt:choose>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label or madsrdf:authoritativeLabel]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
                     <xslt:variable name="vvAddedEntryNameMarcKeyTag-e">
                       <xsl:value-of select="translate(., $upper, $lower)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
@@ -15491,7 +15509,7 @@
                     </xslt:if>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <xslt:variable name="vRelationURI">
                       <xslt:choose>
@@ -15519,14 +15537,14 @@
                 </xslt:when>
               </xslt:choose>
               <xslt:choose>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
                     </marc:subfield>
                   </xslt:for-each>
                 </xslt:when>
-                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+                <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
                   <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
                     <marc:subfield code="4">
                       <xslt:value-of select="." />
@@ -22048,8 +22066,17 @@
                   <xsl:when test="$vPA/bf:*/bf:status/bf:Status/@rdf:about = 'http://id.loc.gov/vocabulary/mstatus/ceased' and                                   string-length($date1) = 4 and string-length($date2) = 4">
                     <xsl:value-of select="translate(concat('d', $date1, $date2), 'X', 'u')" />
                   </xsl:when>
-                  <xsl:when test="string-length($date1)=4 and string-length($date2)=5 and                                    (contains($date2, '~') or contains($date2, '?') or contains($date2, '%'))">
-                    <xsl:value-of select="translate(concat('q', $date1, $date2), 'X', 'u')" />
+                  <!-- <bf:date rdf:datatype="http://id.loc.gov/datatypes/edtf">1940~/1997~</bf:date> -->
+                  <xsl:when test="string-length($date1)=5 and string-length($date2)=5 and                      (contains($date1, '~') or contains($date1, '?') or contains($date1, '%')) and                     (contains($date2, '~') or contains($date2, '?') or contains($date2, '%'))">
+                    <xsl:value-of select="translate(concat('q', substring($date1, 1, 4), substring($date2, 1, 4)), 'X', 'u')" />
+                  </xsl:when>
+                  <!-- <bf:date rdf:datatype="http://id.loc.gov/datatypes/edtf">1940~/1997</bf:date> -->
+                  <xsl:when test="string-length($date1)=5 and string-length($date2)=4 and                      (contains($date1, '~') or contains($date1, '?') or contains($date1, '%'))">
+                    <xsl:value-of select="translate(concat('q', substring($date1, 1, 4), $date2), 'X', 'u')" />
+                  </xsl:when>
+                  <!-- <bf:date rdf:datatype="http://id.loc.gov/datatypes/edtf">1940/1997~</bf:date> -->
+                  <xsl:when test="string-length($date1)=4 and string-length($date2)=5 and                      (contains($date2, '~') or contains($date2, '?') or contains($date2, '%'))">
+                    <xsl:value-of select="translate(concat('q', $date1, substring($date2, 1, 4)), 'X', 'u')" />
                   </xsl:when>
                   <xsl:when test="string-length($date1)=4 and string-length($date2)=4">
                     <xsl:value-of select="translate(concat('m', $date1, $date2), 'X', 'u')" />
@@ -22842,7 +22869,7 @@
                     <xslt:text>s</xslt:text>
                   </xslt:when>
                   <xslt:otherwise>
-                    <xslt:text> </xslt:text>
+                    <xsl:value-of select="' '" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                   </xslt:otherwise>
                 </xslt:choose>
               </xslt:when>
@@ -26102,7 +26129,7 @@
           </xslt:choose>
           <xslt:choose>
             <xslt:when test="$vMainEntryTag='100' or $vMainEntryTag='110'">
-              <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+              <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                 <marc:subfield code="e">
                   <xslt:choose>
                     <xslt:when test="madsrdf:authoritativeLabel">
@@ -26143,7 +26170,7 @@
           </xslt:choose>
           <xslt:choose>
             <xslt:when test="$vMainEntryTag='111'">
-              <xslt:for-each select="../../bf:role/*[rdfs:label or madsrdf:authoritativeLabel]">
+              <xslt:for-each select="../../bf:role/*[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
                 <marc:subfield code="j">
                   <xslt:choose>
                     <xslt:when test="madsrdf:authoritativeLabel">
@@ -26179,7 +26206,7 @@
               </xslt:for-each>
             </xslt:when>
           </xslt:choose>
-          <xslt:for-each select="../../bf:role/*[madsrdf:code or bf:code]|../bf:role/*[madsrdf:code or bf:code]">
+          <xslt:for-each select="../../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]|../bf:role/*[madsrdf:code[.!='ctb'] or bf:code[.!='ctb']]">
             <marc:subfield code="4">
               <xslt:choose>
                 <xslt:when test="madsrdf:code">
@@ -26209,7 +26236,7 @@
               </xslt:choose>
             </marc:subfield>
           </xslt:for-each>
-          <xslt:for-each select="../../bf:role/*/@rdf:about|../bf:role/*/@rdf:about|../../bf:role/@rdf:resource|../bf:role/@rdf:resource">
+          <xslt:for-each select="                 ../../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../bf:role/*/@rdf:about[not(contains(., 'relators/ctb'))] |                  ../../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))] |                  ../bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
             <marc:subfield code="4">
               <xslt:value-of select="." />
             </marc:subfield>
@@ -32359,12 +32386,12 @@
           </xsl:for-each>
         </xslt:when>
       </xslt:choose>
-      <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
+      <xslt:for-each select="             ancestor::node()/bf:role/bf:Role/rdfs:label[.!='Contributor']|             ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel[.!='Contributor']">
         <marc:subfield code="e">
           <xslt:value-of select="." />
         </marc:subfield>
       </xslt:for-each>
-      <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
+      <xslt:for-each select="           ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] |            ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
         <xslt:variable name="vRelationURI">
           <xslt:choose>
             <xslt:when test="contains(.,'id.loc.gov/')">
@@ -32389,14 +32416,14 @@
         </xslt:if>
       </xslt:for-each>
       <xslt:choose>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
             <marc:subfield code="4">
               <xslt:value-of select="." />
             </marc:subfield>
           </xslt:for-each>
         </xslt:when>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
             <marc:subfield code="4">
               <xslt:value-of select="." />
@@ -32552,7 +32579,7 @@
         </xslt:when>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label or madsrdf:authoritativeLabel]">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role[rdfs:label[.!='Contributor'] or madsrdf:authoritativeLabel[.!='Contributor']]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role/rdfs:label|ancestor::node()/bf:role/bf:Role/madsrdf:authoritativeLabel">
             <xslt:variable name="vvAddedEntryNameMarcKeyTag-e">
               <xsl:value-of select="translate(., $upper, $lower)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
@@ -32564,7 +32591,7 @@
             </xslt:if>
           </xslt:for-each>
         </xslt:when>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role[not(rdfs:label) and not(madsrdf:authoritativeLabel)]/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
             <xslt:variable name="vRelationURI">
               <xslt:choose>
@@ -32592,14 +32619,14 @@
         </xslt:when>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about or ancestor::node()/bf:role/@rdf:resource">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role/@rdf:about[not(contains(., 'relators/ctb'))] or ancestor::node()/bf:role/@rdf:resource[not(contains(., 'relators/ctb'))]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role/@rdf:about | ancestor::node()/bf:role/@rdf:resource">
             <marc:subfield code="4">
               <xslt:value-of select="." />
             </marc:subfield>
           </xslt:for-each>
         </xslt:when>
-        <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code or madsrdf:code]">
+        <xslt:when test="ancestor::node()/bf:role/bf:Role[bf:code[.!='ctb'] or madsrdf:code[.!='ctb']]">
           <xslt:for-each select="ancestor::node()/bf:role/bf:Role/*[local-name() = 'code']">
             <marc:subfield code="4">
               <xslt:value-of select="." />
