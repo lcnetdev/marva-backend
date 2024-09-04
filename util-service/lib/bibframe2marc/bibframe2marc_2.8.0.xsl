@@ -3108,11 +3108,7 @@
               </xslt:when>
               <xslt:when test="$vAcode != ''">
                 <xslt:variable name="v040-a">
-                  <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                    <xsl:with-param name="pInput" select="$vAcode" />
-                    <xsl:with-param name="pPadChar" select="'@'" />
-                    <xsl:with-param name="pStringLength" select="3" />
-                  </xsl:call-template>
+                  <xsl:value-of select="$vAcode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:variable>
                 <xslt:if test="$v040-a != ''">
                   <marc:subfield code="a">
@@ -3188,11 +3184,7 @@
               </xslt:when>
               <xslt:when test="$vAcode != ''">
                 <xslt:variable name="v040-c">
-                  <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                    <xsl:with-param name="pInput" select="$vAcode" />
-                    <xsl:with-param name="pPadChar" select="'@'" />
-                    <xsl:with-param name="pStringLength" select="3" />
-                  </xsl:call-template>
+                  <xsl:value-of select="$vAcode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:variable>
                 <xslt:if test="$v040-c != ''">
                   <marc:subfield code="c">
@@ -3263,13 +3255,7 @@
                           <xsl:when test="$mCode = 'dlc'">DLC</xsl:when>
                           <xsl:when test="$mCode = 'dlcmrc'">DLCMRC</xsl:when>
                           <xsl:otherwise>
-                            <transform xmlns="http://www.loc.gov/bf2marc">
-                              <xsl:call-template name="tPadRight">
-                                <xsl:with-param name="pInput" select="$mCode" />
-                                <xsl:with-param name="pPadChar" select="'@'" />
-                                <xsl:with-param name="pStringLength" select="3" />
-                              </xsl:call-template>
-                            </transform>
+                            <xsl:value-of select="$mCode" />
                           </xsl:otherwise>
                         </xsl:choose>
                       </marc:modifierCode>
@@ -3322,11 +3308,7 @@
                   </xslt:when>
                   <xslt:when test="$vModifierCode != ''">
                     <xslt:variable name="v040-d">
-                      <xsl:call-template name="tPadRight" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                        <xsl:with-param name="pInput" select="$vModifierCode" />
-                        <xsl:with-param name="pPadChar" select="'@'" />
-                        <xsl:with-param name="pStringLength" select="3" />
-                      </xsl:call-template>
+                      <xsl:value-of select="$vModifierCode" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                     </xslt:variable>
                     <xslt:if test="$v040-d != ''">
                       <marc:subfield code="d">
