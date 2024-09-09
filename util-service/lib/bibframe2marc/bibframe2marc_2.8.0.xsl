@@ -4,7 +4,7 @@
   <xslt:strip-space elements="*" />
   <xslt:param name="pRecordId" select="'default'" />
   <xslt:param name="pCatScript" select="'Latn'" />
-  <xslt:key name="langs" match="//@xml:lang[contains(., '-')]" use="." />
+  <xslt:key name="langs" match="//@xml:lang[contains(., '-') and not(contains(., 'atn'))]" use="." />
   <xslt:param name="pGenerationDatestamp">
     <xslt:choose>
       <xslt:when test="function-available('date:date-time')">
@@ -24,7 +24,7 @@
   <xslt:variable name="xslProcessor">
     <xslt:value-of select="system-property('xslt:vendor')" />
   </xslt:variable>
-  <xslt:variable name="vCurrentVersion">DLC bibframe2marc v2.7.0</xslt:variable>
+  <xslt:variable name="vCurrentVersion">DLC bibframe2marc v2.8.0</xslt:variable>
   <xslt:variable name="df880script">
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>arab</lang>
@@ -2824,7 +2824,7 @@
             <xslt:text> </xslt:text>
           </xslt:otherwise>
         </xslt:choose>
-        <xslt:text>c 4500</xslt:text>
+        <xslt:text>i 4500</xslt:text>
       </marc:leader>
       <marc:controlfield>
         <xslt:attribute name="xml:space">preserve</xslt:attribute>
@@ -3048,19 +3048,34 @@
         </xslt:when>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]">
+        <xslt:when test="$vAdminMetadata[bf:descriptionLevel or bf:descriptionConventions or bflc:encodingLevel]">
           <marc:datafield>
             <xslt:attribute name="tag">040</xslt:attribute>
             <xslt:variable name="vLanguageUri">
               <xslt:choose>
-                <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/@rdf:resource">
+                <xslt:when test="$vAdminMetadata[bf:descriptionLevel or bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/@rdf:resource">
                   <xsl:value-of select="$vAdminMetadata/bf:descriptionLanguage/@rdf:resource" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:when>
-                <xslt:when test="$vAdminMetadata[bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/*/@rdf:about">
+                <xslt:when test="$vAdminMetadata[bf:descriptionLevel or bf:descriptionConventions or bflc:encodingLevel]/bf:descriptionLanguage/*/@rdf:about">
                   <xsl:value-of select="$vAdminMetadata/bf:descriptionLanguage/*/@rdf:about" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                 </xslt:when>
               </xslt:choose>
             </xslt:variable>
+            <xslt:variable name="df040sfsPreNS">
+              <xslt:choose>
+                <xslt:when test="$vAdminMetadata/bflc:marcKey[starts-with(., '040')]">
+                  <xsl:call-template name="tParseMarcKey" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                    <xsl:with-param name="pString" select="substring($vAdminMetadata/bflc:marcKey[starts-with(., '040')], 6)" />
+                  </xsl:call-template>
+                </xslt:when>
+                <xslt:when test="$vAdminMetadata/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/internal']/rdfs:label[starts-with(., '040')]">
+                  <xsl:call-template name="tParseMarcKey" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                    <xsl:with-param name="pString" select="substring($vAdminMetadata/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/internal']/rdfs:label[starts-with(., '040')], 6)" />
+                  </xsl:call-template>
+                </xslt:when>
+              </xslt:choose>
+            </xslt:variable>
+            <xslt:variable name="df040sfs" select="exsl:node-set($df040sfsPreNS)" />
             <xslt:attribute name="ind1">
               <xslt:text> </xslt:text>
             </xslt:attribute>
@@ -3172,6 +3187,16 @@
               </marc:subfield>
             </xslt:for-each>
             <xslt:choose>
+              <xslt:when test="$df040sfs//marc:subfield[@code='c']">
+                <xslt:variable name="v040-c">
+                  <xsl:value-of select="$df040sfs//marc:subfield[@code='c'][1]" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                </xslt:variable>
+                <xslt:if test="$v040-c != ''">
+                  <marc:subfield code="c">
+                    <xslt:value-of select="$v040-c" />
+                  </marc:subfield>
+                </xslt:if>
+              </xslt:when>
               <xslt:when test="$vAcode = 'dlc'">
                 <xslt:variable name="v040-c">
                   <xsl:value-of select="translate($vAcode,$lower,$upper)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
@@ -3197,21 +3222,11 @@
               <xslt:when test="count($vAdminMetadata[bf:status/bf:Status[@rdf:about='http://id.loc.gov/vocabulary/mstatus/c']]) &gt; 0">
                 <xsl:variable name="modifierCodePreNS" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                   <marc:codes>
-                    <xsl:if test="$vAdminMetadata/bflc:marcKey[starts-with(., '040')]">
-                      <xsl:variable name="df040sfsPreNS">
-                        <subfields xmlns="http://www.loc.gov/bf2marc">
-                          <xsl:call-template name="tParseMarcKey">
-                            <xsl:with-param name="pString" select="substring($vAdminMetadata/bflc:marcKey[starts-with(., '040')], 6)" />
-                          </xsl:call-template>
-                        </subfields>
-                      </xsl:variable>
-                      <xsl:variable name="df040sfs" select="exsl:node-set($df040sfsPreNS)" />
-                      <xsl:for-each select="$df040sfs//marc:subfield[@code='d']">
-                        <marc:modifierCode>
-                          <xsl:value-of select="." />
-                        </marc:modifierCode>
-                      </xsl:for-each>
-                    </xsl:if>
+                    <xsl:for-each select="$df040sfs//marc:subfield[@code='d']">
+                      <marc:modifierCode>
+                        <xsl:value-of select="." />
+                      </marc:modifierCode>
+                    </xsl:for-each>
                     <xsl:for-each select="$vAdminMetadata[bf:status/bf:Status[@rdf:about='http://id.loc.gov/vocabulary/mstatus/c']]">
                       <xsl:sort select="bf:date" data-type="text" order="ascending" />
                       <xsl:variable name="mCode">
@@ -6350,26 +6365,47 @@
               <xslt:attribute name="ind2">
                 <xslt:text> </xslt:text>
               </xslt:attribute>
-              <xslt:variable name="v880-6">
-                <xsl:value-of select="concat('250-00/',$v880Script)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+              <xslt:choose>
+                <xslt:when test="ancestor::bf:Instance/bf:editionStatement[not(@xml:lang)]">
+                  <xslt:variable name="v880-6">
+                    <xsl:value-of select="concat('250-25/',$v880Script)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  </xslt:variable>
+                  <xslt:if test="$v880-6 != ''">
+                    <marc:subfield code="6">
+                      <xslt:value-of select="$v880-6" />
+                    </marc:subfield>
+                  </xslt:if>
+                </xslt:when>
+                <xslt:otherwise>
+                  <xslt:variable name="v880-6">
+                    <xsl:value-of select="concat('250-00/',$v880Script)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  </xslt:variable>
+                  <xslt:if test="$v880-6 != ''">
+                    <marc:subfield code="6">
+                      <xslt:value-of select="$v880-6" />
+                    </marc:subfield>
+                  </xslt:if>
+                </xslt:otherwise>
+              </xslt:choose>
+              <xslt:variable name="v880-a">
+                <xsl:value-of select="." xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                <xsl:variable name="vEndsWith" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <transform xmlns="http://www.loc.gov/bf2marc">
+                    <xsl:call-template name="tEndsWith">
+                      <xsl:with-param name="pStr" select="." />
+                      <xsl:with-param name="pEndChar" select="'.'" />
+                    </xsl:call-template>
+                  </transform>
+                </xsl:variable>
+                <xsl:if test="$vEndsWith = '0'" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <xsl:text>.</xsl:text>
+                </xsl:if>
               </xslt:variable>
-              <xslt:if test="$v880-6 != ''">
-                <marc:subfield code="6">
-                  <xslt:value-of select="$v880-6" />
+              <xslt:if test="$v880-a != ''">
+                <marc:subfield code="a">
+                  <xslt:value-of select="$v880-a" />
                 </marc:subfield>
               </xslt:if>
-              <marc:subfield code="a">
-                <xslt:value-of select="." />
-              </marc:subfield>
-              <xslt:variable name="vEndsWith">
-                <xsl:call-template name="tEndsWith" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                  <xsl:with-param name="pStr" select="." />
-                  <xsl:with-param name="pEndChar" select="'.'" />
-                </xsl:call-template>
-              </xslt:variable>
-              <xsl:if test="$vEndsWith = '0'" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                <xsl:text>.</xsl:text>
-              </xsl:if>
             </marc:datafield>
           </xslt:when>
           <xslt:otherwise>
@@ -6381,18 +6417,37 @@
               <xslt:attribute name="ind2">
                 <xslt:text> </xslt:text>
               </xslt:attribute>
-              <marc:subfield code="a">
-                <xslt:value-of select="." />
-              </marc:subfield>
-              <xslt:variable name="vEndsWith">
-                <xsl:call-template name="tEndsWith" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                  <xsl:with-param name="pStr" select="." />
-                  <xsl:with-param name="pEndChar" select="'.'" />
-                </xsl:call-template>
+              <xslt:choose>
+                <xslt:when test="ancestor::bf:Instance/bf:editionStatement[@xml:lang]">
+                  <xslt:variable name="v250-6">
+                    <xsl:value-of select="'880-25'" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                  </xslt:variable>
+                  <xslt:if test="$v250-6 != ''">
+                    <marc:subfield code="6">
+                      <xslt:value-of select="$v250-6" />
+                    </marc:subfield>
+                  </xslt:if>
+                </xslt:when>
+              </xslt:choose>
+              <xslt:variable name="v250-a">
+                <xsl:value-of select="." xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                <xsl:variable name="vEndsWith" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <transform xmlns="http://www.loc.gov/bf2marc">
+                    <xsl:call-template name="tEndsWith">
+                      <xsl:with-param name="pStr" select="." />
+                      <xsl:with-param name="pEndChar" select="'.'" />
+                    </xsl:call-template>
+                  </transform>
+                </xsl:variable>
+                <xsl:if test="$vEndsWith = '0'" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <xsl:text>.</xsl:text>
+                </xsl:if>
               </xslt:variable>
-              <xsl:if test="$vEndsWith = '0'" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                <xsl:text>.</xsl:text>
-              </xsl:if>
+              <xslt:if test="$v250-a != ''">
+                <marc:subfield code="a">
+                  <xslt:value-of select="$v250-a" />
+                </marc:subfield>
+              </xslt:if>
             </marc:datafield>
           </xslt:otherwise>
         </xslt:choose>
@@ -8880,9 +8935,24 @@
                         </marc:subfield>
                       </xslt:if>
                     </xslt:when>
-                    <xslt:when test="$relURI != '' and                ( contains($relURI, 'id.worldcat.org/fast') )">
+                    <xslt:when test="$relURI != '' and                ( contains($relURI, 'http://id.worldcat.org/fast/') )">
                       <xslt:variable name="vvSubjectTag-0">
                         <xsl:value-of select="$relURI" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvSubjectTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvSubjectTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                      <xslt:variable name="vvSubjectTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                       </xslt:variable>
                       <xslt:if test="$vvSubjectTag-0 != ''">
                         <marc:subfield code="0">
@@ -8959,6 +9029,25 @@
                       <xslt:value-of select="$vvSubjectTag-0" />
                     </marc:subfield>
                   </xslt:if>
+                  <xslt:choose>
+                    <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+                      <xslt:variable name="vvSubjectTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvSubjectTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvSubjectTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                    </xslt:when>
+                  </xslt:choose>
                 </xslt:when>
               </xslt:choose>
             </marc:datafield>
@@ -9220,9 +9309,24 @@
                         </marc:subfield>
                       </xslt:if>
                     </xslt:when>
-                    <xslt:when test="$relURI != '' and                ( contains($relURI, 'id.worldcat.org/fast') )">
+                    <xslt:when test="$relURI != '' and                ( contains($relURI, 'http://id.worldcat.org/fast/') )">
                       <xslt:variable name="vvSubjectTag-0">
                         <xsl:value-of select="$relURI" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvSubjectTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvSubjectTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                      <xslt:variable name="vvSubjectTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
                       </xslt:variable>
                       <xslt:if test="$vvSubjectTag-0 != ''">
                         <marc:subfield code="0">
@@ -9299,6 +9403,25 @@
                       <xslt:value-of select="$vvSubjectTag-0" />
                     </marc:subfield>
                   </xslt:if>
+                  <xslt:choose>
+                    <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+                      <xslt:variable name="vvSubjectTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvSubjectTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvSubjectTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                    </xslt:when>
+                  </xslt:choose>
                 </xslt:when>
               </xslt:choose>
             </marc:datafield>
@@ -13698,6 +13821,25 @@
                       <xslt:value-of select="$vvGenreTag-0" />
                     </marc:subfield>
                   </xslt:if>
+                  <xslt:choose>
+                    <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+                      <xslt:variable name="vvGenreTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvGenreTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvGenreTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                    </xslt:when>
+                  </xslt:choose>
                 </xslt:when>
               </xslt:choose>
             </marc:datafield>
@@ -13902,6 +14044,25 @@
                       <xslt:value-of select="$vvGenreTag-0" />
                     </marc:subfield>
                   </xslt:if>
+                  <xslt:choose>
+                    <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+                      <xslt:variable name="vvGenreTag-0">
+                        <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                          <xsl:call-template name="tPadLeft">
+                            <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                            <xsl:with-param name="pPadChar" select="'0'" />
+                            <xsl:with-param name="pStringLength" select="'8'" />
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+                      </xslt:variable>
+                      <xslt:if test="$vvGenreTag-0 != ''">
+                        <marc:subfield code="0">
+                          <xslt:value-of select="$vvGenreTag-0" />
+                        </marc:subfield>
+                      </xslt:if>
+                    </xslt:when>
+                  </xslt:choose>
                 </xslt:when>
               </xslt:choose>
             </marc:datafield>
@@ -13909,8 +14070,8 @@
         </xslt:otherwise>
       </xslt:choose>
       <xslt:choose>
-        <xslt:when test="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xslt:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xslt:when test="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xslt:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xslt:variable name="vInd2Val">
               <xslt:choose>
                 <xslt:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -14353,7 +14514,7 @@
           </xslt:for-each>
         </xslt:when>
         <xslt:otherwise>
-          <xslt:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ]">
+          <xslt:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]">
             <xslt:variable name="vInd2Val">
               <xslt:choose>
                 <xslt:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -22865,7 +23026,7 @@
               <xslt:value-of select="$vPosition-8" />
             </xslt:when>
             <xslt:otherwise>
-              <xslt:text>|</xslt:text>
+              <xslt:text> </xslt:text>
             </xslt:otherwise>
           </xslt:choose>
           <xslt:variable name="vPosition-9">
@@ -25158,12 +25319,12 @@
       <xslt:attribute name="ind2">
         <xslt:text> </xslt:text>
       </xslt:attribute>
-      <xslt:variable name="v066-a">
+      <xslt:variable name="v066-c">
         <xsl:value-of select="$v880Script" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
       </xslt:variable>
-      <xslt:if test="$v066-a != ''">
-        <marc:subfield code="a">
-          <xslt:value-of select="$v066-a" />
+      <xslt:if test="$v066-c != ''">
+        <marc:subfield code="c">
+          <xslt:value-of select="$v066-c" />
         </marc:subfield>
       </xslt:if>
     </marc:datafield>
@@ -31536,9 +31697,24 @@
                 </marc:subfield>
               </xslt:if>
             </xslt:when>
-            <xslt:when test="$relURI != '' and                ( contains($relURI, 'id.worldcat.org/fast') )">
+            <xslt:when test="$relURI != '' and                ( contains($relURI, 'http://id.worldcat.org/fast/') )">
               <xslt:variable name="vvSubjectTag-0">
                 <xsl:value-of select="$relURI" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+              </xslt:variable>
+              <xslt:if test="$vvSubjectTag-0 != ''">
+                <marc:subfield code="0">
+                  <xslt:value-of select="$vvSubjectTag-0" />
+                </marc:subfield>
+              </xslt:if>
+              <xslt:variable name="vvSubjectTag-0">
+                <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <xsl:call-template name="tPadLeft">
+                    <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                    <xsl:with-param name="pPadChar" select="'0'" />
+                    <xsl:with-param name="pStringLength" select="'8'" />
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
               </xslt:variable>
               <xslt:if test="$vvSubjectTag-0 != ''">
                 <marc:subfield code="0">
@@ -31615,6 +31791,25 @@
               <xslt:value-of select="$vvSubjectTag-0" />
             </marc:subfield>
           </xslt:if>
+          <xslt:choose>
+            <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+              <xslt:variable name="vvSubjectTag-0">
+                <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <xsl:call-template name="tPadLeft">
+                    <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                    <xsl:with-param name="pPadChar" select="'0'" />
+                    <xsl:with-param name="pStringLength" select="'8'" />
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+              </xslt:variable>
+              <xslt:if test="$vvSubjectTag-0 != ''">
+                <marc:subfield code="0">
+                  <xslt:value-of select="$vvSubjectTag-0" />
+                </marc:subfield>
+              </xslt:if>
+            </xslt:when>
+          </xslt:choose>
         </xslt:when>
       </xslt:choose>
     </marc:datafield>
@@ -31819,11 +32014,30 @@
               <xslt:value-of select="$vvGenreTag-0" />
             </marc:subfield>
           </xslt:if>
+          <xslt:choose>
+            <xslt:when test="contains($relURI, 'id.worldcat.org/fast')">
+              <xslt:variable name="vvGenreTag-0">
+                <xsl:variable name="vFastID" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                  <xsl:call-template name="tPadLeft">
+                    <xsl:with-param name="pInput" select="substring-after($relURI,'http://id.worldcat.org/fast/')" />
+                    <xsl:with-param name="pPadChar" select="'0'" />
+                    <xsl:with-param name="pStringLength" select="'8'" />
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(OCoLC)fst', $vFastID)" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" />
+              </xslt:variable>
+              <xslt:if test="$vvGenreTag-0 != ''">
+                <marc:subfield code="0">
+                  <xslt:value-of select="$vvGenreTag-0" />
+                </marc:subfield>
+              </xslt:if>
+            </xslt:when>
+          </xslt:choose>
         </xslt:when>
       </xslt:choose>
     </marc:datafield>
   </xslt:template>
-  <xslt:template match="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record)                     ]" mode="generate-655">
+  <xslt:template match="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]" mode="generate-655">
     <xslt:param name="vRecordId" />
     <xslt:param name="vAdminMetadata" />
     <xslt:variable name="vInd2Val">
