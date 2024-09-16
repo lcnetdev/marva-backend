@@ -2273,7 +2273,7 @@ app.post('/marcpreview', async (request, response) => {
 	})
 
 	let results = []
-
+	let rawMarc
 	for (let xslt of xslts){
 
 		if (xslt.fullPath.toLowerCase().indexOf('.xsl') == -1){
@@ -2307,18 +2307,20 @@ app.post('/marcpreview', async (request, response) => {
 			x = x.replace(/\s+xml:space="preserve"\s+/g,' ')
 			x = x.replace(/\s+xml:lang="en"\s+/g,' ')
 
-			
+
 			x = x.replace(/<marc:/g,'<')
 			x = x.replace(/<\/marc:/g,'</')
 			console.log(x)
 
 			const record = Marc.parse(x, 'marcxml');
+			rawMarc = record
 			marcRecord = Marc.format(record, 'Text')
 
 		}catch(err){
 			marcRecord = err.toString()
 		}
 
+		//r.marcRecord = marcRecordHtmlify(rawMarc)
 		r.marcRecord = marcRecord.trim()
 
 
@@ -2330,6 +2332,50 @@ app.post('/marcpreview', async (request, response) => {
 	response.status(200).json(results);
 
 });
+
+/**
+ * Puts everything into HTML tags with classes to help style the output
+ */
+function marcRecordHtmlify(data){
+	let formatedMarcRecord = ["<span class='marc record'>"]
+	let leader = "<span class='marc leader'>" + data["leader"] + "</span>"
+	formatedMarcRecord.push(leader)
+	let fields = data["fields"]
+	for (let field of fields){
+		let tag
+		let value = null
+		let indicators = null
+		let subfields = []
+		for (let el in field){
+			if (el == 0){
+				tag = field[el]
+			} else if (field.length == 2){
+				value = field[el]
+			} else if(el == 1 && field.length > 2) {
+				indicators = [field[el][0], field[el][1]]
+			} else {
+				if ((el % 2) == 0 && field.length > 2) {
+					subfields.push([field[el], field[Number(el)+1]])
+				}
+			}
+		}
+		if (value){
+			//Fields that are no "tag: value"
+			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
+			value = " <span class='marc value'>" + value + "</span>"
+			formatedMarcRecord.push("<span class='marc field'>"+ tag + value + "</span>")
+		} else {
+			//fields with subfields
+			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$"+subfield[0] +"</span> <span class='marc subfield subfield-value'>" + subfield[1] +"</span></span></span>")
+			indicators = "<span class='marc indicators'><span class='marc indiccators indicator-1'>" + indicators[0] + "</span><span class='marc indiccators indicator-2'>" + indicators[1] + "</span></span>"
+			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
+			formatedMarcRecord.push("<span class='marc field'>"+ tag + indicators + subfields.join(" ") + "</span>")
+		}
+		formatedMarcRecord.push("</span>") //close the first tag
+	}
+
+	return formatedMarcRecord.join("\r\n")
+};
 
 
 console.log('listending on 5200')
