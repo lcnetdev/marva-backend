@@ -2366,7 +2366,7 @@ function marcRecordHtmlify(data){
 			formatedMarcRecord.push("<span class='marc field'>"+ tag + value + "</span>")
 		} else {
 			//fields with subfields
-			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$"+subfield[0] +"</span> <span class='marc subfield subfield-value'>" + subfield[1] +"</span></span></span>")
+			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$"+subfield[0] +"</span> <span class='marc subfield subfield-value'>" + subfield[1] +"</span></span>")
 			indicators = "<span class='marc indicators'><span class='marc indiccators indicator-1'>" + indicators[0] + "</span><span class='marc indiccators indicator-2'>" + indicators[1] + "</span></span>"
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
 			formatedMarcRecord.push("<span class='marc field'>"+ tag + indicators + subfields.join(" ") + "</span>")
