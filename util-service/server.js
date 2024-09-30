@@ -2370,9 +2370,8 @@ function marcRecordHtmlify(data){
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
 			formatedMarcRecord.push("<div class='marc field'>"+ tag + " " + indicators + " " + subfields.join(" ") + "</div>")
 		}
-
-		formatedMarcRecord.push("</div>") //close the first tag
 	}
+	formatedMarcRecord.push("</div>") //close the first tag
 
 	return formatedMarcRecord.join("\r\n")
 
