@@ -2254,7 +2254,7 @@ app.get('/whichrt', async (request, response) => {
 
 app.post('/marcpreview/:type', async (request, response){
 	let type = request.params.type
-	var rdfxml = request.body.rdfxml;
+	var rdfxml = request.body.rdfxml
 
 	// write out the contents to a file
 	let tmpfilename = crypto.createHash('md5').update(new Date().getTime().toString()).digest("hex")
@@ -2374,10 +2374,12 @@ function marcRecordHtmlify(data){
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
 			formatedMarcRecord.push("<div class='marc field'>"+ tag + " " + indicators + " " + subfields.join(" ") + "</div>")
 		}
+
+		formatedMarcRecord.push("</div>") //close the first tag
 	}
-	formatedMarcRecord.push("</div>") //close the first tag
 
 	return formatedMarcRecord.join("\r\n")
+
 };
 
 
