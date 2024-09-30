@@ -2320,7 +2320,7 @@ app.post('/marcpreview/:type', async (request, response) => {
 		}
 
 		if (type == "html"){
-			let formatted = marcRecordHtmlify(data)
+			let formatted = marcRecordHtmlify(rawMarc)
 			r.marcRecord = formatted
 		} else {
 			r.marcRecord = marcRecord.trim()
