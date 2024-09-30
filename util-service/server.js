@@ -2252,7 +2252,7 @@ app.get('/whichrt', async (request, response) => {
 });
 
 
-app.post('/marcpreview/:type', async (request, response){
+app.post('/marcpreview/:type', async (request, response) => {
 	let type = request.params.type
 	var rdfxml = request.body.rdfxml
 
@@ -2325,11 +2325,7 @@ app.post('/marcpreview/:type', async (request, response){
 		} else {
 			r.marcRecord = marcRecordmarcRecord.trim()
 		}
-
-
 	}
-
-
 
 	response.set('Content-Type', 'application/json');
 	response.status(200).json(results);
