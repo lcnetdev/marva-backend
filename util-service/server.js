@@ -2252,10 +2252,9 @@ app.get('/whichrt', async (request, response) => {
 });
 
 
-app.post('/marcpreview', async (request, response) => {
-
-
-	var rdfxml = request.body.rdfxml;
+app.post('/marcpreview/:type', async (request, response){
+	let type = request.params.type
+	var rdfxml = request.body.rdfxml
 
 	// write out the contents to a file
 	let tmpfilename = crypto.createHash('md5').update(new Date().getTime().toString()).digest("hex")
@@ -2320,8 +2319,12 @@ app.post('/marcpreview', async (request, response) => {
 			marcRecord = err.toString()
 		}
 
-		//r.marcRecord = marcRecordHtmlify(rawMarc)
-		r.marcRecord = marcRecord.trim()
+		if (type == "html"){
+			let formatted = marcRecordHtmlify(data)
+			r.marcRecord = formatted //marcRecord.trim()
+		} else {
+			r.marcRecord = marcRecordmarcRecord.trim()
+		}
 
 
 	}
@@ -2337,8 +2340,8 @@ app.post('/marcpreview', async (request, response) => {
  * Puts everything into HTML tags with classes to help style the output
  */
 function marcRecordHtmlify(data){
-	let formatedMarcRecord = ["<span class='marc record'>"]
-	let leader = "<span class='marc leader'>" + data["leader"] + "</span>"
+	let formatedMarcRecord = ["<div class='marc record'>"]
+	let leader = "<div class='marc leader'>" + data["leader"].replace( / /g, "&nbsp;" ) + "</div>"
 	formatedMarcRecord.push(leader)
 	let fields = data["fields"]
 	for (let field of fields){
@@ -2363,18 +2366,20 @@ function marcRecordHtmlify(data){
 			//Fields that are no "tag: value"
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
 			value = " <span class='marc value'>" + value + "</span>"
-			formatedMarcRecord.push("<span class='marc field'>"+ tag + value + "</span>")
+			formatedMarcRecord.push("<div class='marc field'>"+ tag + value + "</div>")
 		} else {
 			//fields with subfields
 			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$"+subfield[0] +"</span> <span class='marc subfield subfield-value'>" + subfield[1] +"</span></span>")
-			indicators = "<span class='marc indicators'><span class='marc indicators indicator-1'>" + indicators[0] + "</span><span class='marc indiccators indicator-2'>" + indicators[1] + "</span></span>"
+			indicators = "<span class='marc indicators'><span class='marc indicators indicator-1'>" + indicators[0] + "</span><span class='marc indicators indicator-2'>" + indicators[1] + "</span></span>"
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
-			formatedMarcRecord.push("<span class='marc field'>"+ tag + indicators + subfields.join(" ") + "</span>")
+			formatedMarcRecord.push("<div class='marc field'>"+ tag + " " + indicators + " " + subfields.join(" ") + "</div>")
 		}
-		formatedMarcRecord.push("</span>") //close the first tag
+
+		formatedMarcRecord.push("</div>") //close the first tag
 	}
 
 	return formatedMarcRecord.join("\r\n")
+
 };
 
 
