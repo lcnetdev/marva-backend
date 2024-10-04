@@ -6396,7 +6396,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:variable name="v880-6">
-                    <xsl:value-of select="concat('250-00/',$v880Script)"/>
+                    <xsl:value-of select="concat('250-25/',$v880Script)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-6 != ''">
                     <marc:subfield code="6">
@@ -6669,14 +6669,14 @@
                   <xsl:for-each select="bflc:simplePlace[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simplePlace[not(@xml:lang)]">
+                      <xsl:if test="following-sibling::bflc:simplePlace[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:if test="../bflc:simpleAgent[not(@xml:lang)]">
+                        <xsl:if test="../bflc:simpleAgent[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                           <xsl:text> :</xsl:text>
                         </xsl:if>
-                        <xsl:if test="not(../bflc:simpleAgent[not(@xml:lang)]) and ../bflc:simpleDate[not(@xml:lang)]">
+                        <xsl:if test="not(../bflc:simpleAgent[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]) and ../bflc:simpleDate[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                           <xsl:text> ,</xsl:text>
                         </xsl:if>
                       </xsl:if>
@@ -6703,11 +6703,11 @@
                   <xsl:for-each select="bflc:simpleAgent[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                     <marc:subfield code="b">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simpleAgent[not(@xml:lang)]">
+                      <xsl:if test="following-sibling::bflc:simpleAgent[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:if test="../bflc:simpleDate[not(@xml:lang)]">
+                        <xsl:if test="../bflc:simpleDate[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                           <xsl:text>,</xsl:text>
                         </xsl:if>
                       </xsl:if>
@@ -6727,7 +6727,7 @@
                   <xsl:for-each select="bflc:simpleDate[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                     <marc:subfield code="c">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simpleDate[not(@xml:lang)]">
+                      <xsl:if test="following-sibling::bflc:simpleDate[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
@@ -22836,6 +22836,7 @@
                     <xsl:when test="$v008Format='BK'">
                       <xsl:choose>
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026047' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026047']">a</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026085' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026085']">a</xsl:when>
                         <xsl:when test="bf:Work/bf:note/bf:Note/rdfs:label[contains(., 'Contains biographical information')]">d</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026049' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026049']">b</xsl:when>
                         <xsl:otherwise>
@@ -34175,6 +34176,9 @@
       <xsl:attribute name="ind2">
         <xsl:variable name="vInd">
           <xsl:choose>
+            <xsl:when test="$vLinkTagFromWork2 != '780' and $vLinkTagFromWork2 != '785'">
+              <xsl:text>8</xsl:text>
+            </xsl:when>
             <xsl:when test="ancestor::bf:Relation/bf:relationship[contains(@rdf:resource, 'continuedinpart') or contains(bf:Relationship/@rdf:about, 'continuedinpart')]">
               <xsl:text>1</xsl:text>
             </xsl:when>
