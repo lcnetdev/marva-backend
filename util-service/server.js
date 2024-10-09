@@ -2305,7 +2305,7 @@ app.post('/marcpreview/:type', async (request, response) => {
 			x = x.replace(/\s+xml:space="preserve">/g,'>')
 			x = x.replace(/\s+xml:space="preserve"\s+/g,' ')
 			// x = x.replace(/\s+xml:lang="en"\s+/g,' ')
-			x = x.replace(/\s+xml:lang=".*"[\s+>]/g,' ')     //match and remove all `xml:lang="..."` instances
+			x = x.replace(/\s+xml:lang="[a-zA-Z-]*"[\s+>]/g,' ')     //match and remove all `xml:lang="..."` instances
 
 
 			x = x.replace(/<marc:/g,'<')
