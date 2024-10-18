@@ -3264,15 +3264,17 @@
                           </xsl:when>
                         </xsl:choose>
                       </xsl:variable>
-                      <marc:modifierCode>
-                        <xsl:choose>
-                          <xsl:when test="$mCode = 'dlc'">DLC</xsl:when>
-                          <xsl:when test="$mCode = 'dlcmrc'">DLCMRC</xsl:when>
-                          <xsl:otherwise>
-                            <xsl:value-of select="$mCode"/>
-                          </xsl:otherwise>
-                        </xsl:choose>
-                      </marc:modifierCode>
+                      <xsl:if test="$mCode != ''">
+                        <marc:modifierCode>
+                          <xsl:choose>
+                            <xsl:when test="$mCode = 'dlc'">DLC</xsl:when>
+                            <xsl:when test="$mCode = 'dlcmrc'">DLC-MRC</xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="$mCode"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </marc:modifierCode>
+                      </xsl:if>
                     </xsl:for-each>
                   </marc:codes>
                 </xsl:variable>
@@ -6157,7 +6159,7 @@
               <xsl:variable name="v880-6">
                 <xsl:choose>
                   <xsl:when test="$v880Script != ''">
-                    <xsl:value-of select="concat('245-01/',$v880Script)"/>
+                    <xsl:value-of select="concat('245-02/',$v880Script)"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:text>245-01</xsl:text>
@@ -6386,7 +6388,7 @@
               <xsl:choose>
                 <xsl:when test="ancestor::bf:Instance/bf:editionStatement[not(@xml:lang)]">
                   <xsl:variable name="v880-6">
-                    <xsl:value-of select="concat('250-25/',$v880Script)"/>
+                    <xsl:value-of select="concat('250-24/',$v880Script)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-6 != ''">
                     <marc:subfield code="6">
@@ -6438,7 +6440,7 @@
               <xsl:choose>
                 <xsl:when test="ancestor::bf:Instance/bf:editionStatement[@xml:lang]">
                   <xsl:variable name="v250-6">
-                    <xsl:value-of select="'880-25'"/>
+                    <xsl:value-of select="'880-24'"/>
                   </xsl:variable>
                   <xsl:if test="$v250-6 != ''">
                     <marc:subfield code="6">
@@ -6576,10 +6578,10 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="v880Occurence">
-          <xsl:value-of select="10+position()"/>
+          <xsl:value-of select="30+position()"/>
         </xsl:variable>
         <xsl:choose>
-          <xsl:when test="$v880Occurence &lt; 21">
+          <xsl:when test="$v880Occurence &lt; 41">
             <marc:datafield>
               <xsl:attribute name="tag">264</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -6731,15 +6733,24 @@
                         <xsl:text>,</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:variable name="vEndsWith">
+                        <xsl:variable name="vEndsWithBracket">
+                          <xsl:call-template name="tEndsWith">
+                            <xsl:with-param name="pStr" select="."/>
+                            <xsl:with-param name="pEndChar" select="']'"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:variable name="vEndsWithPeriod">
                           <xsl:call-template name="tEndsWith">
                             <xsl:with-param name="pStr" select="."/>
                             <xsl:with-param name="pEndChar" select="'.'"/>
                           </xsl:call-template>
                         </xsl:variable>
-                        <xsl:if test="$vEndsWith = '0'">
-                          <xsl:text>.</xsl:text>
-                        </xsl:if>
+                        <xsl:choose>
+                          <xsl:when test="$vEndsWithBracket = '1'"/>
+                          <xsl:when test="$vEndsWithPeriod = '0'">
+                            <xsl:text>.</xsl:text>
+                          </xsl:when>
+                        </xsl:choose>
                       </xsl:if>
                     </marc:subfield>
                   </xsl:for-each>
@@ -6875,15 +6886,24 @@
                             <xsl:text>,</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:variable name="vEndsWith">
+                            <xsl:variable name="vEndsWithBracket">
+                              <xsl:call-template name="tEndsWith">
+                                <xsl:with-param name="pStr" select="."/>
+                                <xsl:with-param name="pEndChar" select="']'"/>
+                              </xsl:call-template>
+                            </xsl:variable>
+                            <xsl:variable name="vEndsWithPeriod">
                               <xsl:call-template name="tEndsWith">
                                 <xsl:with-param name="pStr" select="."/>
                                 <xsl:with-param name="pEndChar" select="'.'"/>
                               </xsl:call-template>
                             </xsl:variable>
-                            <xsl:if test="$vEndsWith = '0'">
-                              <xsl:text>.</xsl:text>
-                            </xsl:if>
+                            <xsl:choose>
+                              <xsl:when test="$vEndsWithBracket = '1'"/>
+                              <xsl:when test="$vEndsWithPeriod = '0'">
+                                <xsl:text>.</xsl:text>
+                              </xsl:when>
+                            </xsl:choose>
                           </xsl:if>
                         </marc:subfield>
                       </xsl:for-each>
@@ -22695,7 +22715,7 @@
                   <xsl:choose>
                     <xsl:when test="bf:Instance/bf:supplementaryContent/*[contains(rdfs:label,'index')]">1</xsl:when>
                     <xsl:otherwise>
-                      <xsl:value-of select="' '"/>
+                      <xsl:value-of select="'0'"/>
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:variable>
@@ -26911,7 +26931,7 @@
           </xsl:attribute>
           <xsl:choose>
             <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-              <marc:subfield code="6">880-01</marc:subfield>
+              <marc:subfield code="6">880-02</marc:subfield>
             </xsl:when>
           </xsl:choose>
           <xsl:variable name="v245-a">
