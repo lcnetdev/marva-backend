@@ -38,6 +38,10 @@
       <code>(S</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>kore</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>hang</lang>
       <code>$1</code>
     </script>
@@ -3989,15 +3993,24 @@
             <xsl:attribute name="ind2">
               <xsl:text> </xsl:text>
             </xsl:attribute>
-            <xsl:variable name="df880scriptNS" select="exsl:node-set($df880script)"/>
-            <xsl:variable name="vLangs" select="//@xml:lang[contains(., '-') and not(contains(., 'atn'))]"/>
-            <xsl:for-each select="$df880scriptNS/script/lang">
-              <xsl:variable name="vLang" select="."/>
-              <xsl:if test="$vLangs[translate(substring-after(.,'-'),$upper,$lower) = $vLang ]">
-                <marc:subfield code="c">
-                  <xsl:value-of select="../code"/>
-                </marc:subfield>
-              </xsl:if>
+            <xsl:variable name="scriptCodesPreNS">
+              <xsl:variable name="df880scriptNS" select="exsl:node-set($df880script)"/>
+              <xsl:variable name="vLangs" select="//@xml:lang[contains(., '-') and not(contains(., 'atn'))]"/>
+              <!-- <xsl:for-each select="$df880scriptNS/*[lang]/lang"> -->
+              <xsl:for-each select="$df880scriptNS/script/lang">
+                <xsl:variable name="vLang" select="."/>
+                <xsl:if test="$vLangs[translate(substring-after(.,'-'),$upper,$lower) = $vLang ]">
+                  <marc:scriptCode>
+                    <xsl:value-of select="../code"/>
+                  </marc:scriptCode>
+                </xsl:if>
+              </xsl:for-each>
+            </xsl:variable>
+            <xsl:variable name="scriptCodes" select="exsl:node-set($scriptCodesPreNS)"/>
+            <xsl:for-each select="$scriptCodes//marc:scriptCode[not(.=preceding::*[1])]">
+              <marc:subfield code="c">
+                <xsl:value-of select="."/>
+              </marc:subfield>
             </xsl:for-each>
           </marc:datafield>
         </xsl:when>
