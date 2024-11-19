@@ -4089,13 +4089,13 @@
         </xsl:variable>
         <xsl:variable name="vNameAuthPreNS">
           <xsl:call-template name="tGetMiniMARCFromKey">
-            <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[starts-with(. , '1')][1]"/>
+            <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))][1]"/>
           </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="vNameAuth" select="exsl:node-set($vNameAuthPreNS)"/>
         <xsl:variable name="vNameTag">
           <xsl:choose>
-            <xsl:when test="$vNameAuth//marc:record">
+            <xsl:when test="$vNameAuth//marc:datafield[@tag!='']">
               <xsl:choose>
                 <xsl:when test="$vNameAuth//marc:datafield[@tag='100']">
                   <xsl:text>100</xsl:text>
@@ -4128,8 +4128,8 @@
         </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
-            <xsl:when test="self::node()/bflc:marcKey[starts-with(. , '4') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang">
-              <xsl:variable name="vLangTag" select="self::node()/bflc:marcKey[starts-with(. , '4') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+            <xsl:when test="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang">
+              <xsl:variable name="vLangTag" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
               <xsl:variable name="vlang">
                 <xsl:value-of select="translate(substring-after($vLangTag,'-'),$upper,$lower)"/>
               </xsl:variable>
@@ -4138,16 +4138,16 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vNameVariantPreNS">
-          <xsl:if test="$v880Script != '' and self::node()/bflc:marcKey[starts-with(. , '4') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]">
+          <xsl:if test="$v880Script != '' and self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]">
             <xsl:call-template name="tGetMiniMARCFromKey">
-              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[starts-with(. , '4') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]"/>
+              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]"/>
             </xsl:call-template>
           </xsl:if>
         </xsl:variable>
         <xsl:variable name="vNameVariant" select="exsl:node-set($vNameVariantPreNS)"/>
         <xsl:variable name="vNameVariantTag">
           <xsl:choose>
-            <xsl:when test="$vNameVariant//marc:record">
+            <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
               <xsl:choose>
                 <xsl:when test="$vNameVariant//marc:datafield[@tag='400']">
                   <xsl:text>100</xsl:text>
@@ -4421,7 +4421,7 @@
             <xsl:text> </xsl:text>
           </xsl:attribute>
           <xsl:choose>
-            <xsl:when test="$vNameVariant//marc:record">
+            <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
               <xsl:variable name="vvNameTag-6">
                 <xsl:value-of select="concat('880-0', position())"/>
               </xsl:variable>
@@ -4443,7 +4443,7 @@
           <xsl:copy-of select="$vShared"/>
         </marc:datafield>
         <xsl:choose>
-          <xsl:when test="$vNameVariant//marc:record">
+          <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
             <marc:datafield>
               <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -9606,7 +9606,7 @@
               </xsl:choose>
             </xsl:variable>
             <xsl:choose>
-              <xsl:when test="*[(local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or                       local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or                       local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or                       local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family'] or                       local-name(madsrdf:componentList/*[1])='PersonalName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName' or                       local-name(madsrdf:componentList/*[1])='FamilyName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName' or                       local-name(madsrdf:componentList/*[1])='Person' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person' or                       local-name(madsrdf:componentList/*[1])='Family' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family' or                       bf:contribution/*/bf:agent/*[local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel or rdfs:label)]">
+              <xsl:when test="*[(local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or                       local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or                       local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or                       local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family'] or                       local-name(madsrdf:componentList/*[1])='PersonalName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName' or                       local-name(madsrdf:componentList/*[1])='FamilyName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName' or                       local-name(madsrdf:componentList/*[1])='Person' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person' or                       local-name(madsrdf:componentList/*[1])='Family' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family' or                       bf:contribution/*/bf:agent/*[local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='PersonalName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#PersonalName'] or local-name()='FamilyName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#FamilyName'] or local-name()='Person' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Person'] or local-name()='Family' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Family']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel)]">
                 <marc:datafield>
                   <xsl:attribute name="tag">600</xsl:attribute>
                   <xsl:attribute name="ind1">
@@ -10001,7 +10001,7 @@
                   </xsl:when>
                 </xsl:choose>
               </xsl:when>
-              <xsl:when test="*[(local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or                       local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or                       local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction'] or                       local-name(madsrdf:componentList/*[1])='CorporateName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName' or                       local-name(madsrdf:componentList/*[1])='Organization' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization' or                       local-name(madsrdf:componentList/*[1])='Jurisdiction' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction' or                       bf:contribution/*/bf:agent/*[local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel or rdfs:label)]">
+              <xsl:when test="*[(local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or                       local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or                       local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction'] or                       local-name(madsrdf:componentList/*[1])='CorporateName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName' or                       local-name(madsrdf:componentList/*[1])='Organization' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization' or                       local-name(madsrdf:componentList/*[1])='Jurisdiction' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction' or                       bf:contribution/*/bf:agent/*[local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='CorporateName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#CorporateName'] or local-name()='Organization' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization'] or local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel)]">
                 <marc:datafield>
                   <xsl:attribute name="tag">610</xsl:attribute>
                   <xsl:attribute name="ind1">
@@ -10398,7 +10398,7 @@
                   </xsl:when>
                 </xsl:choose>
               </xsl:when>
-              <xsl:when test="*[(local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or                       local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting'] or                       local-name(madsrdf:componentList/*[1])='ConferenceName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName' or                       local-name(madsrdf:componentList/*[1])='Meeting' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting' or                       bf:contribution/*/bf:agent/*[local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel or rdfs:label)]">
+              <xsl:when test="*[(local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or                       local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting'] or                       local-name(madsrdf:componentList/*[1])='ConferenceName' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName' or                       local-name(madsrdf:componentList/*[1])='Meeting' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting' or                       bf:contribution/*/bf:agent/*[local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting']] or                       madsrdf:componentList/*[1]/bf:contribution/*/bf:agent/*[local-name()='ConferenceName' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#ConferenceName'] or local-name()='Meeting' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Meeting']]) and                       (madsrdf:componentList or madsrdf:authoritativeLabel)]">
                 <marc:datafield>
                   <xsl:attribute name="tag">611</xsl:attribute>
                   <xsl:attribute name="ind1">
@@ -13666,7 +13666,7 @@
             <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
             <xsl:variable name="vAddedEntryNameLookupTag">
               <xsl:choose>
-                <xsl:when test="$vRelResource//marc:record">
+                <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
                   <xsl:choose>
                     <xsl:when test="$vRelResource//marc:datafield[@tag='100']">
                       <xsl:text>700</xsl:text>
@@ -13839,7 +13839,7 @@
             <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
             <xsl:variable name="vAddedEntryNameLookupTag">
               <xsl:choose>
-                <xsl:when test="$vRelResource//marc:record">
+                <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
                   <xsl:choose>
                     <xsl:when test="$vRelResource//marc:datafield[@tag='100']">
                       <xsl:text>700</xsl:text>
@@ -14020,7 +14020,7 @@
         <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
         <xsl:variable name="vAddedEntryNameMarcKeyTag">
           <xsl:choose>
-            <xsl:when test="$vRelResource//marc:record[@tag!='']">
+            <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
               <xsl:choose>
                 <xsl:when test="$vRelResource//marc:datafield[@tag='100']">
                   <xsl:text>700</xsl:text>
@@ -14199,7 +14199,7 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:choose>
-          <xsl:when test="$vRelResource//marc:record[@tag!='']">
+          <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
             <marc:datafield>
               <xsl:attribute name="tag">
                 <xsl:value-of select="$vAddedEntryNameMarcKeyTag"/>
@@ -14240,7 +14240,7 @@
                 <xsl:text> </xsl:text>
               </xsl:attribute>
               <xsl:choose>
-                <xsl:when test="$vNameVariant//marc:record">
+                <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
                   <xsl:variable name="vvAddedEntryNameMarcKeyTag-6">
                     <xsl:value-of select="concat('880-7', position())"/>
                   </xsl:variable>
@@ -14264,7 +14264,7 @@
           </xsl:when>
         </xsl:choose>
         <xsl:choose>
-          <xsl:when test="$vNameVariant//marc:record">
+          <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
             <marc:datafield>
               <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -24841,7 +24841,7 @@
     <xsl:variable name="vNameAuth" select="exsl:node-set($vNameAuthPreNS)"/>
     <xsl:variable name="vMainEntryTag">
       <xsl:choose>
-        <xsl:when test="$vNameAuth//marc:record">
+        <xsl:when test="$vNameAuth//marc:datafield[@tag!='']">
           <xsl:choose>
             <xsl:when test="$vNameAuth//marc:datafield[@tag='100']">
               <xsl:text>100</xsl:text>
@@ -30784,7 +30784,7 @@
     <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
     <xsl:variable name="vAddedEntryNameLookupTag">
       <xsl:choose>
-        <xsl:when test="$vRelResource//marc:record">
+        <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
           <xsl:choose>
             <xsl:when test="$vRelResource//marc:datafield[@tag='100']">
               <xsl:text>700</xsl:text>
