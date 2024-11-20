@@ -8378,9 +8378,13 @@
                     </xsl:choose>
                   </xsl:for-each>
                 </xsl:variable>
-                <xsl:call-template name="tChopPunct">
-                  <xsl:with-param name="pString" select="$vNoteText"/>
-                </xsl:call-template>
+                <!-- Do not chop punctuation - 20241119 -->
+                <!--
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="$vNoteText"/>
+              </xsl:call-template>
+              -->
+                <xsl:value-of select="$vNoteText"/>
               </xsl:variable>
               <xsl:if test="$v500-a != ''">
                 <marc:subfield code="a">
@@ -14289,7 +14293,7 @@
               </xsl:attribute>
               <xsl:variable name="v880-6">
                 <xsl:choose>
-                  <xsl:when test="$vRelResource//marc:record[@tag!='']">
+                  <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
                     <xsl:value-of select="concat($vAddedEntryNameMarcKeyTag, '-7', position(), '/', $v880Script)"/>
                   </xsl:when>
                   <xsl:otherwise>
@@ -22088,7 +22092,28 @@
               <xsl:text>   </xsl:text>
             </xsl:otherwise>
           </xsl:choose>
-          <xsl:text>  </xsl:text>
+          <xsl:text> </xsl:text>
+          <xsl:variable name="vPosition-14">
+            <xsl:choose>
+              <xsl:when test="contains($vAdminMetadata[bf:status/bf:Status[@rdf:about='http://id.loc.gov/vocabulary/mstatus/n']]/bf:agent//@rdf:*[1], '/dlc')">
+                <xsl:value-of select="' '"/>
+              </xsl:when>
+              <xsl:when test="contains($vAdminMetadata/bf:descriptionAuthentication//@rdf:*[1], '/pcc')">
+                <xsl:text>c</xsl:text>
+              </xsl:when>
+              <xsl:when test="contains($vAdminMetadata/bf:descriptionAuthentication//@rdf:*[1], '/lccopycat')">
+                <xsl:text>d</xsl:text>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:choose>
+            <xsl:when test="$vPosition-14 != ''">
+              <xsl:value-of select="$vPosition-14"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text> </xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
         </marc:controlfield>
       </xsl:when>
       <xsl:otherwise>
@@ -29451,9 +29476,7 @@
         <xsl:choose>
           <xsl:when test="position() = 1">
             <marc:subfield code="a">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
+              <xsl:value-of select="."/>
             </marc:subfield>
           </xsl:when>
           <xsl:otherwise>
