@@ -862,13 +862,19 @@ app.post('/publish/production', async (request, response) => {
 		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
 			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
 		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
+
 
 		let resp_data = {
 			name: request.body.name,
 			// "url": resources + name,
 			//"objid": data.objid,
 			// "lccn": lccn,
-			publish: postStatus
+			publish: postStatus,
+			postLocation:postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -1057,13 +1063,18 @@ app.post('/publish/staging', async (request, response) => {
 		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
 			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
 		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
 
 		let resp_data = {
 			name: request.body.name,
 			// "url": resources + name,
 			//"objid": data.objid,
 			// "lccn": lccn,
-			publish: postStatus
+			publish: postStatus,
+			postLocation:postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
