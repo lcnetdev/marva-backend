@@ -3365,7 +3365,7 @@
                       <xsl:value-of select="$vInd"/>
                     </xsl:when>
                     <xsl:otherwise>
-                      <xsl:text> </xsl:text>
+                      <xsl:text>0</xsl:text>
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:attribute>
@@ -3500,7 +3500,7 @@
                   <xsl:value-of select="$vInd"/>
                 </xsl:when>
                 <xsl:otherwise>
-                  <xsl:text> </xsl:text>
+                  <xsl:text>0</xsl:text>
                 </xsl:otherwise>
               </xsl:choose>
             </xsl:attribute>
@@ -3630,6 +3630,9 @@
               <xsl:choose>
                 <xsl:when test="$vSourceLang[1]/bf:source/bf:Source/*[local-name()='code']">
                   <xsl:value-of select="$vSourceLang[1]/bf:source/bf:Source/*[local-name()='code']"/>
+                </xsl:when>
+                <xsl:when test="$vSourceLang[1]/bf:source/madsrdf:Authority/*[local-name()='code']">
+                  <xsl:value-of select="$vSourceLang[1]/bf:source/madsrdf:Authority/*[local-name()='code']"/>
                 </xsl:when>
                 <xsl:when test="$vSourceUri != ''">
                   <xsl:choose>
