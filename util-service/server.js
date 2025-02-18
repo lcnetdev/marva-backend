@@ -35,6 +35,9 @@ const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
 const VALIDATIONURL = process.env.VALIDATIONURL;
+const STAGINGNACOSTUB = process.env.STAGINGNACOSTUB;
+const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
+
 // disable some features when running in bibframe.org mode
 const BFORGMODE = process.env.BFORGMODE;
 
@@ -69,7 +72,8 @@ try{
 
 let now = parseInt(new Date() / 1000)
 let ageLimitForAllRecords = 15 //days
-
+let NACO_START = 2025700001
+let nacoIdObj = null
 
 const uri = 'mongodb://mongo:27017/';
 MongoClient.connect(uri, function(err, client) {
@@ -79,6 +83,21 @@ MongoClient.connect(uri, function(err, client) {
 
     const db = client.db('bfe2');
 
+
+    db.collection('lccnNACO').findOne({}).then(function(doc) {
+    	if(!doc){
+    		// no doc here means there is no collection, so insert our first number
+    		db.collection("lccnNACO").insertOne({ id: NACO_START },
+	        	function(err, result) {
+	        		console.log("Inserted the first ID")
+	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
+	        			nacoIdObj = doc
+	        		})	            
+	        })
+    	}else{
+    		nacoIdObj = doc
+    	}
+    })
 
     // build an intial index
     // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
@@ -1209,6 +1228,126 @@ app.post('/publish/staging', async (request, response) => {
 });
 
 
+
+app.post('/nacostub/staging', async (request, response) => {
+
+
+	var name = request.body.name + ".xml";
+	var marcxml = request.body.marcxml;
+
+	let endpoint = "/controllers/ingest/bf-bib.xqy"
+
+
+	var url = "https://" + STAGINGNACOSTUB.trim() + endpoint;
+	console.log('------')
+	console.log(request.body.marcxml)
+	console.log('------')
+	console.log('posting to',url)
+
+
+	let postLogEntry = {
+		'postingDate': new Date(),
+		'postingEnv': 'production',
+		'postingTo': url,
+		'postingXML': request.body.marcxml,
+
+	}
+
+	try{
+
+		const postResponse = await got.post(url, {
+			body: marcxml,
+			username:MLUSERSTAGE,
+			password:MLPASSSTAGE,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}
+
+		});
+
+		postLogEntry['postingStatus'] = 'success'
+		postLogEntry['postingStatusCode'] = postResponse.statusCode
+		postLogEntry['postingBodyResponse'] = postResponse.body
+		postLogEntry['postingName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+		let postStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
+
+		let resp_data = {
+			name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
+			publish: postStatus,
+			postLocation:postLocation
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+
+
+
+	}catch(err){
+		console.error(err)
+
+
+
+		errString = JSON.stringify(err)
+		let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		err = JSON.parse(errString)
+
+		console.log("-----errString------")
+		console.log(errString)
+		console.log("----------------------")
+		console.log("ERror code", err.StatusCodeError)
+
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.StatusCodeError
+		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		resp_data = {
+				"name": request.body.name,
+				"objid":  "objid",
+				"publish": {"status": "error","server": url,"message": err.response.body }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+
+
+
+	}
+
+
+
+});
+
+
+
+
+
+
+
 app.get('/myrecords/production/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
@@ -1320,6 +1459,22 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 
 
+
+
+app.get('/lccnnaco', function(request, response){
+	// ++ the naco id
+	nacoIdObj.id++
+	response.json(nacoIdObj); 
+
+	// update the database
+	MongoClient.connect(uri, function(err, client) {
+	    const db = client.db('bfe2');
+		db.collection('lccnNACO').updateOne(
+		    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
+		    { $set: {id:nacoIdObj.id } }
+		);
+	})
+});
 
 
 app.get('/deploy-production', function(request, response){
