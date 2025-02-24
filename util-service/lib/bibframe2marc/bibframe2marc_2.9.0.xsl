@@ -3343,7 +3343,7 @@
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
-        <xsl:when test="bf:Work/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages') and not(contains(., '/zxx'))] or bf:Work/bf:language/*/*[not(bf:source)]">
+        <xsl:when test="bf:Work/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages') and not(contains(., '/zxx'))] or                  bf:Work/bf:language/*/*[not(bf:source)]">
           <xsl:variable name="vAllLangElements" select="         bf:Work/bf:language/@rdf:resource[contains(., 'id.loc.gov/vocabulary/languages')] |         bf:Work/bf:language/bf:Language[not(bf:source) and not(bf:part)]//@rdf:about[contains(., 'id.loc.gov/vocabulary/languages')] |          bf:Work/bf:language/bf:Language[not(bf:source) and not(bf:part) and not(@rdf:about)] |          bf:Work/bf:language/bf:Language[not(bf:source) and bf:part] |         bf:Work/bf:accompaniedBy/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')][1] |         bf:Work/bf:note/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')][1]         "/>
           <xsl:choose>
             <xsl:when test="count($vAllLangElements) &gt; 1">
@@ -3352,6 +3352,15 @@
                 <xsl:attribute name="ind1">
                   <xsl:variable name="vInd">
                     <xsl:choose>
+                      <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/otx'">
+                        <xsl:text>1</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/sub'">
+                        <xsl:text>1</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/itr'">
+                        <xsl:text>1</xsl:text>
+                      </xsl:when>
                       <xsl:when test="bf:Work/bf:note/bf:Note[rdfs:label='Includes translation or is translation']">
                         <xsl:text>1</xsl:text>
                       </xsl:when>
@@ -3478,6 +3487,113 @@
               </marc:datafield>
             </xsl:when>
           </xsl:choose>
+        </xsl:when>
+        <xsl:when test="(                   bf:Work/bf:accompaniedBy/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')] or                    bf:Work/bf:note/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')]                 ) and                  not(bf:Work/bf:language)">
+          <marc:datafield>
+            <xsl:attribute name="tag">041</xsl:attribute>
+            <xsl:attribute name="ind1">
+              <xsl:variable name="vInd">
+                <xsl:choose>
+                  <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/otx'">
+                    <xsl:text>1</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/sub'">
+                    <xsl:text>1</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="bf:Work/bf:note/bf:Note/rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/resourceComponents/itr'">
+                    <xsl:text>1</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="bf:Work/bf:note/bf:Note[rdfs:label='Includes translation or is translation']">
+                    <xsl:text>1</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="bf:Work/bf:note/bf:Note[rdfs:label='Includes translation']">
+                    <xsl:text>1</xsl:text>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:choose>
+                <xsl:when test="$vInd != ''">
+                  <xsl:value-of select="$vInd"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>0</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:attribute>
+            <xsl:attribute name="ind2">
+              <xsl:text> </xsl:text>
+            </xsl:attribute>
+            <xsl:for-each select="                   bf:Work/bf:accompaniedBy/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')] |                    bf:Work/bf:note/bf:*[contains(rdf:type/@rdf:resource, 'id.loc.gov/vocabulary/resourceComponents')]/bf:language//@rdf:*[contains(., 'id.loc.gov/vocabulary/languages')]">
+              <xsl:variable name="vLangCode">
+                <xsl:choose>
+                  <xsl:when test="starts-with(.,'http://id.loc.gov/vocabulary/languages/')">
+                    <xsl:value-of select="substring-after(.,'http://id.loc.gov/vocabulary/languages/')"/>
+                  </xsl:when>
+                  <xsl:when test="madsrdf:code">
+                    <xsl:value-of select="madsrdf:code"/>
+                  </xsl:when>
+                  <xsl:when test="starts-with(rdf:value,'http://id.loc.gov/vocabulary/languages/')">
+                    <xsl:value-of select="substring-after(rdf:value,'http://id.loc.gov/vocabulary/languages/')"/>
+                  </xsl:when>
+                  <xsl:when test="starts-with(rdf:value/@rdf:resource,'http://id.loc.gov/vocabulary/languages/')">
+                    <xsl:value-of select="substring-after(rdf:value/@rdf:resource,'http://id.loc.gov/vocabulary/languages/')"/>
+                  </xsl:when>
+                  <xsl:when test="rdf:value">
+                    <xsl:value-of select="rdf:value"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="rdfs:label"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$vLangCode != ''">
+                <xsl:variable name="vtype" select="ancestor::bf:accompaniedBy/bf:*/rdf:type/@rdf:resource[contains(., 'id.loc.gov/vocabulary/resourceComponents')]|ancestor::bf:note/bf:*/rdf:type/@rdf:resource[contains(., 'id.loc.gov/vocabulary/resourceComponents')]"/>
+                <xsl:variable name="vSFcode">
+                  <xsl:choose>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/res'">a</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/str'">a</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/sum'">b</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/stx'">d</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/lib'">e</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/toc'">f</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/amt'">g</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/otx'">h</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/int'">i</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/sub'">j</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/itr'">k</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/olb'">n</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/amt'">m</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/cap'">p</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/aud'">q</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/vis'">r</xsl:when>
+                    <xsl:when test="$vtype='http://id.loc.gov/vocabulary/resourceComponents/tav'">t</xsl:when>
+                    <xsl:when test="bf:part='summary'">b</xsl:when>
+                    <xsl:when test="bf:part='sung or spoken text'">d</xsl:when>
+                    <xsl:when test="bf:part='libretto'">e</xsl:when>
+                    <xsl:when test="bf:part='table of contents'">f</xsl:when>
+                    <xsl:when test="bf:part='accompanying material'">g</xsl:when>
+                    <xsl:when test="bf:part='original'">h</xsl:when>
+                    <xsl:when test="bf:part='intertitles'">i</xsl:when>
+                    <xsl:when test="bf:part='subtitles or captions'">j</xsl:when>
+                    <xsl:when test="bf:part='intermediate translations'">k</xsl:when>
+                    <xsl:when test="bf:part='original accompanying materials'">m</xsl:when>
+                    <xsl:when test="bf:part='original libretto'">n</xsl:when>
+                    <xsl:when test="bf:part='captions'">p</xsl:when>
+                    <xsl:when test="bf:part='accessible audio'">q</xsl:when>
+                    <xsl:when test="bf:part='accessible visual material'">r</xsl:when>
+                    <xsl:when test="bf:part='accompanying transcripts'">t</xsl:when>
+                    <xsl:otherwise>a</xsl:otherwise>
+                  </xsl:choose>
+                </xsl:variable>
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="$vSFcode"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="$vLangCode"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:for-each>
+          </marc:datafield>
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
@@ -4406,6 +4522,12 @@
           <xsl:attribute name="ind1">
             <xsl:variable name="vInd">
               <xsl:choose>
+                <xsl:when test="local-name()='Place' or                       rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Place'] or                        local-name()='Jurisdiction' or                       rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="local-name()='Organization' or                       rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization']">
+                  <xsl:text>2</xsl:text>
+                </xsl:when>
                 <xsl:when test="$vNameAuth//marc:datafield[@tag=$vNameTag]">
                   <xsl:value-of select="$vNameAuth//marc:datafield[@tag=$vNameTag]/@ind1"/>
                 </xsl:when>
@@ -4452,6 +4574,12 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
+                    <xsl:when test="local-name()='Place' or                           rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Place'] or                            local-name()='Jurisdiction' or                           rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="local-name()='Organization' or                           rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
                     <xsl:when test="$vNameVariant//marc:datafield[@tag=$vNameTag]">
                       <xsl:value-of select="$vNameVariant//marc:datafield[@tag=$vNameTag]/@ind1"/>
                     </xsl:when>
@@ -5716,10 +5844,10 @@
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:for-each select="                       bf:*[local-name()='Instance' or local-name()='Work']/bf:title/bf:*[(                         local-name()='VariantTitle' or                         local-name()='ParallelTitle' or                         local-name()='TranscribedTitle' or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']                       ) and                          not(bf:variantType = 'translated') and                         not(bf:variantType = 'former') and                         bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]                         ]                       |                       bf:Instance/bf:hasItem/bf:Item/bf:title/bf:*[                         bflc:applicableInstitution/*/bf:code='DLC' and                          (                         local-name()='VariantTitle' or                         local-name()='ParallelTitle' or                         local-name()='TranscribedTitle' or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']                       ) and                        not(bf:variantType = 'translated') and                       not(bf:variantType = 'former') and                       bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]                       ]                     ">
+      <xsl:for-each select="                       bf:*[local-name()='Instance' or local-name()='Work']/bf:title/bf:*[(                         local-name()='VariantTitle' or                         local-name()='ParallelTitle' or                         local-name()='TranscribedTitle' or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']                       ) and                         not(rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']) and                         not(bf:variantType = 'translated') and                         not(bf:variantType = 'former') and                         bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]                         ]                       |                       bf:Instance/bf:hasItem/bf:Item/bf:title/bf:*[                         bflc:applicableInstitution/*/bf:code='DLC' and                          (                         local-name()='VariantTitle' or                         local-name()='ParallelTitle' or                         local-name()='TranscribedTitle' or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or                         rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']                       ) and                        not(rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']) and                       not(bf:variantType = 'translated') and                       not(bf:variantType = 'former') and                       bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]                       ]                     ">
         <xsl:variable name="vOccurrenceNumber">
           <xsl:if test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(               local-name()='VariantTitle' or               local-name()='ParallelTitle' or               local-name()='TranscribedTitle' or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']               ) and                not(bf:variantType = 'translated') and               not(bf:variantType = 'former') and               bf:mainTitle[@xml:lang]])"/>
+            <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(               local-name()='VariantTitle' or               local-name()='ParallelTitle' or               local-name()='TranscribedTitle' or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']               ) and                not(rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']) and               not(bf:variantType = 'translated') and               not(bf:variantType = 'former') and               bf:mainTitle[@xml:lang]])"/>
             <xsl:value-of select="3 + $prevTitleCount"/>
           </xsl:if>
         </xsl:variable>
@@ -5728,11 +5856,41 @@
           <xsl:attribute name="ind1">
             <xsl:variable name="vInd">
               <xsl:choose>
-                <xsl:when test="local-name()='ParallelTitle' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle']">
-                  <xsl:text>3</xsl:text>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/por']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/atp']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cap']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/run']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cov']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/spi']">
+                  <xsl:text>1</xsl:text>
                 </xsl:when>
                 <xsl:when test="bf:variantType = 'portion'">
-                  <xsl:text>3</xsl:text>
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:variantType = 'added title page'">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:variantType = 'caption'">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:variantType = 'running'">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:variantType = 'spine'">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:variantType = 'cover'">
+                  <xsl:text>1</xsl:text>
                 </xsl:when>
               </xsl:choose>
             </xsl:variable>
@@ -5741,7 +5899,7 @@
                 <xsl:value-of select="$vInd"/>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:text>1</xsl:text>
+                <xsl:text>3</xsl:text>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:attribute>
@@ -5750,6 +5908,27 @@
               <xsl:choose>
                 <xsl:when test="local-name()='ParallelTitle' or                       rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle']">
                   <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/por']">
+                  <xsl:text>0</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/dis']">
+                  <xsl:text>2</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cov']">
+                  <xsl:text>4</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/atp']">
+                  <xsl:text>5</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cap']">
+                  <xsl:text>6</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/run']">
+                  <xsl:text>7</xsl:text>
+                </xsl:when>
+                <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/spi']">
+                  <xsl:text>8</xsl:text>
                 </xsl:when>
                 <xsl:when test="bf:variantType = 'portion'">
                   <xsl:text>0</xsl:text>
@@ -5895,11 +6074,41 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="local-name()='ParallelTitle' or                   rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle']">
-                      <xsl:text>3</xsl:text>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/por']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/atp']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cap']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/run']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cov']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/spi']">
+                      <xsl:text>1</xsl:text>
                     </xsl:when>
                     <xsl:when test="bf:variantType = 'portion'">
-                      <xsl:text>3</xsl:text>
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="bf:variantType = 'added title page'">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="bf:variantType = 'caption'">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="bf:variantType = 'running'">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="bf:variantType = 'spine'">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="bf:variantType = 'cover'">
+                      <xsl:text>1</xsl:text>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -5908,7 +6117,7 @@
                     <xsl:value-of select="$vInd"/>
                   </xsl:when>
                   <xsl:otherwise>
-                    <xsl:text>1</xsl:text>
+                    <xsl:text>3</xsl:text>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:attribute>
@@ -5917,6 +6126,27 @@
                   <xsl:choose>
                     <xsl:when test="local-name()='ParallelTitle' or                   rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle']">
                       <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/por']">
+                      <xsl:text>0</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/dis']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cov']">
+                      <xsl:text>4</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/atp']">
+                      <xsl:text>5</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/cap']">
+                      <xsl:text>6</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/run']">
+                      <xsl:text>7</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/spi']">
+                      <xsl:text>8</xsl:text>
                     </xsl:when>
                     <xsl:when test="bf:variantType = 'portion'">
                       <xsl:text>0</xsl:text>
@@ -6044,10 +6274,10 @@
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:for-each select="bf:Work/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     bf:variantType = 'former' and      (       bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or        rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ] |     bf:Instance[rdf:type/@rdf:resource!='http://id.loc.gov/ontologies/bflc/SecondaryInstance']/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     bf:variantType = 'former' and      (     bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or      rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ]">
+      <xsl:for-each select="bf:Work/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     (       bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']     ) and      (       bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or        rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ] |     bf:Instance[rdf:type/@rdf:resource!='http://id.loc.gov/ontologies/bflc/SecondaryInstance']/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     (       bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']     ) and      (     bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or      rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ]">
         <xsl:variable name="vOccurrenceNumber">
           <xsl:if test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(             local-name()='VariantTitle' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']             ) and             bf:variantType = 'former' and              bf:mainTitle[@xml:lang]])"/>
+            <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(             local-name()='VariantTitle' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']             ) and             (               bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']             ) and             bf:mainTitle[@xml:lang]])"/>
             <xsl:value-of select="7 + $prevTitleCount"/>
           </xsl:if>
         </xsl:variable>
@@ -6770,11 +7000,11 @@
                       <xsl:for-each select="bflc:simplePlace[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                         <marc:subfield code="a">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simplePlace[@xml:lang]">
+                          <xsl:if test="following-sibling::bflc:simplePlace[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                             <xsl:text> ;</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:if test="../bflc:simpleAgent[@xml:lang]">
+                            <xsl:if test="../bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                               <xsl:text> :</xsl:text>
                             </xsl:if>
                             <xsl:if test="not(../bflc:simpleAgent[@xml:lang]) and ../bflc:simpleDate[@xml:lang]">
@@ -6804,11 +7034,11 @@
                       <xsl:for-each select="bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                         <marc:subfield code="b">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang]">
+                          <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                             <xsl:text>,</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:if test="../bflc:simpleDate[@xml:lang]">
+                            <xsl:if test="../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                               <xsl:text>,</xsl:text>
                             </xsl:if>
                           </xsl:if>
@@ -6828,7 +7058,7 @@
                       <xsl:for-each select="bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                         <marc:subfield code="c">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simpleDate[@xml:lang]">
+                          <xsl:if test="following-sibling::bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                             <xsl:text>,</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
@@ -7025,7 +7255,7 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:choose>
-          <xsl:when test="@rdf:resource or bf:IntendedAudience[@rdf:about or bflc:demographicGroup or bf:source]">
+          <xsl:when test="@rdf:resource[not(contains(., '/maudience/'))] or                    bf:IntendedAudience[                     @rdf:about[not(contains(., '/maudience/'))] or                      bf:source//@rdf:*[. = 'http://id.loc.gov/vocabulary/subjectSchemes/lcdgt'] or                      bf:source//@rdf:*[. = 'http://id.loc.gov/vocabulary/subjectSchemes/lcsh'] or                      bf:source//bf:code[. = 'lcsh']                  ]">
             <xsl:variable name="vXmlLang">
               <xsl:value-of select="bf:IntendedAudience/rdfs:label/@xml:lang"/>
             </xsl:variable>
@@ -7079,7 +7309,7 @@
                   <xsl:value-of select="$v385-3"/>
                 </marc:subfield>
               </xsl:if>
-              <xsl:for-each select="bf:IntendedAudience/bflc:demographicGroup/bflc:DemographicGroup[not(@rdf:about)]/rdfs:label">
+              <xsl:for-each select="bf:IntendedAudience/bflc:demographicGroup/bflc:DemographicGroup/rdfs:label">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="m">
@@ -7103,14 +7333,11 @@
                             <xsl:value-of select="@rdf:resource"/>
                           </xsl:when>
                           <xsl:when test="*/@rdf:about">
-                            <xsl:value-of select="*/@rdf:resource"/>
+                            <xsl:value-of select="*/@rdf:about"/>
                           </xsl:when>
                         </xsl:choose>
                       </xsl:variable>
                       <xsl:choose>
-                        <xsl:when test="*/rdfs:label">
-                          <xsl:value-of select="*/rdfs:label"/>
-                        </xsl:when>
                         <xsl:when test="contains($vDGUri,'id.loc.gov')">
                           <xsl:call-template name="tUriCode">
                             <xsl:with-param name="pUri" select="$vDGUri"/>
@@ -7172,17 +7399,9 @@
               </xsl:for-each>
             </marc:datafield>
           </xsl:when>
-          <xsl:otherwise>
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="bf:IntendedAudience/rdfs:label/@xml:lang"/>
-            </xsl:variable>
+          <xsl:when test="bf:IntendedAudience[not(@rdf:about)]/rdfs:label">
             <marc:datafield>
               <xsl:attribute name="tag">521</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
-                </xsl:attribute>
-              </xsl:if>
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
@@ -7230,15 +7449,20 @@
                   </xsl:call-template>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:for-each select="bf:IntendedAudience/bf:source/bf:Source/rdfs:label">
+                <marc:subfield code="b">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
             </marc:datafield>
-          </xsl:otherwise>
+          </xsl:when>
         </xsl:choose>
       </xsl:for-each>
       <xsl:apply-templates select="bf:Work/bflc:creatorCharacteristic" mode="generate-386">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |                  bf:Work/bf:hasSeries/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']]">
+      <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |                  bf:Work/bf:hasSeries/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']]">
         <xsl:variable name="vLangTag" select="bf:title/bf:Title/bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
         <xsl:variable name="vScript">
           <xsl:value-of select="translate(substring-after($vLangTag,'-'),$upper,$lower)"/>
@@ -7435,6 +7659,12 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
+                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/vocabulary/relationship/series']/bf:associatedResource/bf:Hub[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/vocabulary/relationship/series']/bf:associatedResource/bf:Series[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
                     <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/ontologies/bibframe/hasSeries']/bf:associatedResource/bf:Hub[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
                       <xsl:text>1</xsl:text>
                     </xsl:when>
@@ -8268,6 +8498,39 @@
               </xsl:for-each>
             </marc:datafield>
           </xsl:when>
+          <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='documentation' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc')">
+            <xsl:variable name="vXmlLang">
+              <xsl:value-of select="rdfs:label/@xml:lang"/>
+            </xsl:variable>
+            <marc:datafield>
+              <xsl:attribute name="tag">556</xsl:attribute>
+              <xsl:if test="$vXmlLang != ''">
+                <xsl:attribute name="xml:lang">
+                  <xsl:value-of select="$vXmlLang"/>
+                </xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="ind1">
+                <xsl:text>8</xsl:text>
+              </xsl:attribute>
+              <xsl:attribute name="ind2">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:for-each select="rdfs:label">
+                <xsl:choose>
+                  <xsl:when test="position() = 1">
+                    <marc:subfield code="a">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
+                    </marc:subfield>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 556 $a.</xsl:message>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each>
+            </marc:datafield>
+          </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='related material' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/related')">
             <xsl:variable name="vXmlLang">
               <xsl:value-of select="rdfs:label/@xml:lang"/>
@@ -8435,10 +8698,11 @@
               </xsl:for-each>
             </marc:datafield>
           </xsl:when>
-          <xsl:when test="(local-name(../..)='Work' and          (           translate(bf:noteType,$upper,$lower)='language' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/lang' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/award'         ))"/>
+          <xsl:when test="(local-name(../..)='Work' and          (           translate(bf:noteType,$upper,$lower)='language' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/lang' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/award' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/suppl'         ))"/>
           <xsl:when test="(           local-name(../..)='Work' and            contains(rdf:type/@rdf:resource, 'http://id.loc.gov/vocabulary/resourceComponents')         )"/>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and                    (                   (translate(bf:noteType,$upper,$lower)='physical details' or translate(bf:noteType,$upper,$lower)='accompanying material' or translate(bf:noteType,$upper,$lower)='binding' or translate(bf:noteType,$upper,$lower)='action') or                    (rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/physical' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/accmat' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/binding' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/action')                   )"/>
           <xsl:when test="(         local-name(../..)='Instance' and          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio'         )"/>
+          <xsl:when test="(local-name(../..)='Instance' and          (         rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas'         ))"/>
           <xsl:otherwise>
             <xsl:variable name="vXmlLang">
               <xsl:value-of select="rdfs:label/@xml:lang"/>
@@ -8702,7 +8966,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:apply-templates select="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))]" mode="generate-508">
+      <xsl:apply-templates select="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits']/rdfs:label" mode="generate-508">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -8710,7 +8974,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:credits[starts-with(text(),'Cast:')]" mode="generate-511">
+      <xsl:apply-templates select="bf:Instance/bf:credits[starts-with(text(),'Cast:')] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants']/rdfs:label" mode="generate-511">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -8726,7 +8990,11 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:preferredCitation" mode="generate-524">
+      <xsl:apply-templates select="bf:Instance/bf:preferredCitation |                      bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas']/rdfs:label" mode="generate-524">
+        <xsl:with-param name="vRecordId" select="$vRecordId"/>
+        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/suppl' and rdfs:label[. != '']]       " mode="generate-525">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -8824,6 +9092,9 @@
                     <xsl:when test="$vRelResource//marc:datafield[@tag='130']">
                       <xsl:text>630</xsl:text>
                     </xsl:when>
+                    <xsl:when test="$vRelResource//marc:datafield[@tag='147']">
+                      <xsl:text>647</xsl:text>
+                    </xsl:when>
                     <xsl:when test="$vRelResource//marc:datafield[@tag='150']">
                       <xsl:text>650</xsl:text>
                     </xsl:when>
@@ -8847,6 +9118,9 @@
                 </xsl:when>
                 <xsl:when test="$vSubjectTag='630'">
                   <xsl:text>adfghklmnoprs</xsl:text>
+                </xsl:when>
+                <xsl:when test="$vSubjectTag='647'">
+                  <xsl:text>acdg</xsl:text>
                 </xsl:when>
                 <xsl:when test="$vSubjectTag='650'">
                   <xsl:text>a</xsl:text>
@@ -11122,6 +11396,142 @@
                   <xsl:copy-of select="$vShared"/>
                 </marc:datafield>
               </xsl:when>
+              <xsl:when test="*[(local-name()='Event' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#Event'] or             local-name()='Event' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Event'] or             local-name(madsrdf:componentList/*[1])='Event' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#Event' or             local-name(madsrdf:componentList/*[1])='Event' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Event') and             (madsrdf:componentList or madsrdf:authoritativeLabel or rdfs:label)]">
+                <marc:datafield>
+                  <xsl:attribute name="tag">647</xsl:attribute>
+                  <xsl:attribute name="ind1">
+                    <xsl:text> </xsl:text>
+                  </xsl:attribute>
+                  <xsl:attribute name="ind2">
+                    <xsl:variable name="vInd">
+                      <xsl:choose>
+                        <xsl:when test="$vInd2Val != ''">
+                          <xsl:value-of select="$vInd2Val"/>
+                        </xsl:when>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <xsl:choose>
+                      <xsl:when test="$vInd != ''">
+                        <xsl:value-of select="$vInd"/>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:text>4</xsl:text>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:attribute>
+                  <xsl:choose>
+                    <xsl:when test="*/madsrdf:componentList">
+                      <xsl:for-each select="*/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <marc:subfield code="3">
+                              <xsl:call-template name="tChopPunct">
+                                <xsl:with-param name="pString" select="."/>
+                              </xsl:call-template>
+                            </marc:subfield>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $3.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                      <xsl:variable name="v647-a">
+                        <xsl:choose>
+                          <xsl:when test="*/madsrdf:componentList/*[1]/madsrdf:authoritativeLabel">
+                            <xsl:for-each select="*/madsrdf:componentList/*[1]/madsrdf:authoritativeLabel">
+                              <xsl:choose>
+                                <xsl:when test="position() = 1">
+                                  <xsl:call-template name="tChopPunct">
+                                    <xsl:with-param name="pString" select="."/>
+                                  </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $a.</xsl:message>
+                                </xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:for-each>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:for-each select="*/madsrdf:componentList/*[1]/rdfs:label">
+                              <xsl:choose>
+                                <xsl:when test="position() = 1">
+                                  <xsl:call-template name="tChopPunct">
+                                    <xsl:with-param name="pString" select="."/>
+                                  </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $a.</xsl:message>
+                                </xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:for-each>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:variable>
+                      <xsl:if test="$v647-a != ''">
+                        <marc:subfield code="a">
+                          <xsl:value-of select="$v647-a"/>
+                        </marc:subfield>
+                      </xsl:if>
+                      <xsl:copy-of select="$vShared"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:for-each select="*/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <marc:subfield code="3">
+                              <xsl:call-template name="tChopPunct">
+                                <xsl:with-param name="pString" select="."/>
+                              </xsl:call-template>
+                            </marc:subfield>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $3.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                      <xsl:variable name="v647-a">
+                        <xsl:choose>
+                          <xsl:when test="*/madsrdf:authoritativeLabel">
+                            <xsl:for-each select="*/madsrdf:authoritativeLabel[1]">
+                              <xsl:choose>
+                                <xsl:when test="position() = 1">
+                                  <xsl:call-template name="tChopPunct">
+                                    <xsl:with-param name="pString" select="."/>
+                                  </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $a.</xsl:message>
+                                </xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:for-each>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:for-each select="*/rdfs:label[1]">
+                              <xsl:choose>
+                                <xsl:when test="position() = 1">
+                                  <xsl:call-template name="tChopPunct">
+                                    <xsl:with-param name="pString" select="."/>
+                                  </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 647 $a.</xsl:message>
+                                </xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:for-each>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:variable>
+                      <xsl:if test="$v647-a != ''">
+                        <marc:subfield code="a">
+                          <xsl:value-of select="$v647-a"/>
+                        </marc:subfield>
+                      </xsl:if>
+                      <xsl:copy-of select="$vSharedDollar0s"/>
+                      <xsl:copy-of select="$vSharedDollar2"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </marc:datafield>
+              </xsl:when>
               <xsl:when test="*[(local-name()='Temporal' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#Temporal'] or                       local-name()='Temporal' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Temporal'] or                       local-name(madsrdf:componentList/*[1])='Temporal' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://www.loc.gov/mads/rdf/v1#Temporal' or                       local-name(madsrdf:componentList/*[1])='Temporal' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Temporal') and                       (madsrdf:componentList or madsrdf:authoritativeLabel or rdfs:label)]">
                 <marc:datafield>
                   <xsl:attribute name="tag">648</xsl:attribute>
@@ -11744,7 +12154,7 @@
                     <xsl:when test="*/madsrdf:componentList">
                       <xsl:variable name="v651-a">
                         <xsl:choose>
-                          <xsl:when test="*/madsrdf:componentList/*[1]/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                          <xsl:when test="*/madsrdf:componentList/*[1]/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or @xml:lang='en']">
                             <xsl:for-each select="*/madsrdf:componentList/*[1]/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                               <xsl:choose>
                                 <xsl:when test="position() = 1">
@@ -11759,7 +12169,7 @@
                             </xsl:for-each>
                           </xsl:when>
                           <xsl:otherwise>
-                            <xsl:for-each select="*/madsrdf:componentList/*[1]/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                            <xsl:for-each select="*/madsrdf:componentList/*[1]/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or @xml:lang='en']">
                               <xsl:choose>
                                 <xsl:when test="position() = 1">
                                   <xsl:call-template name="tChopPunct">
@@ -11791,8 +12201,8 @@
                     <xsl:otherwise>
                       <xsl:variable name="v651-a">
                         <xsl:choose>
-                          <xsl:when test="*/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                            <xsl:for-each select="*/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                          <xsl:when test="*/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or @xml:lang='en']">
+                            <xsl:for-each select="*/madsrdf:authoritativeLabel[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or @xml:lang='en']">
                               <xsl:choose>
                                 <xsl:when test="position() = 1">
                                   <xsl:call-template name="tChopPunct">
@@ -11806,7 +12216,7 @@
                             </xsl:for-each>
                           </xsl:when>
                           <xsl:otherwise>
-                            <xsl:for-each select="*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                            <xsl:for-each select="*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or @xml:lang='en']">
                               <xsl:choose>
                                 <xsl:when test="position() = 1">
                                   <xsl:call-template name="tChopPunct">
@@ -13820,7 +14230,7 @@
               </xsl:if>
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                  <xsl:for-each select="$vRelResource//marc:datafield[@tag='110']/@ind1">
                     <xsl:choose>
                       <xsl:when test="position() = 1">
                         <xsl:value-of select="."/>
@@ -13830,6 +14240,7 @@
                       </xsl:otherwise>
                     </xsl:choose>
                   </xsl:for-each>
+                  <xsl:value-of select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1"/>
                 </xsl:variable>
                 <xsl:choose>
                   <xsl:when test="$vInd != ''">
@@ -13993,7 +14404,7 @@
               </xsl:if>
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                  <xsl:for-each select="$vRelResource//marc:datafield[@tag='110']/@ind1">
                     <xsl:choose>
                       <xsl:when test="position() = 1">
                         <xsl:value-of select="."/>
@@ -14003,6 +14414,7 @@
                       </xsl:otherwise>
                     </xsl:choose>
                   </xsl:for-each>
+                  <xsl:value-of select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1"/>
                 </xsl:variable>
                 <xsl:choose>
                   <xsl:when test="$vInd != ''">
@@ -14316,6 +14728,24 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
+                    <xsl:when test="$vRelResource//marc:datafield[@tag='110']/@ind1 != ''">
+                      <xsl:for-each select="$vRelResource//marc:datafield[@tag='110']/@ind1">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <xsl:value-of select="."/>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vAddedEntryNameMarcKeyTag.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="local-name()='Place' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Place'] or              local-name()='Jurisdiction' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="local-name()='Organization' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
                     <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1 != ''">
                       <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
                         <xsl:choose>
@@ -14379,6 +14809,24 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
+                    <xsl:when test="local-name()='Place' or                 rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Place'] or                  local-name()='Jurisdiction' or                 rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']">
+                      <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="local-name()='Organization' or                 rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Organization']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1 != ''">
+                      <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <xsl:value-of select="."/>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
                     <xsl:when test="$vNameVariant//marc:datafield[@tag=$vNameVariantTag]">
                       <xsl:value-of select="$vNameVariant//marc:datafield[@tag=$vNameVariantTag]/@ind1"/>
                     </xsl:when>
@@ -14389,7 +14837,7 @@
                     <xsl:value-of select="$vInd"/>
                   </xsl:when>
                   <xsl:otherwise>
-                    <xsl:text>2</xsl:text>
+                    <xsl:text> </xsl:text>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:attribute>
@@ -14426,8 +14874,8 @@
       </xsl:for-each>
       <xsl:if test="$xslProcessor != 'libxslt'">
         <xsl:choose>
-          <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
               <xsl:variable name="relURI">
                 <xsl:choose>
                   <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
@@ -14667,7 +15115,7 @@
             </xsl:for-each>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         ">
+            <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         ">
               <xsl:variable name="relURI">
                 <xsl:choose>
                   <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
@@ -14910,14 +15358,14 @@
       </xsl:if>
       <xsl:if test="$xslProcessor = 'libxslt'">
         <xsl:choose>
-          <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]             ">
+          <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series'))]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series'))]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries'))]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries'))]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bf:relatedTo[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                     bf:Work/bf:hasPart[contains(@rdf:resource, 'hubs')] |                     bf:Work/bf:hasPart/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]             ">
             <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed relationship node(s)/Hub(s) <xsl:value-of select="name()"/>.  Repeatable target field 7XX.</xsl:message>
           </xsl:when>
         </xsl:choose>
       </xsl:if>
       <xsl:choose>
-        <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:when test="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
@@ -15171,7 +15619,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             ">
+          <xsl:for-each select="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             ">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
@@ -18343,8 +18791,8 @@
       </xsl:apply-templates>
       <xsl:if test="$xslProcessor != 'libxslt'">
         <xsl:choose>
-          <xsl:when test="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:when test="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                  bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                  bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
               <xsl:variable name="relURI">
                 <xsl:choose>
                   <xsl:when test="contains(@rdf:resource,'id.loc.gov')">
@@ -18530,7 +18978,7 @@
             </xsl:for-each>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       ">
+            <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                  bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |          bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |                bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]       ">
               <xsl:variable name="relURI">
                 <xsl:choose>
                   <xsl:when test="contains(@rdf:resource,'id.loc.gov')">
@@ -18719,14 +19167,14 @@
       </xsl:if>
       <xsl:if test="$xslProcessor = 'libxslt'">
         <xsl:choose>
-          <xsl:when test="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         ">
+          <xsl:when test="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bf:hasSeries[contains(@rdf:resource, 'hubs')] |         bf:Work/bf:hasSeries/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo[contains(@rdf:resource, 'hubs')] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[contains(@rdf:about, 'hubs') and not(bflc:marcKey)]         ">
             <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed relationship node(s)/Hub(s) <xsl:value-of select="name()"/>.  Repeatable target field 8XX.</xsl:message>
           </xsl:when>
         </xsl:choose>
       </xsl:if>
       <xsl:choose>
-        <xsl:when test="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:when test="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:about,'id.loc.gov')">
@@ -18915,7 +19363,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       ">
+          <xsl:for-each select="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       ">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:about,'id.loc.gov')">
@@ -19104,7 +19552,7 @@
           </xsl:for-each>
         </xsl:otherwise>
       </xsl:choose>
-      <xsl:for-each select="     bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))]">
+      <xsl:for-each select="     bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))] |     //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[not(contains(@rdf:about, 'hubs')) and not(bflc:marcKey) and bf:title and not(contains(bf:status/@rdf:resource, 'mstatus/t')) and not(contains(bf:status/bf:Status/@rdf:about, '/mstatus/t'))]">
         <xsl:variable name="vScriptSubtag">
           <xsl:call-template name="tScriptCode">
             <xsl:with-param name="pXmlLang" select="rdfs:label/@xml:lang"/>
@@ -29293,7 +29741,24 @@
         </xsl:attribute>
       </xsl:if>
       <xsl:attribute name="ind1">
-        <xsl:text>0</xsl:text>
+        <xsl:variable name="vInd">
+          <xsl:choose>
+            <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/incmp']">
+              <xsl:text>1</xsl:text>
+            </xsl:when>
+            <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/part']">
+              <xsl:text>2</xsl:text>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$vInd != ''">
+            <xsl:value-of select="$vInd"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>0</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:attribute>
       <xsl:attribute name="ind2">
         <xsl:text> </xsl:text>
@@ -29319,7 +29784,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))]" mode="generate-508">
+  <xsl:template match="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits']/rdfs:label" mode="generate-508">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vXmlLang">
@@ -29343,6 +29808,20 @@
           <xsl:with-param name="pString" select="."/>
         </xsl:call-template>
       </marc:subfield>
+      <xsl:for-each select="ancestor::bf:Note/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+        <xsl:choose>
+          <xsl:when test="position() = 1">
+            <marc:subfield code="3">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 508 $3.</xsl:message>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bflc:indexedIn/bf:Work |                     bf:Work/bf:references/bf:Work" mode="generate-510">
@@ -29446,7 +29925,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:credits[starts-with(text(),'Cast:')]" mode="generate-511">
+  <xsl:template match="bf:Instance/bf:credits[starts-with(text(),'Cast:')] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants']/rdfs:label" mode="generate-511">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vXmlLang">
@@ -29460,21 +29939,58 @@
         </xsl:attribute>
       </xsl:if>
       <xsl:attribute name="ind1">
-        <xsl:text>1</xsl:text>
+        <xsl:variable name="vInd">
+          <xsl:choose>
+            <xsl:when test="contains(., 'Cast:')">
+              <xsl:text>1</xsl:text>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$vInd != ''">
+            <xsl:value-of select="$vInd"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>0</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:attribute>
       <xsl:attribute name="ind2">
         <xsl:text> </xsl:text>
       </xsl:attribute>
       <xsl:variable name="v511-a">
-        <xsl:call-template name="tChopPunct">
-          <xsl:with-param name="pString" select="substring-after(.,'Cast:')"/>
-        </xsl:call-template>
+        <xsl:choose>
+          <xsl:when test="contains(., 'Cast:')">
+            <xsl:call-template name="tChopPunct">
+              <xsl:with-param name="pString" select="substring-after(.,'Cast:')"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:call-template name="tChopPunct">
+              <xsl:with-param name="pString" select="."/>
+            </xsl:call-template>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:variable>
       <xsl:if test="$v511-a != ''">
         <marc:subfield code="a">
           <xsl:value-of select="$v511-a"/>
         </marc:subfield>
       </xsl:if>
+      <xsl:for-each select="ancestor::bf:Note/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+        <xsl:choose>
+          <xsl:when test="position() = 1">
+            <marc:subfield code="3">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 511 $3.</xsl:message>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bf:capture/bf:Capture[not(bf:date[@rdf:datatype='http://id.loc.gov/datatypes/edtf']) and not(bf:place/@rdf:resource)]" mode="generate-518">
@@ -29634,7 +30150,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:preferredCitation" mode="generate-524">
+  <xsl:template match="bf:Instance/bf:preferredCitation |                      bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas']/rdfs:label" mode="generate-524">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vXmlLang">
@@ -29658,6 +30174,41 @@
           <xsl:with-param name="pString" select="."/>
         </xsl:call-template>
       </marc:subfield>
+    </marc:datafield>
+  </xsl:template>
+  <xsl:template match="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/suppl' and rdfs:label[. != '']]       " mode="generate-525">
+    <xsl:param name="vRecordId"/>
+    <xsl:param name="vAdminMetadata"/>
+    <xsl:variable name="vXmlLang">
+      <xsl:value-of select="rdfs:label/@xml:lang"/>
+    </xsl:variable>
+    <marc:datafield>
+      <xsl:attribute name="tag">525</xsl:attribute>
+      <xsl:if test="$vXmlLang != ''">
+        <xsl:attribute name="xml:lang">
+          <xsl:value-of select="$vXmlLang"/>
+        </xsl:attribute>
+      </xsl:if>
+      <xsl:attribute name="ind1">
+        <xsl:text> </xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="ind2">
+        <xsl:text> </xsl:text>
+      </xsl:attribute>
+      <xsl:for-each select="rdfs:label">
+        <xsl:choose>
+          <xsl:when test="position() = 1">
+            <marc:subfield code="a">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 525 $a.</xsl:message>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Instance/bf:contentAccessibility/bf:ContentAccessibility/rdfs:label" mode="generate-532">
@@ -30960,7 +31511,7 @@
       </xsl:if>
       <xsl:attribute name="ind1">
         <xsl:variable name="vInd">
-          <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1">
+          <xsl:for-each select="$vRelResource//marc:datafield[@tag='110']/@ind1">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <xsl:value-of select="."/>
@@ -30970,6 +31521,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:value-of select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/@ind1"/>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="$vInd != ''">
@@ -31066,7 +31618,7 @@
       </xsl:choose>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             " mode="generate-vAddRelationMarcKeyTag">
+  <xsl:template match="bf:Work/bf:relation/bf:Relation[bf:relationship[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bf:Relationship/@rdf:about, 'hasSeries')) and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:associatedResource/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[not(contains(@rdf:resource, 'hasSeries')) and not(contains(bflc:Relation/@rdf:about, 'hasSeries'))and not(contains(@rdf:resource, '/relationship/series')) and not(contains(bf:Relationship/@rdf:about, '/relationship/series'))]]/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:relatedTo/bf:*[bflc:marcKey or marc:record] |                     bf:Work/bf:hasPart/bf:*[bflc:marcKey or marc:record]             " mode="generate-vAddRelationMarcKeyTag">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="relURI">
@@ -34079,7 +34631,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       " mode="generate-vSeriesMarcKeyTag">
+  <xsl:template match="       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bflc:marcKey] |       bf:Work/bf:hasSeries/bf:*[bflc:marcKey] |       bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bflc:marcKey]       " mode="generate-vSeriesMarcKeyTag">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="relURI">
