@@ -1235,7 +1235,7 @@ app.post('/nacostub/staging', async (request, response) => {
 	var name = request.body.name + ".xml";
 	var marcxml = request.body.marcxml;
 
-	let endpoint = "/controllers/ingest/bf-bib.xqy"
+	let endpoint = "/controllers/ingest/marc-auth.xqy"
 
 
 	var url = "https://" + STAGINGNACOSTUB.trim() + endpoint;
