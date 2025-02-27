@@ -6574,7 +6574,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:variable name="v880-6">
-                    <xsl:value-of select="concat('250-25/',$v880Script)"/>
+                    <xsl:value-of select="concat('250-24/',$v880Script)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-6 != ''">
                     <marc:subfield code="6">
@@ -6882,7 +6882,7 @@
                     <marc:subfield code="b">
                       <xsl:value-of select="."/>
                       <xsl:if test="following-sibling::bflc:simpleAgent[                                     not(@xml:lang) or                                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                      (                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                 ]">
-                        <xsl:text>,</xsl:text>
+                        <xsl:text> :</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
                         <xsl:if test="../bflc:simpleDate[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                   ]">
@@ -22266,12 +22266,17 @@
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026055' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026055'">5</xsl:when>
                       <!-- Comics (graphic novels) -->
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026266' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026266'">6</xsl:when>
+                      <xsl:when test="*/madsrdf:authoritativeLabel[contains(., 'comics')] or                                        */rdfs:label[contains(., 'comics')]">6</xsl:when>
+                      <xsl:when test="*/madsrdf:authoritativeLabel[contains(., '(Comics)')] or                                        */rdfs:label[contains(., '(Comics)')]">6</xsl:when>
+                      <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026572' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026572'">6</xsl:when>
                       <!-- Manga -->
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2022026036' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2022026036'">6</xsl:when>
+                      <xsl:when test="*/madsrdf:authoritativeLabel[contains(., ' manga')] or                                        */rdfs:label[contains(., ' manga')]">6</xsl:when>
+                      <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2023026096' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2023026096'">6</xsl:when>
                       <!-- Graphic Novels -->
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026362' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026362'">6</xsl:when>
-                      <xsl:when test="*/madsrdf:authoritativeLabel[contains(., 'comics')] or                                        */rdfs:label[contains(., 'comics')]">6</xsl:when>
-                      <xsl:when test="*/madsrdf:authoritativeLabel[contains(., 'comics')] or                                        */rdfs:label[contains(., 'comics')]">6</xsl:when>
+                      <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2016026005' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2016026005'">6</xsl:when>
+                      <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2017026130' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2017026130'">6</xsl:when>
                     </xsl:choose>
                   </xsl:for-each>
                 </xsl:variable>
