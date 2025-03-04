@@ -118,11 +118,11 @@ MongoClient.connect(uri, function(err, client) {
 
  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
 
-		 			console.log("-------doc")
+		 			// console.log("-------doc")
 
-		 			console.log(doc)
-		 			console.log('doc.index.eid',doc.index.eid)
-		 			console.log('doc.index.user',doc.index.user)
+		 			// console.log(doc)
+		 			// console.log('doc.index.eid',doc.index.eid)
+		 			// console.log('doc.index.user',doc.index.user)
 
 
 	 				if (doc.index.eid){
