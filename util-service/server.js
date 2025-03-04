@@ -114,10 +114,16 @@ MongoClient.connect(uri, function(err, client) {
 
  		cursor.forEach((doc)=>{
 
-
  			if (doc.index){
 
  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+		 			console.log("-------doc")
+
+		 			console.log(doc)
+		 			console.log('doc.index.eid',doc.index.eid)
+		 			console.log('doc.index.user',doc.index.user)
+
 
 	 				if (doc.index.eid){
 	 					recsStageByEid[doc.index.eid] = doc.index
@@ -1269,7 +1275,7 @@ app.post('/nacostub/staging', async (request, response) => {
 		postLogEntry['postingStatus'] = 'success'
 		postLogEntry['postingStatusCode'] = postResponse.statusCode
 		postLogEntry['postingBodyResponse'] = postResponse.body
-		postLogEntry['postingName'] = request.body.name
+		// postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
 		if (postLogEntry.length>50){
 			postLogEntry.shift()
@@ -1285,7 +1291,7 @@ app.post('/nacostub/staging', async (request, response) => {
 		}
 
 		let resp_data = {
-			name: request.body.name,
+			// name: request.body.name,
 			// "url": resources + name,
 			//"objid": data.objid,
 			// "lccn": lccn,
@@ -1316,10 +1322,10 @@ app.post('/nacostub/staging', async (request, response) => {
 		console.log("ERror code", err.StatusCodeError)
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.StatusCodeError
-		postLogEntry['postingBodyResponse'] = err.response.body
-		postLogEntry['postingBodyName'] = request.body.name
-		postLogEntry['postingEid'] = request.body.eid
+		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
+		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body" 
+		// postLogEntry['postingBodyName'] = request.body.name
+		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
 		if (postLogEntry.length>50){
 			postLogEntry.shift()
