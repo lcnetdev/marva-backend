@@ -1497,7 +1497,7 @@ app.get('/deploy-production', function(request, response){
 	let r = shell.exec('./deploy-production.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
-	console.log(r_html)
+	// console.log(r_html)
 
   return response.status(200).send(r_html)
 
@@ -1517,7 +1517,7 @@ app.get('/deploy-production-quartz', function(request, response){
 	let r = shell.exec('./deploy-production-quartz.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
-	console.log(r_html)
+	// console.log(r_html)
 
   return response.status(200).send(r_html)
 
@@ -1538,7 +1538,7 @@ app.get('/deploy-staging', function(request, response){
 	let r = shell.exec('./deploy-staging.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
-	console.log(r_html)
+	// console.log(r_html)
 
   return response.status(200).send(r_html)
 
@@ -1557,7 +1557,7 @@ app.get('/deploy-staging-quartz', function(request, response){
 	let r = shell.exec('./deploy-staging-quartz.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
-	console.log(r_html)
+	// console.log(r_html)
 
   return response.status(200).send(r_html)
 
@@ -1577,7 +1577,7 @@ app.get('/deploy-profile-editor', function(request, response){
 	let r = shell.exec('./deploy-profile-editor.sh')
  	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
-	console.log(r_html)
+	// console.log(r_html)
 
   return response.status(200).send(r_html)
 
@@ -1986,7 +1986,7 @@ const updateGit = async function(docName,env,jsonPayload){
 	    		if (p.json && p.json.Profile && p.json.Profile.resourceTemplates){
 
 	    			for (let rt of p.json.Profile.resourceTemplates ){
-	    				console.log('wrotomg ',rt.id)
+	    				// console.log('wrotomg ',rt.id)
 						fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${rt.id}.json` , JSON.stringify(rt,null,2))
 	    			}
 	    		}
@@ -1997,11 +1997,11 @@ const updateGit = async function(docName,env,jsonPayload){
 		simpleGit.add('.')
 		.then(
 			(addSuccess) => {
-				console.log(addSuccess);
+				// console.log(addSuccess);
 				simpleGit.commit(`${docName}-${env} change`)
 					.then(
 						(successCommit) => {
-							console.log(successCommit);
+							// console.log(successCommit);
 
 							simpleGit.push('origin','main')
 								.then((success) => {
@@ -2158,13 +2158,13 @@ app.put('/profiles/:doc', async (request, response) => {
 				for (let x in docMain.data){
 
 					if (docMain.data[x].id == docName){
-						console.log("updating")
+						// console.log("updating")
 						docMain.data[x] = request.body
-						console.log(docMain.data[x])
+						// console.log(docMain.data[x])
 					}
 				}
-				console.log("docMain.data")
-				console.log(docMain.data)
+				// console.log("docMain.data")
+				// console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
 				    {'_id': new mongo.ObjectID(docMain['_id'])},
@@ -2198,8 +2198,8 @@ app.put('/profiles/:doc', async (request, response) => {
 				// add it to the data
 				docMain.data.push(request.body)
 				// find the id
-				console.log("docMain.data")
-				console.log(docMain.data)
+				// console.log("docMain.data")
+				// console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
 				    {'_id': new mongo.ObjectID(docMain['_id'])},
@@ -2295,7 +2295,7 @@ app.get('/profiles/:doc/:env', async (request, response) => {
 
 
 		let id = `${request.params.doc}-${request.params.env}`
-		console.log("id = ",id)
+		// console.log("id = ",id)
 		let doc = await dbo.collection('profiles').findOne({type: id})
 		if (doc){
 			response.json(doc.data);
@@ -2482,7 +2482,7 @@ app.post('/marcpreview/:type', async (request, response) => {
 
 			x = x.replace(/<marc:/g,'<')
 			x = x.replace(/<\/marc:/g,'</')
-			console.log(x)
+			// console.log(x)
 
 			const record = Marc.parse(x, 'marcxml');
 			rawMarc = record
