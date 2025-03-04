@@ -1335,7 +1335,7 @@ app.post('/nacostub/staging', async (request, response) => {
 		resp_data = {
 				"name": request.body.name,
 				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": err.response.body }
+				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?" }
 			}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
