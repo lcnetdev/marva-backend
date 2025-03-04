@@ -1308,6 +1308,14 @@ app.post('/nacostub/staging', async (request, response) => {
 	}catch(err){
 		console.error(err)
 
+		console.log("==================")
+		if (err && err.response){
+			console.log("err response:")
+			console.log(err.response)
+		}else{
+			console.log("No Error response!")
+		}
+		console.log("==================")
 
 
 		errString = JSON.stringify(err)
@@ -1320,6 +1328,8 @@ app.post('/nacostub/staging', async (request, response) => {
 		console.log(errString)
 		console.log("----------------------")
 		console.log("ERror code", err.StatusCodeError)
+
+
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
