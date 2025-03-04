@@ -1308,14 +1308,17 @@ app.post('/nacostub/staging', async (request, response) => {
 	}catch(err){
 		console.error(err)
 
-		console.log("==================")
+		let errorMessage = "No Message"
+
 		if (err && err.response){
 			console.log("err response:")
 			console.log(err.response)
+			if (err.response.body){
+				errorMessage=err.response.body
+			}
 		}else{
 			console.log("No Error response!")
 		}
-		console.log("==================")
 
 
 		errString = JSON.stringify(err)
@@ -1345,7 +1348,7 @@ app.post('/nacostub/staging', async (request, response) => {
 		resp_data = {
 				"name": request.body.name,
 				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?" }
+				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
 			}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
