@@ -9310,6 +9310,19 @@
                 </xsl:when>
               </xsl:choose>
             </xsl:variable>
+            <xsl:variable name="vMainSourceUri">
+              <xsl:choose>
+                <xsl:when test="*/bf:source//@rdf:*[1] != ''">
+                  <xsl:value-of select="*/bf:source//@rdf:*[1]"/>
+                </xsl:when>
+                <xsl:when test="*/madsrdf:isMemberOfMADSScheme//@rdf:*[1] != ''">
+                  <xsl:value-of select="*/madsrdf:isMemberOfMADSScheme//@rdf:*[1]"/>
+                </xsl:when>
+                <xsl:when test="$relURI != ''">
+                  <xsl:value-of select="$relURI"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="v880Script">
               <xsl:choose>
                 <xsl:when test="self::node()/*/rdfs:label/@xml:lang">
@@ -9559,11 +9572,24 @@
               <xsl:attribute name="ind2">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="contains($relURI, '/subjects/') or contains($relURI, '/names/') or contains($relURI, '/resources/hubs/')">
-                      <xsl:text>0</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains($relURI, '/childrensSubjects/')">
+                    <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/cyac') or                            contains($vMainSourceUri, '/authorities/childrensSubjects') or                           contains($vMainSourceUri, '/subjectSchemes/lcshac')">
                       <xsl:text>1</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/resources/hubs/')">
+                      <xsl:choose>
+                        <xsl:when test="ancestor::bf:Work/bf:subject/*/bf:source//@rdf:*[contains(., '/subjectSchemes/cyac') or contains(., '/authorities/childrensSubjects')]">
+                          <xsl:text>1</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="ancestor::bf:Work/bf:subject/*/madsrdf:isMemberOfMADSScheme//@rdf:*[contains(., '/subjectSchemes/cyac') or contains(., '/authorities/childrensSubjects')]">
+                          <xsl:text>1</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:text>0</xsl:text>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:when>
+                    <xsl:when test="contains($relURI, '/subjects/')">
+                      <xsl:text>0</xsl:text>
                     </xsl:when>
                     <xsl:when test="contains($relURI, '/mesh/')">
                       <xsl:text>2</xsl:text>
@@ -9571,31 +9597,22 @@
                     <xsl:when test="contains($relURI, '/nalt/')">
                       <xsl:text>3</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or                  contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or                  contains($relURI, '/fast/') or                 contains($relURI, 'd-nb.info/gnd/')">
+                    <xsl:when test="contains($relURI, '/genreForms/') or                            contains($relURI, '/demographicTerms/') or                            contains($relURI, '/graphicMaterials/') or                            contains($relURI, '/fast/') or                           contains($relURI, 'd-nb.info/gnd/')">
                       <xsl:text>7</xsl:text>
                     </xsl:when>
-                    <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/childrensSubjects'] or                  bf:source[@rdf:resource='http://id.loc.gov/authorities/childrensSubjects']">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects'] or                  bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects']">
+                    <xsl:when test="contains($vMainSourceUri, '/authorities/subjects') or                            contains($vMainSourceUri, '/subjectSchemes/lcsh') or                            contains($vMainSourceUri, '/authorities/subjects')">
                       <xsl:text>0</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(bf:source//@rdf:*[1], '/subjectSchemes/cyac') or                            contains(bf:source//@rdf:*[1], '/authorities/childrensSubjects') or                           contains(bf:source//@rdf:*[1], '/subjectSchemes/lcshac')">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(bf:source//@rdf:*[1], '/subjectSchemes/lcsh') or                            contains(bf:source//@rdf:*[1], '/authorities/subjects')">
-                      <xsl:text>0</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/mesh']">
+                    <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/mesh')">
                       <xsl:text>2</xsl:text>
                     </xsl:when>
-                    <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/nal']">
+                    <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/nal')">
                       <xsl:text>3</xsl:text>
                     </xsl:when>
-                    <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/cash']">
+                    <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/cash')">
                       <xsl:text>5</xsl:text>
                     </xsl:when>
-                    <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm']">
+                    <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/rvm')">
                       <xsl:text>6</xsl:text>
                     </xsl:when>
                   </xsl:choose>
@@ -9719,11 +9736,24 @@
                   <xsl:attribute name="ind2">
                     <xsl:variable name="vInd">
                       <xsl:choose>
-                        <xsl:when test="contains($relURI, '/subjects/') or contains($relURI, '/names/') or contains($relURI, '/resources/hubs/')">
-                          <xsl:text>0</xsl:text>
-                        </xsl:when>
-                        <xsl:when test="contains($relURI, '/childrensSubjects/')">
+                        <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/cyac') or                                contains($vMainSourceUri, '/authorities/childrensSubjects') or                               contains($vMainSourceUri, '/subjectSchemes/lcshac')">
                           <xsl:text>1</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/resources/hubs/')">
+                          <xsl:choose>
+                            <xsl:when test="ancestor::bf:Work/bf:subject/*/bf:source//@rdf:*[contains(., '/subjectSchemes/cyac') or contains(., '/authorities/childrensSubjects')]">
+                              <xsl:text>1</xsl:text>
+                            </xsl:when>
+                            <xsl:when test="ancestor::bf:Work/bf:subject/*/madsrdf:isMemberOfMADSScheme//@rdf:*[contains(., '/subjectSchemes/cyac') or contains(., '/authorities/childrensSubjects')]">
+                              <xsl:text>1</xsl:text>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:text>0</xsl:text>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:when>
+                        <xsl:when test="contains($relURI, '/subjects/')">
+                          <xsl:text>0</xsl:text>
                         </xsl:when>
                         <xsl:when test="contains($relURI, '/mesh/')">
                           <xsl:text>2</xsl:text>
@@ -9731,25 +9761,22 @@
                         <xsl:when test="contains($relURI, '/nalt/')">
                           <xsl:text>3</xsl:text>
                         </xsl:when>
-                        <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or                      contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or                      contains($relURI, '/fast/') or                     contains($relURI, 'd-nb.info/gnd/')">
+                        <xsl:when test="contains($relURI, '/genreForms/') or                                contains($relURI, '/demographicTerms/') or                                contains($relURI, '/graphicMaterials/') or                                contains($relURI, '/fast/') or                               contains($relURI, 'd-nb.info/gnd/')">
                           <xsl:text>7</xsl:text>
                         </xsl:when>
-                        <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects'] or                      bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects']">
+                        <xsl:when test="contains($vMainSourceUri, '/authorities/subjects') or                                contains($vMainSourceUri, '/subjectSchemes/lcsh') or                                contains($vMainSourceUri, '/authorities/subjects')">
                           <xsl:text>0</xsl:text>
                         </xsl:when>
-                        <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/childrensSubjects'] or                      bf:source[@rdf:resource='http://id.loc.gov/authorities/childrensSubjects']">
-                          <xsl:text>1</xsl:text>
-                        </xsl:when>
-                        <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/mesh']">
+                        <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/mesh')">
                           <xsl:text>2</xsl:text>
                         </xsl:when>
-                        <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/nal']">
+                        <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/nal')">
                           <xsl:text>3</xsl:text>
                         </xsl:when>
-                        <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/cash']">
+                        <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/cash')">
                           <xsl:text>5</xsl:text>
                         </xsl:when>
-                        <xsl:when test="bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm']">
+                        <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/rvm')">
                           <xsl:text>6</xsl:text>
                         </xsl:when>
                       </xsl:choose>
