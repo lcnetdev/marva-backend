@@ -92,7 +92,7 @@ MongoClient.connect(uri, function(err, client) {
 	        		console.log("Inserted the first ID")
 	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
 	        			nacoIdObj = doc
-	        		})	            
+	        		})
 	        })
     	}else{
     		nacoIdObj = doc
@@ -690,8 +690,6 @@ app.post('/errorlog', (request, response) => {
 
 });
 
-
-
 app.get('/sourcelog/:hash', (request, response) => {
 
 	let found = false
@@ -1027,8 +1025,6 @@ app.post('/publish/production', async (request, response) => {
 
 });
 
-
-
 app.post('/publish/staging', async (request, response) => {
 
 	// var shortuuid = require('short-uuid');
@@ -1234,7 +1230,6 @@ app.post('/publish/staging', async (request, response) => {
 });
 
 
-
 app.post('/nacostub/staging', async (request, response) => {
 
 
@@ -1336,7 +1331,7 @@ app.post('/nacostub/staging', async (request, response) => {
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
-		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body" 
+		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body"
 		// postLogEntry['postingBodyName'] = request.body.name
 		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
@@ -1362,11 +1357,6 @@ app.post('/nacostub/staging', async (request, response) => {
 });
 
 
-
-
-
-
-
 app.get('/myrecords/production/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
@@ -1374,7 +1364,6 @@ app.get('/myrecords/production/:user', function(request, response){
 		response.json({});
 	}
 });
-
 
 app.get('/allrecords/production', function(request, response){
 	response.json(recsProdByEid);
@@ -1476,14 +1465,10 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 });
 
 
-
-
-
-
 app.get('/lccnnaco', function(request, response){
 	// ++ the naco id
 	nacoIdObj.id++
-	response.json(nacoIdObj); 
+	response.json(nacoIdObj);
 
 	// update the database
 	MongoClient.connect(uri, function(err, client) {
@@ -2101,8 +2086,6 @@ app.get('/profiles/bootstrap', async (request, response) => {
 	});
 });
 
-
-
 app.get('/profiles/:doc', async (request, response) => {
 
     MongoClient.connect(uri, async function(err, db) {
@@ -2563,6 +2546,64 @@ function marcRecordHtmlify(data){
 
 };
 
+
+function worldCatAuth(){
+	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
+	const authURL = 'https://oauth.oclc.org/auth/'
+					+ '' //{registryID}
+					+ '&client_id=' + '???'
+					+ '&redirect_uri=' + 'http://library.worldshare.edu/test.php'
+					+ '&response_type=' + 'code'
+					+ '&scope=' + 'WorldCatMetadataAPI'
+};
+
+/**
+ * WorldCat
+ */
+app.post('/worldcat/search/', async (request, response) => {
+	/**
+	 * Search WorldCat to get a list of what they cataloger might want
+	 * Search API `/bibs`
+	 *
+	 * ZProcessor only supports search on ISBN and title (left anchored or keyword)
+	 *   This is in the query(?) as `ti:` = title, `bn:` = ISBN
+	 *   Limit to 10 results
+	 * Parameters:
+	 * 	query
+	 * 	index
+	 * 	item types
+	 * 	offest & limit
+	 *
+	 * list of indexes: https://help.oclc.org/Librarian_Toolbox/Searching_WorldCat_Indexes/Bibliographic_records/Bibliographic_record_indexes/Bibliographic_record_index_lists/Alphabetical_list_of_available_Connexion_bibliographic_record_indexes
+	 *
+	 * Return a list of results limited to 10?
+	 */
+
+	var query = request.body.query
+	var index = request.body.index
+	var te = request.body.type
+	var offset = request.body.offset
+	var limit = request.body.limit
+
+	var url = "https://" + WORLDCATURL.trim() + "/bibs"
+});
+
+app.post('/worldcat/marc/:ocn', async (request, response) => {
+	/**
+	 * MARC comes from Metadata API `/worldcat/search/bibs/{oclcNumber}`
+	 *
+	 */
+
+	let ocn = request.params.ocn
+
+	var url = "https://" + WORLDCATURL.trim() + "/worldcat/manage/bibs/" + ocn
+
+	// const record = Marc.parse(x, 'marcxml');
+	// rawMarc = record
+	// marcRecord = Marc.format(record, 'Text')
+
+
+});
 
 console.log('listending on 5200')
 app.listen(5200);
