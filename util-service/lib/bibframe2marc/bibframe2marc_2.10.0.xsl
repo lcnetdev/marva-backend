@@ -4623,8 +4623,8 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:choose>
-        <xsl:when test="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    bf:title and                                                    not(../../bf:contribution/bf:PrimaryContribution) and                                                    not(../../bf:contribution/bflc:PrimaryContribution) and                                                    not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    bf:title and                                                    not(../../bf:contribution/bf:PrimaryContribution) and                                                    not(../../bf:contribution/bflc:PrimaryContribution) and                                                    not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:when test="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="vTitleResourcePreNS">
               <xsl:call-template name="tGetRelResource">
                 <xsl:with-param name="pUri" select="@rdf:about"/>
@@ -4781,7 +4781,7 @@
                     </xsl:otherwise>
                   </xsl:choose>
                   <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-                    <marc:subfield code="0">
+                    <marc:subfield code="1">
                       <xsl:value-of select="."/>
                     </marc:subfield>
                   </xsl:for-each>
@@ -4816,7 +4816,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    bf:title and                                                    not(../../bf:contribution/bf:PrimaryContribution) and                                                    not(../../bf:contribution/bflc:PrimaryContribution) and                                                    not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                             ]">
+          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ]">
             <xsl:variable name="vTitleResourcePreNS">
               <xsl:call-template name="tGetRelResource">
                 <xsl:with-param name="pUri" select="@rdf:about"/>
@@ -4973,7 +4973,7 @@
                     </xsl:otherwise>
                   </xsl:choose>
                   <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-                    <marc:subfield code="0">
+                    <marc:subfield code="1">
                       <xsl:value-of select="."/>
                     </marc:subfield>
                   </xsl:for-each>
@@ -6165,9 +6165,6 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/por']">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
                     <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/atp']">
                       <xsl:text>1</xsl:text>
                     </xsl:when>
@@ -6181,9 +6178,6 @@
                       <xsl:text>1</xsl:text>
                     </xsl:when>
                     <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/spi']">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="bf:variantType = 'portion'">
                       <xsl:text>1</xsl:text>
                     </xsl:when>
                     <xsl:when test="bf:variantType = 'added title page'">
@@ -7787,22 +7781,7 @@
               <xsl:attribute name="ind1">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/vocabulary/relationship/series']/bf:associatedResource/bf:Hub[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/vocabulary/relationship/series']/bf:associatedResource/bf:Series[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/ontologies/bibframe/hasSeries']/bf:associatedResource/bf:Hub[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="../../../../bf:relation/bf:Relation[bf:relationship/bf:Relationship/@rdf:about='http://id.loc.gov/ontologies/bibframe/hasSeries']/bf:associatedResource/bf:Series[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="../../../../bflc:relationship/bflc:Relationship[bflc:relation/bflc:Relation/@rdf:about='http://id.loc.gov/ontologies/bibframe/hasSeries']/bf:relatedTo/bf:Hub[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
-                      <xsl:text>1</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="../../../../bflc:relationship/bflc:Relationship[bflc:relation/bflc:Relation/@rdf:about='http://id.loc.gov/ontologies/bibframe/hasSeries']/bf:relatedTo/bf:Series[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled')]">
+                    <xsl:when test="bf:status//@rdf:*[1] = 'http://id.loc.gov/vocabulary/mstatus/tr'">
                       <xsl:text>1</xsl:text>
                     </xsl:when>
                   </xsl:choose>
@@ -25817,7 +25796,7 @@
       </xsl:if>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    bf:title and                                                    not(../../bf:contribution/bf:PrimaryContribution) and                                                    not(../../bf:contribution/bflc:PrimaryContribution) and                                                    not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                             ]" mode="generate-130">
+  <xsl:template match="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ]" mode="generate-130">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vTitleResourcePreNS">
@@ -25976,7 +25955,7 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-            <marc:subfield code="0">
+            <marc:subfield code="1">
               <xsl:value-of select="."/>
             </marc:subfield>
           </xsl:for-each>
