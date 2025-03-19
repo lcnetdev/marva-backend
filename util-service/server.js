@@ -2549,12 +2549,14 @@ function marcRecordHtmlify(data){
 
 function worldCatAuth(){
 	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
-	const authURL = 'https://oauth.oclc.org/auth/'
+	let authURL = 'https://oauth.oclc.org/auth/'
 					+ '' //{registryID}
 					+ '&client_id=' + '???'
 					+ '&redirect_uri=' + 'http://library.worldshare.edu/test.php'
 					+ '&response_type=' + 'code'
 					+ '&scope=' + 'WorldCatMetadataAPI'
+
+	let tokenURL = "https://oauth.oclc.org/token"
 };
 
 /**
