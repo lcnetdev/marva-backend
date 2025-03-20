@@ -17,6 +17,7 @@
     "mongodb": "^3.6.4",
     "shelljs": "^0.8.5",
     "simple-git": "^3.25.0",
+    "simple-oauth2": "^5.1.0",
     "tslib": "^2.6.3",
     "zip-a-folder": "^3.1.7"
   }

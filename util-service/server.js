@@ -10,6 +10,11 @@ const { Marc } = require('marcjs');
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
 
+// const session = require('express-session')
+// const bodyParser = require('body-parser');
+// const yaml = require('js-yaml');
+// const axios = require("axios");
+
 var got
 
 (async function () {
@@ -37,6 +42,8 @@ const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
 const VALIDATIONURL = process.env.VALIDATIONURL;
 const STAGINGNACOSTUB = process.env.STAGINGNACOSTUB;
 const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
+const WC_CLIENTID = process.env.WC_CLIENTID;
+const WC_SECRET = process.env.WC_SECRET;
 
 // disable some features when running in bibframe.org mode
 const BFORGMODE = process.env.BFORGMODE;
@@ -76,165 +83,165 @@ let NACO_START = 2025700001
 let nacoIdObj = null
 
 const uri = 'mongodb://mongo:27017/';
-MongoClient.connect(uri, function(err, client) {
+// MongoClient.connect(uri, function(err, client) {
 
-	console.log("err", err)
-	console.log("client", client)
+// 	console.log("err", err)
+// 	console.log("client", client)
 
-    const db = client.db('bfe2');
-
-
-    db.collection('lccnNACO').findOne({}).then(function(doc) {
-    	if(!doc){
-    		// no doc here means there is no collection, so insert our first number
-    		db.collection("lccnNACO").insertOne({ id: NACO_START },
-	        	function(err, result) {
-	        		console.log("Inserted the first ID")
-	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
-	        			nacoIdObj = doc
-	        		})
-	        })
-    	}else{
-    		nacoIdObj = doc
-    	}
-    })
-
-    // build an intial index
-    // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
-    //     if(err){
-    //         throw err;
-    //     }
-    //     console.log(col);
-    //     docs.forEach(console.log);
-    // });
+//     const db = client.db('bfe2');
 
 
+//     db.collection('lccnNACO').findOne({}).then(function(doc) {
+//     	if(!doc){
+//     		// no doc here means there is no collection, so insert our first number
+//     		db.collection("lccnNACO").insertOne({ id: NACO_START },
+// 	        	function(err, result) {
+// 	        		console.log("Inserted the first ID")
+// 	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
+// 	        			nacoIdObj = doc
+// 	        		})
+// 	        })
+//     	}else{
+//     		nacoIdObj = doc
+//     	}
+//     })
 
-    var cursor = db.collection('resourcesStaging').find({});
-
- 		cursor.forEach((doc)=>{
-
- 			if (doc.index){
-
- 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-		 			// console.log("-------doc")
-
-		 			// console.log(doc)
-		 			// console.log('doc.index.eid',doc.index.eid)
-		 			// console.log('doc.index.user',doc.index.user)
-
-
-	 				if (doc.index.eid){
-	 					recsStageByEid[doc.index.eid] = doc.index
-	 					recsStageByEid[doc.index.eid]._id = doc._id
-	 				}
-	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsStageByUser[doc.index.user]){
-	 						recsStageByUser[doc.index.user] = {}
-	 					}
-	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
-	 				}
-	 			}
- 			}
- 		})
-
-
-    db.collection('resourcesStaging').watch().on('change', data =>
-    {
-
-        // get the doc
-				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-				.then(function(doc) {
-        if(!doc)
-            throw new Error('No record found.');
-
-			      // add it to the list or update it whatever
-		 				if (doc.index.eid){
-		 					recsStageByEid[doc.index.eid] = doc.index
-		 					recsStageByEid[doc.index.eid]._id = doc._id
-		 				}
-
-			      if (doc.index.user && doc.index.eid){
-		 					if (!recsStageByUser[doc.index.user]){
-		 						recsStageByUser[doc.index.user] = {}
-		 					}
-		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
-			      }
+//     // build an intial index
+//     // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
+//     //     if(err){
+//     //         throw err;
+//     //     }
+//     //     console.log(col);
+//     //     docs.forEach(console.log);
+//     // });
 
 
 
+//     var cursor = db.collection('resourcesStaging').find({});
 
-			  });
+//  		cursor.forEach((doc)=>{
+
+//  			if (doc.index){
+
+//  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+// 		 			// console.log("-------doc")
+
+// 		 			// console.log(doc)
+// 		 			// console.log('doc.index.eid',doc.index.eid)
+// 		 			// console.log('doc.index.user',doc.index.user)
 
 
-    });
+// 	 				if (doc.index.eid){
+// 	 					recsStageByEid[doc.index.eid] = doc.index
+// 	 					recsStageByEid[doc.index.eid]._id = doc._id
+// 	 				}
+// 	 				if (doc.index.user && doc.index.eid){
+// 	 					if (!recsStageByUser[doc.index.user]){
+// 	 						recsStageByUser[doc.index.user] = {}
+// 	 					}
+// 	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+// 	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+// 	 				}
+// 	 			}
+//  			}
+//  		})
+
+
+//     db.collection('resourcesStaging').watch().on('change', data =>
+//     {
+
+//         // get the doc
+// 				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
+// 				.then(function(doc) {
+//         if(!doc)
+//             throw new Error('No record found.');
+
+// 			      // add it to the list or update it whatever
+// 		 				if (doc.index.eid){
+// 		 					recsStageByEid[doc.index.eid] = doc.index
+// 		 					recsStageByEid[doc.index.eid]._id = doc._id
+// 		 				}
+
+// 			      if (doc.index.user && doc.index.eid){
+// 		 					if (!recsStageByUser[doc.index.user]){
+// 		 						recsStageByUser[doc.index.user] = {}
+// 		 					}
+// 		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
+// 		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+// 			      }
 
 
 
 
-    var cursor = db.collection('resourcesProduction').find({});
-
- 		cursor.forEach((doc)=>{
-
- 			if (doc.index){
-
- 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-	 				if (doc.index.eid){
-	 					recsProdByEid[doc.index.eid] = doc.index
-	 					recsProdByEid[doc.index.eid]._id = doc._id
-	 				}
-	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsProdByUser[doc.index.user]){
-	 						recsProdByUser[doc.index.user] = {}
-	 					}
-	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
-	 				}
-	 			}
- 			}
- 		})
+// 			  });
 
 
-    db.collection('resourcesProduction').watch().on('change', data =>
-    {
-
-        // get the doc
-				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-				.then(function(doc) {
-        if(!doc)
-            throw new Error('No record found.');
-
-			      // add it to the list or update it whatever
-		 				if (doc.index.eid){
-		 					recsProdByEid[doc.index.eid] = doc.index
-		 					recsProdByEid[doc.index.eid]._id = doc._id
-		 				}
-
-			      if (doc.index.user && doc.index.eid){
-		 					if (!recsProdByUser[doc.index.user]){
-		 						recsProdByUser[doc.index.user] = {}
-		 					}
-		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
-			      }
+//     });
 
 
 
 
-			  });
+//     var cursor = db.collection('resourcesProduction').find({});
+
+//  		cursor.forEach((doc)=>{
+
+//  			if (doc.index){
+
+//  				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
+
+// 	 				if (doc.index.eid){
+// 	 					recsProdByEid[doc.index.eid] = doc.index
+// 	 					recsProdByEid[doc.index.eid]._id = doc._id
+// 	 				}
+// 	 				if (doc.index.user && doc.index.eid){
+// 	 					if (!recsProdByUser[doc.index.user]){
+// 	 						recsProdByUser[doc.index.user] = {}
+// 	 					}
+// 	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+// 	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+// 	 				}
+// 	 			}
+//  			}
+//  		})
 
 
-    });
+//     db.collection('resourcesProduction').watch().on('change', data =>
+//     {
+
+//         // get the doc
+// 				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
+// 				.then(function(doc) {
+//         if(!doc)
+//             throw new Error('No record found.');
+
+// 			      // add it to the list or update it whatever
+// 		 				if (doc.index.eid){
+// 		 					recsProdByEid[doc.index.eid] = doc.index
+// 		 					recsProdByEid[doc.index.eid]._id = doc._id
+// 		 				}
+
+// 			      if (doc.index.user && doc.index.eid){
+// 		 					if (!recsProdByUser[doc.index.user]){
+// 		 						recsProdByUser[doc.index.user] = {}
+// 		 					}
+// 		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
+// 		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+// 			      }
+
+
+
+
+// 			  });
+
+
+//     });
 
 
 
 
 
-});
+// });
 
 
 
@@ -2547,16 +2554,62 @@ function marcRecordHtmlify(data){
 };
 
 
-function worldCatAuth(){
+async function worldCatAuthToken(){
+	//https://www.oclc.org/developer/api/keys/oauth.en.html
 	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
-	let authURL = 'https://oauth.oclc.org/auth/'
-					+ '' //{registryID}
-					+ '&client_id=' + '???'
-					+ '&redirect_uri=' + 'http://library.worldshare.edu/test.php'
-					+ '&response_type=' + 'code'
-					+ '&scope=' + 'WorldCatMetadataAPI'
+	//https://github.com/OCLC-Developer-Network/gists/blob/master/authentication/node/authCodeAuthExample.js
+	const credentials = {
+		client: {
+		  id: WC_CLIENTID,
+		  secret: WC_SECRET
+		},
+		auth: {
+		  tokenHost: 'https://oauth.oclc.org',
+		  tokenPath: '/token',
+		}
+	  };
 
-	let tokenURL = "https://oauth.oclc.org/token"
+	const scopes = "WorldCatMetadataAPI wcapi:view_bib"; // refresh_token";
+	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
+	const oauth2 = new ClientCredentials(credentials);
+	console.log("ClientCredentials: ", ClientCredentials)
+	console.log("oauth2: ", oauth2)
+	const tokenConfig = {
+		scope: scopes
+	};
+
+	async function getToken(){
+		console.info("getToken")
+		//Get the access token object for the client
+		   try {
+			   let httpOptions = {'Accept': 'application/json'};
+			   let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
+			   console.info("result: ", accessToken)
+			   return accessToken
+		   } catch (error) {
+			   return error;
+		   }
+   }
+
+	// Before doing this, check if there is a token value and if it is still good
+	let token
+	const now = new Date()
+	console.info('now: ', now)
+
+	if (process.env.WC_EXPIRES && (Date.parse(process.env.WC_EXPIRES) - now > 1000)){
+		// use the existing token
+	} else {
+		token = await getToken();
+		console.log("token: ", token)
+		process.env.WC_TOKEN = token.token.access_token
+		process.env.WC_EXPIRES = token.token.expires_at
+	}
+
+	console.log("access_token: ", process.env.WC_TOKEN)
+	console.log("expires: ", process.env.WC_EXPIRES)
+	console.log("remaining time: ", (Date.parse(process.env.WC_EXPIRES) - now))
+
+	return process.env.WC_TOKEN
 };
 
 /**
@@ -2581,13 +2634,58 @@ app.post('/worldcat/search/', async (request, response) => {
 	 * Return a list of results limited to 10?
 	 */
 
-	var query = request.body.query
-	var index = request.body.index
-	var te = request.body.type
-	var offset = request.body.offset
-	var limit = request.body.limit
+	let wcQuery = request.body.query
+	let wcIndex = request.body.index
+	let wcType = request.body.type
+	let wcOffset = request.body.offset
+	let wcLimit = request.body.limit
+	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/bibs'
 
-	var url = "https://" + WORLDCATURL.trim() + "/bibs"
+	const token = await worldCatAuthToken()
+	console.log("token: ", token)
+
+	console.log("making request to ", URL)
+	try{
+		const resp = await got(URL, {
+			searchParams: {
+				q: wcIndex + ": " + wcQuery,
+				itemType: wcType,
+				offset: wcOffset,
+				limit: wcLimit
+			},
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/json",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		// console.log("resp: ", resp)
+		console.log("results: ", resp.body)
+
+		let resp_data = {
+			status: {"status":"success"},
+			results: JSON.parse(resp.body)
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+	}
+
+
+
 });
 
 app.post('/worldcat/marc/:ocn', async (request, response) => {
