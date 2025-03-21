@@ -26,6 +26,10 @@ var got
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
 
+const NodeCache = require( "node-cache" );
+const wcMarcCache = new NodeCache();
+const cacheTTL = 43200  //12 hours
+
 var recsStageByEid = {}
 var recsProdByEid = {}
 
@@ -2512,6 +2516,7 @@ app.post('/marcpreview/:type', async (request, response) => {
  * Puts everything into HTML tags with classes to help style the output
  */
 function marcRecordHtmlify(data){
+	console.info("html: ", data)
 	let formatedMarcRecord = ["<div class='marc record'>"]
 	let leader = "<div class='marc leader'>" + data["leader"].replace( / /g, "&nbsp;" ) + "</div>"
 	formatedMarcRecord.push(leader)
@@ -2569,7 +2574,7 @@ async function worldCatAuthToken(){
 		}
 	  };
 
-	const scopes = "WorldCatMetadataAPI wcapi:view_bib"; // refresh_token";
+	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
 	const oauth2 = new ClientCredentials(credentials);
 	console.log("ClientCredentials: ", ClientCredentials)
@@ -2612,6 +2617,95 @@ async function worldCatAuthToken(){
 	return process.env.WC_TOKEN
 };
 
+async function worldCatSearchApi(token, query, itemType, offset, limit){
+	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
+
+	console.log("making SEARCH request to ", URL)
+
+	try{
+		const resp = await got(URL, {
+			searchParams: {
+				q: query,
+				itemType: itemType,
+				offset: offset,
+				limit: limit
+			},
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/json",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		// console.log("resp: ", resp)
+		console.log("results: ", resp.body)
+		const data = JSON.parse(resp.body)
+		let resp_data = {
+			status: {"status":"success"},
+			results: data
+		}
+
+		return resp_data
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+		return resp_data
+	}
+};
+
+async function worldCatMetadataApi(token, ocn){
+
+	let cachedValue = wcMarcCache.get(token)
+	if (typeof cachedValue != 'undefined'){
+		console.log("returning from cache")
+		let resp_data = {
+			status: {"status":"success"},
+			results: cachedValue.marc
+		}
+		return resp_data
+	}
+
+	const URL = 'https://metadata.api.oclc.org/worldcat/manage/bibs/' + ocn
+
+	console.log("making METADATA request to ", URL)
+
+	try{
+		const resp = await got(URL, {
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/marcxml+xml",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		// console.log("resp: ", resp)
+		console.log("results: ", resp.body)
+		const data = resp.body
+		let resp_data = {
+			status: {"status":"success"},
+			results: data
+		}
+		cache = wcMarcCache.set( token, {marc: data}, cacheTTL );
+		return resp_data
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+		return resp_data
+	}
+};
+
 /**
  * WorldCat
  */
@@ -2639,50 +2733,33 @@ app.post('/worldcat/search/', async (request, response) => {
 	let wcType = request.body.type
 	let wcOffset = request.body.offset
 	let wcLimit = request.body.limit
-	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/bibs'
+	let marc = request.body.marc
+	// /bibs has more details, but brief-bibs as cataloging information that might be useful
 
 	const token = await worldCatAuthToken()
 	console.log("token: ", token)
 
-	console.log("making request to ", URL)
-	try{
-		const resp = await got(URL, {
-			searchParams: {
-				q: wcIndex + ": " + wcQuery,
-				itemType: wcType,
-				offset: wcOffset,
-				limit: wcLimit
-			},
-			headers: {
-				'Authorization': 'Bearer ' + token,
-				'Accept': "application/json",
-				'User-Agent': 'marva-backend/ndmso@loc.gov'
-			}
-		});
+	let resp_data
+	if (!marc){
+		resp_data = await worldCatSearchApi(token, wcIndex + ": " + wcQuery, wcType, wcOffset, wcLimit)
+		for (let record of resp_data.results.briefRecords){
+			marc_data = await worldCatMetadataApi(token, record.oclcNumber)
+			const marc = Marc.parse(marc_data.results, 'marcxml');
+			rawMarc = marc
+			marcRecord = Marc.format(marc, 'Text')
 
-		// console.log("resp: ", resp)
-		console.log("results: ", resp.body)
+			console.info("rawMarc: ", rawMarc)
 
-		let resp_data = {
-			status: {"status":"success"},
-			results: JSON.parse(resp.body)
+			record.marcXML = marc_data.results
+			record.marcRaw = rawMarc
+			record.marcHTML = marcRecordHtmlify(rawMarc)
 		}
-
-		response.set('Content-Type', 'application/json');
-		response.status(200).send(resp_data);
-	} catch(error){
-		// console.error("Error: ", error)
-		// console.error("Error: ", error.response.statusCode)
-		// console.error("Error: ", error.response)
-
-		let resp_data = {
-			status: {"status":"error"},
-			error: error
-		}
-
-		response.set('Content-Type', 'application/json');
-		response.status(200).send(resp_data);
+	} else {
+		resp_data = await worldCatMetadataApi(token, ocn)
 	}
+
+	response.set('Content-Type', 'application/json');
+	response.status(200).send(resp_data);
 
 
 
