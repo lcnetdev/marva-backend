@@ -10080,6 +10080,56 @@
                               </marc:subfield>
                             </xsl:if>
                           </xsl:when>
+                          <xsl:when test="local-name()='HierarchicalGeographic' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#HierarchicalGeographic']">
+                            <xsl:choose>
+                              <xsl:when test="contains(madsrdf:authoritativeLabel, '--')">
+                                <xsl:call-template name="tToken2Subfields">
+                                  <xsl:with-param name="pString" select="madsrdf:authoritativeLabel"/>
+                                  <xsl:with-param name="pSeparator" select="'--'"/>
+                                  <xsl:with-param name="pSubfieldCode" select="'z'"/>
+                                </xsl:call-template>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:variable name="v-z">
+                                  <xsl:choose>
+                                    <xsl:when test="madsrdf:authoritativeLabel">
+                                      <xsl:for-each select="madsrdf:authoritativeLabel">
+                                        <xsl:choose>
+                                          <xsl:when test="position() = 1">
+                                            <xsl:call-template name="tChopPunct">
+                                              <xsl:with-param name="pString" select="."/>
+                                            </xsl:call-template>
+                                          </xsl:when>
+                                          <xsl:otherwise>
+                                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element  $z.</xsl:message>
+                                          </xsl:otherwise>
+                                        </xsl:choose>
+                                      </xsl:for-each>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                      <xsl:for-each select="rdfs:label">
+                                        <xsl:choose>
+                                          <xsl:when test="position() = 1">
+                                            <xsl:call-template name="tChopPunct">
+                                              <xsl:with-param name="pString" select="."/>
+                                            </xsl:call-template>
+                                          </xsl:when>
+                                          <xsl:otherwise>
+                                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element  $z.</xsl:message>
+                                          </xsl:otherwise>
+                                        </xsl:choose>
+                                      </xsl:for-each>
+                                    </xsl:otherwise>
+                                  </xsl:choose>
+                                </xsl:variable>
+                                <xsl:if test="$v-z != ''">
+                                  <marc:subfield code="z">
+                                    <xsl:value-of select="$v-z"/>
+                                  </marc:subfield>
+                                </xsl:if>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:when>
                           <xsl:otherwise>
                             <xsl:variable name="v-x">
                               <xsl:choose>
