@@ -1476,6 +1476,83 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 });
 
 
+// app.post('/preferences', async (request, response) => {
+
+//     MongoClient.connect(uri, async function(err, db) {
+//         if (err) throw err;
+//         var dbo = db.db("bfe2");
+
+//         // find the key to update
+// 		let doc = await dbo.collection('preferences').findOne({id: request.body.id})
+// 		if (doc){
+
+// 			dbo.collection('preferences').updateOne(
+// 			    {'_id': new mongo.ObjectID(doc['_id'])},
+// 			    { $set: request.body }
+// 			);
+
+			
+
+// 		}else{
+// 			console.log("creating")
+
+
+// 	        dbo.collection("templates").insertOne(request.body,
+// 	        function(err, result) {
+// 	            if (err) {
+// 	            	console.log(err)
+// 	            }
+// 	        });
+// 		}
+
+// 		db.close();
+
+// 		// dbo.collection('profiles').collectionName.remove( { } )
+//     });
+
+//     return response.status(200).send("yeah :)")
+// });
+
+
+
+
+
+
+
+
+app.get('/lccnnaco/set/:set', function(request, response){
+
+
+	if (request.params.set){
+		let setTo = parseInt(request.params.set)
+
+
+		let correctlogin = 'INCORRECTLOGINVALUE'
+		if (request.headers.authorization){
+			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+		}
+		if (  request.headers.authorization !== `Basic ${correctlogin}`){
+			return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+		}
+		// Access granted...
+		// set nacoIdObj because it is in memory and used to ++ and return before interacting with the db
+		nacoIdObj.id = setTo
+
+		// update the database
+		MongoClient.connect(uri, function(err, client) {
+		    const db = client.db('bfe2');
+			let result = db.collection('lccnNACO').updateOne(
+			    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
+			    { $set: {id:nacoIdObj.id } }
+			);
+		})
+		response.status(200).send('Set to:' + setTo) 
+	}else{
+		response.status(500).send('Missing param :set.') 
+
+	}
+
+});
 
 
 
