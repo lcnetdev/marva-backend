@@ -6625,19 +6625,60 @@
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:for-each select="bf:Instance/bf:editionStatement">
+      <xsl:for-each select="bf:Instance/bf:editionStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:variable name="v880" select="ancestor::bf:Instance/bf:editionStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
         <xsl:variable name="v880Script">
           <xsl:choose>
-            <xsl:when test="@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))">
+            <xsl:when test="$v880/@xml:lang">
               <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after(@xml:lang,'-'),$upper,$lower)"/>
+                <xsl:value-of select="translate(substring-after($v880/@xml:lang,'-'),$upper,$lower)"/>
               </xsl:variable>
               <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">250</xsl:attribute>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880/@xml:lang">
+              <xsl:variable name="v250-6">
+                <xsl:value-of select="'880-24'"/>
+              </xsl:variable>
+              <xsl:if test="$v250-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v250-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:variable name="v250-a">
+            <xsl:value-of select="."/>
+            <xsl:variable name="vEndsWith">
+              <transform xmlns="http://www.loc.gov/bf2marc">
+                <xsl:call-template name="tEndsWith">
+                  <xsl:with-param name="pStr" select="."/>
+                  <xsl:with-param name="pEndChar" select="'.'"/>
+                </xsl:call-template>
+              </transform>
+            </xsl:variable>
+            <xsl:if test="$vEndsWith = '0'">
+              <xsl:text>.</xsl:text>
+            </xsl:if>
+          </xsl:variable>
+          <xsl:if test="$v250-a != ''">
+            <marc:subfield code="a">
+              <xsl:value-of select="$v250-a"/>
+            </marc:subfield>
+          </xsl:if>
+        </marc:datafield>
         <xsl:choose>
-          <xsl:when test="$v880Script != ''">
+          <xsl:when test="$v880/@xml:lang">
             <marc:datafield>
               <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -6646,34 +6687,20 @@
               <xsl:attribute name="ind2">
                 <xsl:text> </xsl:text>
               </xsl:attribute>
-              <xsl:choose>
-                <xsl:when test="ancestor::bf:Instance/bf:editionStatement[not(@xml:lang)]">
-                  <xsl:variable name="v880-6">
-                    <xsl:value-of select="concat('250-24/',$v880Script)"/>
-                  </xsl:variable>
-                  <xsl:if test="$v880-6 != ''">
-                    <marc:subfield code="6">
-                      <xsl:value-of select="$v880-6"/>
-                    </marc:subfield>
-                  </xsl:if>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:variable name="v880-6">
-                    <xsl:value-of select="concat('250-24/',$v880Script)"/>
-                  </xsl:variable>
-                  <xsl:if test="$v880-6 != ''">
-                    <marc:subfield code="6">
-                      <xsl:value-of select="$v880-6"/>
-                    </marc:subfield>
-                  </xsl:if>
-                </xsl:otherwise>
-              </xsl:choose>
+              <xsl:variable name="v880-6">
+                <xsl:value-of select="concat('250-24/',$v880Script)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v880-6"/>
+                </marc:subfield>
+              </xsl:if>
               <xsl:variable name="v880-a">
-                <xsl:value-of select="."/>
+                <xsl:value-of select="$v880"/>
                 <xsl:variable name="vEndsWith">
                   <transform xmlns="http://www.loc.gov/bf2marc">
                     <xsl:call-template name="tEndsWith">
-                      <xsl:with-param name="pStr" select="."/>
+                      <xsl:with-param name="pStr" select="$v880"/>
                       <xsl:with-param name="pEndChar" select="'.'"/>
                     </xsl:call-template>
                   </transform>
@@ -6689,48 +6716,6 @@
               </xsl:if>
             </marc:datafield>
           </xsl:when>
-          <xsl:otherwise>
-            <marc:datafield>
-              <xsl:attribute name="tag">250</xsl:attribute>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:choose>
-                <xsl:when test="ancestor::bf:Instance/bf:editionStatement[@xml:lang]">
-                  <xsl:variable name="v250-6">
-                    <xsl:value-of select="'880-24'"/>
-                  </xsl:variable>
-                  <xsl:if test="$v250-6 != ''">
-                    <marc:subfield code="6">
-                      <xsl:value-of select="$v250-6"/>
-                    </marc:subfield>
-                  </xsl:if>
-                </xsl:when>
-              </xsl:choose>
-              <xsl:variable name="v250-a">
-                <xsl:value-of select="."/>
-                <xsl:variable name="vEndsWith">
-                  <transform xmlns="http://www.loc.gov/bf2marc">
-                    <xsl:call-template name="tEndsWith">
-                      <xsl:with-param name="pStr" select="."/>
-                      <xsl:with-param name="pEndChar" select="'.'"/>
-                    </xsl:call-template>
-                  </transform>
-                </xsl:variable>
-                <xsl:if test="$vEndsWith = '0'">
-                  <xsl:text>.</xsl:text>
-                </xsl:if>
-              </xsl:variable>
-              <xsl:if test="$v250-a != ''">
-                <marc:subfield code="a">
-                  <xsl:value-of select="$v250-a"/>
-                </marc:subfield>
-              </xsl:if>
-            </marc:datafield>
-          </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
       <xsl:apply-templates select="bf:Work/bf:scale[not(bf:Scale)]" mode="generate-255">
@@ -7000,6 +6985,12 @@
                             <xsl:with-param name="pEndChar" select="']'"/>
                           </xsl:call-template>
                         </xsl:variable>
+                        <xsl:variable name="vEndsWithDash">
+                          <xsl:call-template name="tEndsWith">
+                            <xsl:with-param name="pStr" select="."/>
+                            <xsl:with-param name="pEndChar" select="'-'"/>
+                          </xsl:call-template>
+                        </xsl:variable>
                         <xsl:variable name="vEndsWithPeriod">
                           <xsl:call-template name="tEndsWith">
                             <xsl:with-param name="pStr" select="."/>
@@ -7008,6 +6999,7 @@
                         </xsl:variable>
                         <xsl:choose>
                           <xsl:when test="$vEndsWithBracket = '1'"/>
+                          <xsl:when test="$vEndsWithDash = '1'"/>
                           <xsl:when test="$vEndsWithPeriod = '0'">
                             <xsl:text>.</xsl:text>
                           </xsl:when>
@@ -7153,6 +7145,12 @@
                                 <xsl:with-param name="pEndChar" select="']'"/>
                               </xsl:call-template>
                             </xsl:variable>
+                            <xsl:variable name="vEndsWithDash">
+                              <xsl:call-template name="tEndsWith">
+                                <xsl:with-param name="pStr" select="."/>
+                                <xsl:with-param name="pEndChar" select="'-'"/>
+                              </xsl:call-template>
+                            </xsl:variable>
                             <xsl:variable name="vEndsWithPeriod">
                               <xsl:call-template name="tEndsWith">
                                 <xsl:with-param name="pStr" select="."/>
@@ -7161,6 +7159,7 @@
                             </xsl:variable>
                             <xsl:choose>
                               <xsl:when test="$vEndsWithBracket = '1'"/>
+                              <xsl:when test="$vEndsWithDash = '1'"/>
                               <xsl:when test="$vEndsWithPeriod = '0'">
                                 <xsl:text>.</xsl:text>
                               </xsl:when>
