@@ -10,6 +10,11 @@ const { Marc } = require('marcjs');
 const mongo = require('mongodb')
 const MongoClient = mongo.MongoClient;
 
+// const session = require('express-session')
+// const bodyParser = require('body-parser');
+// const yaml = require('js-yaml');
+// const axios = require("axios");
+
 var got
 
 (async function () {
@@ -20,6 +25,10 @@ var got
 
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
+
+const NodeCache = require( "node-cache" );
+const wcMarcCache = new NodeCache();
+const cacheTTL = 43200  //12 hours
 
 var recsStageByEid = {}
 var recsProdByEid = {}
@@ -34,9 +43,12 @@ const MLUSERSTAGE = process.env.MLUSERSTAGE;
 const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
+const PRODUCTIONccURL = process.env.PRODUCTIONccURL;
 const VALIDATIONURL = process.env.VALIDATIONURL;
 const STAGINGNACOSTUB = process.env.STAGINGNACOSTUB;
 const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
+const WC_CLIENTID = process.env.WC_CLIENTID;
+const WC_SECRET = process.env.WC_SECRET;
 
 // disable some features when running in bibframe.org mode
 const BFORGMODE = process.env.BFORGMODE;
@@ -92,7 +104,7 @@ MongoClient.connect(uri, function(err, client) {
 	        		console.log("Inserted the first ID")
 	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
 	        			nacoIdObj = doc
-	        		})	            
+	        		})
 	        })
     	}else{
     		nacoIdObj = doc
@@ -690,8 +702,6 @@ app.post('/errorlog', (request, response) => {
 
 });
 
-
-
 app.get('/sourcelog/:hash', (request, response) => {
 
 	let found = false
@@ -1027,8 +1037,6 @@ app.post('/publish/production', async (request, response) => {
 
 });
 
-
-
 app.post('/publish/staging', async (request, response) => {
 
 	// var shortuuid = require('short-uuid');
@@ -1234,7 +1242,6 @@ app.post('/publish/staging', async (request, response) => {
 });
 
 
-
 app.post('/nacostub/staging', async (request, response) => {
 
 
@@ -1336,7 +1343,7 @@ app.post('/nacostub/staging', async (request, response) => {
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
-		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body" 
+		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body"
 		// postLogEntry['postingBodyName'] = request.body.name
 		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
@@ -1462,7 +1469,7 @@ app.post('/nacostub/production', async (request, response) => {
 
 		postLogEntry['postingStatus'] = 'error'
 		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
-		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body" 
+		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body"
 		// postLogEntry['postingBodyName'] = request.body.name
 		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
@@ -1487,11 +1494,6 @@ app.post('/nacostub/production', async (request, response) => {
 
 });
 
-
-
-
-
-
 app.get('/myrecords/production/:user', function(request, response){
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
@@ -1499,7 +1501,6 @@ app.get('/myrecords/production/:user', function(request, response){
 		response.json({});
 	}
 });
-
 
 app.get('/allrecords/production', function(request, response){
 	response.json(recsProdByEid);
@@ -1616,7 +1617,7 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 // 			    { $set: request.body }
 // 			);
 
-			
+
 
 // 		}else{
 // 			console.log("creating")
@@ -1671,9 +1672,9 @@ app.get('/lccnnaco/set/:set', function(request, response){
 			    { $set: {id:nacoIdObj.id } }
 			);
 		})
-		response.status(200).send('Set to:' + setTo) 
+		response.status(200).send('Set to:' + setTo)
 	}else{
-		response.status(500).send('Missing param :set.') 
+		response.status(500).send('Missing param :set.')
 
 	}
 
@@ -1685,7 +1686,7 @@ app.get('/lccnnaco/set/:set', function(request, response){
 app.get('/lccnnaco', function(request, response){
 	// ++ the naco id
 	nacoIdObj.id++
-	response.json(nacoIdObj); 
+	response.json(nacoIdObj);
 
 	// update the database
 	MongoClient.connect(uri, function(err, client) {
@@ -2036,9 +2037,7 @@ app.delete('/templates/:doc', async (request, response) => {
 
 app.post("/validate", async (request, response) => {
 	var rdfxml = request.body.rdfxml;
-
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
-
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
 
 	let postLogEntry = {
@@ -2046,7 +2045,6 @@ app.post("/validate", async (request, response) => {
 		'postingEnv': 'production',
 		'postingTo': url,
 		'postingXML': request.body.rdfxml,
-
 	}
 
 	try {
@@ -2302,8 +2300,6 @@ app.get('/profiles/bootstrap', async (request, response) => {
 
 	});
 });
-
-
 
 app.get('/profiles/:doc', async (request, response) => {
 
@@ -2765,6 +2761,330 @@ function marcRecordHtmlify(data){
 
 };
 
+/** WORLD CAT FUNCTIONS
+ * Get a token from WorldCat
+ * The token is stored in an environmental variable along with when it expires.
+ * The expiration date is checked, when it exists, against the current time
+ * to decide if we can load the existing token, or need to ask for a new one.
+ *
+ * @returns {string} token from worldcat
+ */
+async function worldCatAuthToken(){
+	//https://www.oclc.org/developer/api/keys/oauth.en.html
+	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
+	//https://github.com/OCLC-Developer-Network/gists/blob/master/authentication/node/authCodeAuthExample.js
+	const credentials = {
+		client: {
+		  id: WC_CLIENTID,
+		  secret: WC_SECRET
+		},
+		auth: {
+		  tokenHost: 'https://oauth.oclc.org',
+		  tokenPath: '/token',
+		}
+	  };
+
+	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
+	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
+	const oauth2 = new ClientCredentials(credentials);
+	const tokenConfig = {
+		scope: scopes
+	};
+
+	async function getToken(){
+		//Get the access token object for the client
+		   try {
+			   let httpOptions = {'Accept': 'application/json'};
+			   let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
+			   return accessToken
+		   } catch (error) {
+			   return error;
+		   }
+   }
+
+	// Before doing this, check if there is a token value and if it is still good
+	let token
+	const now = new Date()
+
+	if (process.env.WC_EXPIRES && (Date.parse(process.env.WC_EXPIRES) - now > 1000)){
+		// use the existing token
+	} else {
+		token = await getToken();
+		process.env.WC_TOKEN = token.token.access_token
+		process.env.WC_EXPIRES = token.token.expires_at
+	}
+
+	return process.env.WC_TOKEN
+};
+
+/**
+ *
+ * @param {string} token Token for worldCat
+ * @param {string} query The search term in form index: query, ex: `ti: huck finn` would be a a title search for "huck finn"
+ * @param {string} itemType The type of iem
+ * @param {string} offset Where the search starts off, for pagination
+ * @param {string} limit How many results to return
+ * @returns
+ */
+async function worldCatSearchApi(token, query, itemType, offset, limit){
+	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
+
+	let queryParams = {}
+	if (itemType == 'book'){
+		queryParams = {
+			q: query,
+			itemSubType: 'book-printbook',
+			offset: offset,
+			limit: limit
+		}
+	} else if (itemType == 'ebook'){
+		queryParams = {
+			q: query,
+			itemSubType: 'book-digital',
+			offset: offset,
+			limit: limit
+		}
+	} else {
+		queryParams = {
+			q: query,
+			itemType: itemType,
+			offset: offset,
+			limit: limit
+		}
+	}
+
+	try{
+		const resp = await got(URL, {
+			searchParams: queryParams,
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/json",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		const data = JSON.parse(resp.body)
+		let resp_data = {
+			status: {"status":"success"},
+			results: data
+		}
+
+		return resp_data
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+		return resp_data
+	}
+};
+
+async function worldCatMetadataApi(token, ocn){
+
+	let cachedValue = wcMarcCache.get(ocn)
+	if (typeof cachedValue != 'undefined'){
+		let resp_data = {
+			status: {"status":"success"},
+			results: cachedValue.marc
+		}
+		return resp_data
+	}
+
+	const URL = 'https://metadata.api.oclc.org/worldcat/manage/bibs/' + ocn
+
+	try{
+		const resp = await got(URL, {
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/marcxml+xml",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		const data = resp.body
+		let resp_data = {
+			status: {"status":"success"},
+			results: data
+		}
+		cache = wcMarcCache.set( ocn, {marc: data}, cacheTTL );
+		return resp_data
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+		return resp_data
+	}
+};
+
+/**
+ * WorldCat
+ */
+app.post('/worldcat/search/', async (request, response) => {
+	/**
+	 * Search WorldCat to get a list of what they cataloger might want
+	 * Search API `/bibs`
+	 *
+	 * ZProcessor only supports search on ISBN and title (left anchored or keyword)
+	 *   This is in the query(?) as `ti:` = title, `bn:` = ISBN
+	 *   Limit to 10 results
+	 * Parameters:
+	 * 	query
+	 * 	index
+	 * 	item types
+	 * 	offest & limit
+	 *
+	 * list of indexes: https://help.oclc.org/Librarian_Toolbox/Searching_WorldCat_Indexes/Bibliographic_records/Bibliographic_record_indexes/Bibliographic_record_index_lists/Alphabetical_list_of_available_Connexion_bibliographic_record_indexes
+	 *
+	 * Return a list of results limited to 10?
+	 */
+
+	let wcQuery = request.body.query
+	let wcIndex = request.body.index
+	let wcType = request.body.type
+	let wcOffset = request.body.offset
+	let wcLimit = request.body.limit
+	let marc = request.body.marc
+	// /bibs has more details, but brief-bibs as cataloging information that might be useful
+
+	const token = await worldCatAuthToken()
+
+	let resp_data
+	if (!marc){
+		resp_data = await worldCatSearchApi(token, wcIndex + ": " + wcQuery, wcType, wcOffset, wcLimit)
+		if (resp_data.results && resp_data.results.numberOfRecords> 0 ){
+			for (let record of resp_data.results.briefRecords){
+				marc_data = await worldCatMetadataApi(token, record.oclcNumber)
+
+				const marc = Marc.parse(marc_data.results, 'marcxml');
+				rawMarc = marc
+				marcRecord = Marc.format(marc, 'Text')
+
+				record.marcXML = rawMarc.as('marcxml')//marc_data.results
+				record.marcRaw = rawMarc
+				record.marcJSON = JSON.parse(rawMarc.as('mij'))
+				record.marcHTML = marcRecordHtmlify(rawMarc)
+				record.rawResult = marc_data.results
+			}
+		}
+	} else {
+		resp_data = await worldCatMetadataApi(token, ocn)
+	}
+
+	response.set('Content-Type', 'application/json');
+	response.status(200).send(resp_data);
+
+
+
+});
+
+app.post('/copycat/upload', async (request, response) => {
+	/**
+	 * MARC comes from Metadata API `/worldcat/search/bibs/{oclcNumber}`
+	 *
+	 */
+	let endpoint = "/controllers/ingest/marc-bib.xqy"
+	var url = "https://" + PRODUCTIONccURL.trim() + endpoint;
+
+	var marcxml = request.body.marcxml;
+
+	let postLogEntry = {
+		'copyCatDate': new Date(),
+		'copyCatEnv': 'production',
+		'copyCatTo': url,
+		'copyCatXML': request.body.marcxml,
+
+	}
+
+
+	try{
+		const postResponse = await got.post(url, {
+			body: marcxml,
+			username:MLUSER,
+			password:MLPASS,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}
+
+		});
+
+		postLogEntry['copyCatStatus'] = 'success'
+		postLogEntry['copyCatStatusCode'] = 200
+		postLogEntry['copyCatBodyResponse'] = postResponse.body
+		postLogEntry['copyCatName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+		let copyCatStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			copyCatStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
+
+
+		let resp_data = {
+			name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
+			copyCatStat: copyCatStatus,
+			postLocation:postLocation
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+
+
+
+	}catch(err){
+		console.log("err: ", err)
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.response.statusCode
+		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		errString = JSON.stringify(err.response.body)
+		let replace = `${MLUSER}|${MLPASS}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		errString = JSON.parse(errString)
+
+
+
+		resp_data = {
+				"name": request.body.name,
+				"objid":  "objid",
+				"publish": {"status": "error","server": url,"message": errString }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+
+
+	}
+
+});
 
 console.log('listending on 5200')
 app.listen(5200);
