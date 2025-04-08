@@ -1830,9 +1830,7 @@ app.delete('/templates/:doc', async (request, response) => {
 
 app.post("/validate", async (request, response) => {
 	var rdfxml = request.body.rdfxml;
-
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
-
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
 
 	let postLogEntry = {
@@ -1840,7 +1838,6 @@ app.post("/validate", async (request, response) => {
 		'postingEnv': 'production',
 		'postingTo': url,
 		'postingXML': request.body.rdfxml,
-
 	}
 
 	try {
@@ -2558,7 +2555,14 @@ function marcRecordHtmlify(data){
 
 };
 
-
+/** WORLD CAT FUNCTIONS
+ * Get a token from WorldCat
+ * The token is stored in an environmental variable along with when it expires.
+ * The expiration date is checked, when it exists, against the current time
+ * to decide if we can load the existing token, or need to ask for a new one.
+ *
+ * @returns {string} token from worldcat
+ */
 async function worldCatAuthToken(){
 	//https://www.oclc.org/developer/api/keys/oauth.en.html
 	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
@@ -2577,19 +2581,15 @@ async function worldCatAuthToken(){
 	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
 	const oauth2 = new ClientCredentials(credentials);
-	console.log("ClientCredentials: ", ClientCredentials)
-	console.log("oauth2: ", oauth2)
 	const tokenConfig = {
 		scope: scopes
 	};
 
 	async function getToken(){
-		console.info("getToken")
 		//Get the access token object for the client
 		   try {
 			   let httpOptions = {'Accept': 'application/json'};
 			   let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
-			   console.info("result: ", accessToken)
 			   return accessToken
 		   } catch (error) {
 			   return error;
@@ -2599,37 +2599,57 @@ async function worldCatAuthToken(){
 	// Before doing this, check if there is a token value and if it is still good
 	let token
 	const now = new Date()
-	console.info('now: ', now)
 
 	if (process.env.WC_EXPIRES && (Date.parse(process.env.WC_EXPIRES) - now > 1000)){
 		// use the existing token
 	} else {
 		token = await getToken();
-		console.log("token: ", token)
 		process.env.WC_TOKEN = token.token.access_token
 		process.env.WC_EXPIRES = token.token.expires_at
 	}
 
-	console.log("access_token: ", process.env.WC_TOKEN)
-	console.log("expires: ", process.env.WC_EXPIRES)
-	console.log("remaining time: ", (Date.parse(process.env.WC_EXPIRES) - now))
-
 	return process.env.WC_TOKEN
 };
 
+/**
+ *
+ * @param {string} token Token for worldCat
+ * @param {string} query The search term in form index: query, ex: `ti: huck finn` would be a a title search for "huck finn"
+ * @param {string} itemType The type of iem
+ * @param {string} offset Where the search starts off, for pagination
+ * @param {string} limit How many results to return
+ * @returns
+ */
 async function worldCatSearchApi(token, query, itemType, offset, limit){
 	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
 
-	console.log("making SEARCH request to ", URL)
+	let queryParams = {}
+	if (itemType == 'book'){
+		queryParams = {
+			q: query,
+			itemSubType: 'book-printbook',
+			offset: offset,
+			limit: limit
+		}
+	} else if (itemType == 'ebook'){
+		queryParams = {
+			q: query,
+			itemSubType: 'book-digital',
+			offset: offset,
+			limit: limit
+		}
+	} else {
+		queryParams = {
+			q: query,
+			itemType: itemType,
+			offset: offset,
+			limit: limit
+		}
+	}
 
 	try{
 		const resp = await got(URL, {
-			searchParams: {
-				q: query,
-				itemType: itemType,
-				offset: offset,
-				limit: limit
-			},
+			searchParams: queryParams,
 			headers: {
 				'Authorization': 'Bearer ' + token,
 				'Accept': "application/json",
@@ -2637,8 +2657,6 @@ async function worldCatSearchApi(token, query, itemType, offset, limit){
 			}
 		});
 
-		// console.log("resp: ", resp)
-		console.log("results: ", resp.body)
 		const data = JSON.parse(resp.body)
 		let resp_data = {
 			status: {"status":"success"},
@@ -2661,9 +2679,8 @@ async function worldCatSearchApi(token, query, itemType, offset, limit){
 
 async function worldCatMetadataApi(token, ocn){
 
-	let cachedValue = wcMarcCache.get(token)
+	let cachedValue = wcMarcCache.get(ocn)
 	if (typeof cachedValue != 'undefined'){
-		console.log("returning from cache")
 		let resp_data = {
 			status: {"status":"success"},
 			results: cachedValue.marc
@@ -2672,8 +2689,6 @@ async function worldCatMetadataApi(token, ocn){
 	}
 
 	const URL = 'https://metadata.api.oclc.org/worldcat/manage/bibs/' + ocn
-
-	console.log("making METADATA request to ", URL)
 
 	try{
 		const resp = await got(URL, {
@@ -2684,14 +2699,12 @@ async function worldCatMetadataApi(token, ocn){
 			}
 		});
 
-		// console.log("resp: ", resp)
-		console.log("results: ", resp.body)
 		const data = resp.body
 		let resp_data = {
 			status: {"status":"success"},
 			results: data
 		}
-		cache = wcMarcCache.set( token, {marc: data}, cacheTTL );
+		cache = wcMarcCache.set( ocn, {marc: data}, cacheTTL );
 		return resp_data
 	} catch(error){
 		// console.error("Error: ", error)
@@ -2737,22 +2750,24 @@ app.post('/worldcat/search/', async (request, response) => {
 	// /bibs has more details, but brief-bibs as cataloging information that might be useful
 
 	const token = await worldCatAuthToken()
-	console.log("token: ", token)
 
 	let resp_data
 	if (!marc){
 		resp_data = await worldCatSearchApi(token, wcIndex + ": " + wcQuery, wcType, wcOffset, wcLimit)
-		for (let record of resp_data.results.briefRecords){
-			marc_data = await worldCatMetadataApi(token, record.oclcNumber)
-			const marc = Marc.parse(marc_data.results, 'marcxml');
-			rawMarc = marc
-			marcRecord = Marc.format(marc, 'Text')
+		if (resp_data.results && resp_data.results.numberOfRecords> 0 ){
+			for (let record of resp_data.results.briefRecords){
+				marc_data = await worldCatMetadataApi(token, record.oclcNumber)
 
-			console.info("rawMarc: ", rawMarc)
+				const marc = Marc.parse(marc_data.results, 'marcxml');
+				rawMarc = marc
+				marcRecord = Marc.format(marc, 'Text')
 
-			record.marcXML = marc_data.results
-			record.marcRaw = rawMarc
-			record.marcHTML = marcRecordHtmlify(rawMarc)
+				record.marcXML = rawMarc.as('marcxml')//marc_data.results
+				record.marcRaw = rawMarc
+				record.marcJSON = JSON.parse(rawMarc.as('mij'))
+				record.marcHTML = marcRecordHtmlify(rawMarc)
+				record.rawResult = marc_data.results
+			}
 		}
 	} else {
 		resp_data = await worldCatMetadataApi(token, ocn)
@@ -2765,20 +2780,103 @@ app.post('/worldcat/search/', async (request, response) => {
 
 });
 
-app.post('/worldcat/marc/:ocn', async (request, response) => {
+app.post('/copycat/upload', async (request, response) => {
 	/**
 	 * MARC comes from Metadata API `/worldcat/search/bibs/{oclcNumber}`
 	 *
 	 */
+	let endpoint = "/controllers/ingest/marc-bib.xqy"
+	var url = "https://" + PRODUCTIONPOSTURL.trim() + endpoint;
 
-	let ocn = request.params.ocn
+	var marcxml = request.body.marcxml;
 
-	var url = "https://" + WORLDCATURL.trim() + "/worldcat/manage/bibs/" + ocn
+	let postLogEntry = {
+		'copyCatDate': new Date(),
+		'copyCatEnv': 'production',
+		'copyCatTo': url,
+		'copyCatXML': request.body.marcxml,
 
-	// const record = Marc.parse(x, 'marcxml');
-	// rawMarc = record
-	// marcRecord = Marc.format(record, 'Text')
+	}
 
+
+	try{
+		const postResponse = await got.post(url, {
+			body: marcxml,
+			username:MLUSER,
+			password:MLPASS,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}
+
+		});
+
+		postLogEntry['copyCatStatus'] = 'success'
+		postLogEntry['copyCatStatusCode'] = 200
+		postLogEntry['copyCatBodyResponse'] = postResponse.body
+		postLogEntry['copyCatName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+		let copyCatStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			copyCatStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
+
+
+		let resp_data = {
+			name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
+			copyCatStat: copyCatStatus,
+			postLocation:postLocation
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+
+
+
+	}catch(err){
+
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  err.response.statusCode
+		postLogEntry['postingBodyResponse'] = err.response.body
+		postLogEntry['postingBodyName'] = request.body.name
+		postLogEntry['postingEid'] = request.body.eid
+
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		errString = JSON.stringify(err.response.body)
+		let replace = `${MLUSER}|${MLPASS}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		errString = JSON.parse(errString)
+
+
+
+		resp_data = {
+				"name": request.body.name,
+				"objid":  "objid",
+				"publish": {"status": "error","server": url,"message": errString }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+
+
+	}
 
 });
 
