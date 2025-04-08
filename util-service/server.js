@@ -1361,6 +1361,131 @@ app.post('/nacostub/staging', async (request, response) => {
 
 });
 
+app.post('/nacostub/production', async (request, response) => {
+
+
+	var name = request.body.name + ".xml";
+	var marcxml = request.body.marcxml;
+
+	let endpoint = "/controllers/ingest/marc-auth.xqy"
+
+
+	var url = "https://" + PRODUCTIONNACOSTUB.trim() + endpoint;
+	console.log('------')
+	console.log(request.body.marcxml)
+	console.log('------')
+	console.log('posting to',url)
+
+
+	let postLogEntry = {
+		'postingDate': new Date(),
+		'postingEnv': 'production',
+		'postingTo': url,
+		'postingXML': request.body.marcxml,
+
+	}
+
+	try{
+
+		const postResponse = await got.post(url, {
+			body: marcxml,
+			username:MLUSER,
+			password:MLPASS,
+			headers: {
+				"Content-type": "application/xml",
+				'user-agent': 'marva-backend'
+			}
+
+		});
+
+		postLogEntry['postingStatus'] = 'success'
+		postLogEntry['postingStatusCode'] = postResponse.statusCode
+		postLogEntry['postingBodyResponse'] = postResponse.body
+		// postLogEntry['postingName'] = request.body.name
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+		let postStatus = {"status":"published"}
+
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
+			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		}
+		let postLocation = null
+		if (postResponse.headers && postResponse.headers.location){
+			postLocation=postResponse.headers.location
+		}
+
+		let resp_data = {
+			// name: request.body.name,
+			// "url": resources + name,
+			//"objid": data.objid,
+			// "lccn": lccn,
+			publish: postStatus,
+			postLocation:postLocation
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+
+
+
+
+	}catch(err){
+		console.error(err)
+
+		let errorMessage = "No Message"
+
+		if (err && err.response){
+			console.log("err response:")
+			console.log(err.response)
+			if (err.response.body){
+				errorMessage=err.response.body
+			}
+		}else{
+			console.log("No Error response!")
+		}
+
+
+		errString = JSON.stringify(err)
+		let replace = `${MLUSER}|${MLPASS}`;
+		let re = new RegExp(replace,"g");
+		errString = errString.replace(re, ",'****')");
+		err = JSON.parse(errString)
+
+		console.log("-----errString------")
+		console.log(errString)
+		console.log("----------------------")
+		console.log("ERror code", err.StatusCodeError)
+
+
+
+		postLogEntry['postingStatus'] = 'error'
+		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
+		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body" 
+		// postLogEntry['postingBodyName'] = request.body.name
+		// postLogEntry['postingEid'] = request.body.eid
+		postLog.push(postLogEntry)
+		if (postLogEntry.length>50){
+			postLogEntry.shift()
+		}
+
+
+		resp_data = {
+				"name": request.body.name,
+				"objid":  "objid",
+				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
+			}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+
+
+
+	}
+
+
+
+});
 
 
 
