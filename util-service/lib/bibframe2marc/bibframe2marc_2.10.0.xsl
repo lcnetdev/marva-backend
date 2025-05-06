@@ -14662,6 +14662,13 @@
       <xsl:choose>
         <xsl:when test="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
           <xsl:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:variable name="relURI">
+              <xsl:choose>
+                <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+                  <xsl:value-of select="bf:*/@rdf:about"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="vInd2Val">
               <xsl:choose>
                 <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -14682,6 +14689,9 @@
                 <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
                   <xsl:text>6</xsl:text>
                 </xsl:when>
+                <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>7</xsl:text>
+                </xsl:when>
                 <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
                   <xsl:text>7</xsl:text>
                 </xsl:when>
@@ -14689,6 +14699,9 @@
             </xsl:variable>
             <xsl:variable name="vSf2val">
               <xsl:choose>
+                <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>rbmscv</xsl:text>
+                </xsl:when>
                 <xsl:when test="$vInd2Val = '7'">
                   <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
                     <xsl:variable name="vSourceUri">
@@ -15047,16 +15060,18 @@
                       <xsl:value-of select="$v655-a"/>
                     </marc:subfield>
                   </xsl:if>
-                  <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$relURI != ''">
+                      <xsl:variable name="v655-0">
+                        <xsl:value-of select="$relURI"/>
+                      </xsl:variable>
+                      <xsl:if test="$v655-0 != ''">
+                        <marc:subfield code="0">
+                          <xsl:value-of select="$v655-0"/>
+                        </marc:subfield>
+                      </xsl:if>
+                    </xsl:when>
+                  </xsl:choose>
                   <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
                     <marc:subfield code="0">
                       <xsl:variable name="vIdType">
@@ -15105,6 +15120,13 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]">
+            <xsl:variable name="relURI">
+              <xsl:choose>
+                <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+                  <xsl:value-of select="bf:*/@rdf:about"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="vInd2Val">
               <xsl:choose>
                 <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -15125,6 +15147,9 @@
                 <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
                   <xsl:text>6</xsl:text>
                 </xsl:when>
+                <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>7</xsl:text>
+                </xsl:when>
                 <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
                   <xsl:text>7</xsl:text>
                 </xsl:when>
@@ -15132,6 +15157,9 @@
             </xsl:variable>
             <xsl:variable name="vSf2val">
               <xsl:choose>
+                <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>rbmscv</xsl:text>
+                </xsl:when>
                 <xsl:when test="$vInd2Val = '7'">
                   <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
                     <xsl:variable name="vSourceUri">
@@ -15490,16 +15518,18 @@
                       <xsl:value-of select="$v655-a"/>
                     </marc:subfield>
                   </xsl:if>
-                  <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$relURI != ''">
+                      <xsl:variable name="v655-0">
+                        <xsl:value-of select="$relURI"/>
+                      </xsl:variable>
+                      <xsl:if test="$v655-0 != ''">
+                        <marc:subfield code="0">
+                          <xsl:value-of select="$v655-0"/>
+                        </marc:subfield>
+                      </xsl:if>
+                    </xsl:when>
+                  </xsl:choose>
                   <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
                     <marc:subfield code="0">
                       <xsl:variable name="vIdType">
@@ -31854,6 +31884,13 @@
   <xsl:template match="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]" mode="generate-655">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
+    <xsl:variable name="relURI">
+      <xsl:choose>
+        <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+          <xsl:value-of select="bf:*/@rdf:about"/>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="vInd2Val">
       <xsl:choose>
         <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -31874,6 +31911,9 @@
         <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
           <xsl:text>6</xsl:text>
         </xsl:when>
+        <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+          <xsl:text>7</xsl:text>
+        </xsl:when>
         <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
           <xsl:text>7</xsl:text>
         </xsl:when>
@@ -31881,6 +31921,9 @@
     </xsl:variable>
     <xsl:variable name="vSf2val">
       <xsl:choose>
+        <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+          <xsl:text>rbmscv</xsl:text>
+        </xsl:when>
         <xsl:when test="$vInd2Val = '7'">
           <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
             <xsl:variable name="vSourceUri">
@@ -32239,16 +32282,18 @@
               <xsl:value-of select="$v655-a"/>
             </marc:subfield>
           </xsl:if>
-          <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-            <marc:subfield code="0">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-          <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-            <marc:subfield code="0">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
+          <xsl:choose>
+            <xsl:when test="$relURI != ''">
+              <xsl:variable name="v655-0">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v655-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v655-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
           <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
             <marc:subfield code="0">
               <xsl:variable name="vIdType">
