@@ -2955,7 +2955,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:identifiedBy/bf:Local[bf:source/bf:Source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
+      <xsl:apply-templates select="bf:Instance/bf:identifiedBy/bf:Local[bf:source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -6974,7 +6974,7 @@
                               <xsl:text> :</xsl:text>
                             </xsl:if>
                             <xsl:if test="not(../bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]) and ../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                              <xsl:text> ,</xsl:text>
+                              <xsl:text>,</xsl:text>
                             </xsl:if>
                           </xsl:if>
                         </marc:subfield>
@@ -7001,7 +7001,7 @@
                         <marc:subfield code="b">
                           <xsl:value-of select="."/>
                           <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                            <xsl:text>,</xsl:text>
+                            <xsl:text> :</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
                             <xsl:if test="../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
@@ -23981,7 +23981,7 @@
       </xsl:choose>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:identifiedBy/bf:Local[bf:source/bf:Source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
+  <xsl:template match="bf:Instance/bf:identifiedBy/bf:Local[bf:source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vSourceUri">
@@ -24063,9 +24063,12 @@
               <xsl:variable name="v016-2">
                 <xsl:choose>
                   <xsl:when test="contains($vSourceUri,'id.loc.gov')">
-                    <xsl:call-template name="tUriCode">
-                      <xsl:with-param name="pUri" select="$vSourceUri"/>
-                    </xsl:call-template>
+                    <xsl:variable name="vC">
+                      <xsl:call-template name="tUriCode">
+                        <xsl:with-param name="pUri" select="$vSourceUri"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="translate($vC, $lower, $upper)"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:value-of select="$vSourceUri"/>
