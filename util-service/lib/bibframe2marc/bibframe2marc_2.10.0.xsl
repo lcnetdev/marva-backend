@@ -4860,7 +4860,7 @@
                 <xsl:text> </xsl:text>
               </xsl:attribute>
               <xsl:variable name="v880-6">
-                <xsl:value-of select="concat('880-0', '1', '/', $v880Script)"/>
+                <xsl:value-of select="concat('130-0', '1', '/', $v880Script)"/>
               </xsl:variable>
               <xsl:if test="$v880-6 != ''">
                 <marc:subfield code="6">
@@ -5030,7 +5030,7 @@
                 <xsl:text>0</xsl:text>
               </xsl:attribute>
               <xsl:variable name="v880-6">
-                <xsl:value-of select="concat('880-0', '2', '/', $v880Script)"/>
+                <xsl:value-of select="concat('240-0', '2', '/', $v880Script)"/>
               </xsl:variable>
               <xsl:if test="$v880-6 != ''">
                 <marc:subfield code="6">
