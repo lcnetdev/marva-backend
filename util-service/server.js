@@ -43,6 +43,7 @@ const MLUSERSTAGE = process.env.MLUSERSTAGE;
 const MLPASSSTAGE = process.env.MLPASSSTAGE;
 const STAGINGPOSTURL = process.env.STAGINGPOSTURL;
 const PRODUCTIONPOSTURL = process.env.PRODUCTIONPOSTURL;
+const STAGGINGccURL = process.env.STAGGINGccURL;
 const PRODUCTIONccURL = process.env.PRODUCTIONccURL;
 const VALIDATIONURL = process.env.VALIDATIONURL;
 const STAGINGNACOSTUB = process.env.STAGINGNACOSTUB;
@@ -2986,13 +2987,20 @@ app.post('/worldcat/search/', async (request, response) => {
 
 });
 
-app.post('/copycat/upload', async (request, response) => {
+app.post('/copycat/upload/:location', async (request, response) => {
 	/**
 	 * MARC comes from Metadata API `/worldcat/search/bibs/{oclcNumber}`
 	 *
 	 */
+	let location = request.params.location
 	let endpoint = "/controllers/ingest/marc-bib.xqy"
-	var url = "https://" + PRODUCTIONccURL.trim() + endpoint;
+	var url = ''
+	if (location == 'prod'){
+		url = "https://" + PRODUCTIONccURL.trim() + endpoint;
+	} else {
+		url = "https://" + STAGGINGccURL.trim() + endpoint;
+	}
+
 
 	var marcxml = request.body.marcxml;
 
