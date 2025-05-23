@@ -4493,6 +4493,9 @@
                   <xsl:when test="$agentURI != '' and (contains($agentURI, '/agents/') or contains($agentURI, '/gnd/'))">
                     <xsl:value-of select="$agentURI"/>
                   </xsl:when>
+                  <xsl:when test="$agentURI != '' and contains($agentURI, 'id.loc.gov/authorities/')">
+                    <xsl:value-of select="concat(substring-before($agentURI,'authorities/names'), 'rwo/agents/', substring-after($agentURI,'authorities/names/'))"/>
+                  </xsl:when>
                   <xsl:when test="@rdf:about[                   contains(., '/agents/') or contains(., '/gnd/') or contains(., '/isni/')                    ]">
                     <xsl:for-each select="@rdf:about[                     contains(., '/agents/') or contains(., '/gnd/') or contains(., '/isni/')                     ]">
                       <xsl:choose>
@@ -15615,6 +15618,26 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-0">
                     <xsl:value-of select="$relURI"/>
@@ -15627,6 +15650,16 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-1">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+                    <marc:subfield code="1">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-1">
                     <xsl:value-of select="$relURI"/>
@@ -15789,6 +15822,26 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-0">
                     <xsl:value-of select="$relURI"/>
@@ -15801,6 +15854,16 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-1">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+                    <marc:subfield code="1">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-1">
                     <xsl:value-of select="$relURI"/>
@@ -15988,6 +16051,26 @@
             </xsl:when>
           </xsl:choose>
           <xsl:choose>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+              <xsl:variable name="v-0">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+              <xsl:variable name="v-0">
+                <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+              </xsl:variable>
+              <xsl:if test="$v-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
             <xsl:when test="not(contains($relURI,'example.org')) and            not(contains($relURI,'REPLACE')) and            not(contains($relURI,'rwo')) and            not(contains($relURI,'id.oclc.org/worldcat/entity/')) and            not(contains($relURI,'isni.org/isni/')) and            not(contains($relURI,'viaf.org/viaf/')) and            not(contains($relURI,'d-nb.info/gnd/'))">
               <xsl:variable name="v-0">
                 <xsl:value-of select="$relURI"/>
@@ -16000,6 +16083,26 @@
             </xsl:when>
           </xsl:choose>
           <xsl:choose>
+            <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+              <xsl:variable name="v-1">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v-1 != ''">
+                <marc:subfield code="1">
+                  <xsl:value-of select="$v-1"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+              <xsl:variable name="v-1">
+                <xsl:value-of select="concat(substring-before($relURI,'authorities/names'), 'rwo/agents/', substring-after($relURI,'authorities/names/'))"/>
+              </xsl:variable>
+              <xsl:if test="$v-1 != ''">
+                <marc:subfield code="1">
+                  <xsl:value-of select="$v-1"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
             <xsl:when test="contains($relURI,'id.oclc.org/worldcat/entity/') or            contains($relURI,'isni.org/isni/') or            contains($relURI,'viaf.org/viaf/') or            contains($relURI,'d-nb.info/gnd/')">
               <xsl:variable name="v-1">
                 <xsl:value-of select="$relURI"/>
@@ -32124,6 +32227,26 @@
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
+        <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+          <xsl:variable name="vvAddedEntryNameLookupTag-0">
+            <xsl:value-of select="$relURI"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+            <marc:subfield code="0">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
+        <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+          <xsl:variable name="vvAddedEntryNameLookupTag-0">
+            <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+            <marc:subfield code="0">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
         <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
           <xsl:variable name="vvAddedEntryNameLookupTag-0">
             <xsl:value-of select="$relURI"/>
@@ -32136,6 +32259,16 @@
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
+        <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+          <xsl:variable name="vvAddedEntryNameLookupTag-1">
+            <xsl:value-of select="$relURI"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+            <marc:subfield code="1">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
         <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
           <xsl:variable name="vvAddedEntryNameLookupTag-1">
             <xsl:value-of select="$relURI"/>
