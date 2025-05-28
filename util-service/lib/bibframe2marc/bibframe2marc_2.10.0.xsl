@@ -22245,6 +22245,51 @@
           </xsl:when>
         </xsl:choose>
       </marc:datafield>
+      <xsl:for-each select="$vAdminMetadata/bflc:marcKey[starts-with(., '9')]">
+        <xsl:variable name="vTag">
+          <xsl:value-of select="substring(., 1, 3)"/>
+        </xsl:variable>
+        <xsl:variable name="vInd1">
+          <xsl:value-of select="substring(., 4, 1)"/>
+        </xsl:variable>
+        <xsl:variable name="vInd2">
+          <xsl:value-of select="substring(., 5, 1)"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">
+            <xsl:value-of select="$vTag"/>
+          </xsl:attribute>
+          <xsl:attribute name="ind1">
+            <xsl:variable name="vInd">
+              <xsl:value-of select="$vInd1"/>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$vInd != ''">
+                <xsl:value-of select="$vInd"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text> </xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:variable name="vInd">
+              <xsl:value-of select="$vInd2"/>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$vInd != ''">
+                <xsl:value-of select="$vInd"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text> </xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
+          <xsl:call-template name="tParseMarcKey">
+            <xsl:with-param name="pString" select="substring(., 6)"/>
+          </xsl:call-template>
+        </marc:datafield>
+      </xsl:for-each>
     </marc:record>
   </xsl:template>
   <xsl:template match="/rdf:RDF/bf:Instance" mode="generate-007">
