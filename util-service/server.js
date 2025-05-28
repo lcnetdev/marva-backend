@@ -50,6 +50,7 @@ const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
 const WC_CLIENTID = process.env.WC_CLIENTID;
 const WC_SECRET = process.env.WC_SECRET;
 
+
 // disable some features when running in bibframe.org mode
 const BFORGMODE = process.env.BFORGMODE;
 
@@ -1495,6 +1496,7 @@ app.post('/nacostub/production', async (request, response) => {
 });
 
 app.get('/myrecords/production/:user', function(request, response){
+	console.log('recsProdByUser',recsProdByUser)
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
 	}else{
@@ -2783,7 +2785,7 @@ async function worldCatAuthToken(){
 		  tokenPath: '/token',
 		}
 	  };
-
+	console.log("credentials", credentials)
 	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
 	const oauth2 = new ClientCredentials(credentials);
@@ -2796,8 +2798,10 @@ async function worldCatAuthToken(){
 		   try {
 			   let httpOptions = {'Accept': 'application/json'};
 			   let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
+			   console.log("Access Token: ", accessToken);
 			   return accessToken
 		   } catch (error) {
+			   console.error("Error getting token: ", error);
 			   return error;
 		   }
    }
@@ -2810,6 +2814,7 @@ async function worldCatAuthToken(){
 		// use the existing token
 	} else {
 		token = await getToken();
+		console.log("New token: ", token)
 		process.env.WC_TOKEN = token.token.access_token
 		process.env.WC_EXPIRES = token.token.expires_at
 	}
@@ -3085,6 +3090,124 @@ app.post('/copycat/upload', async (request, response) => {
 	}
 
 });
+
+
+
+app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
+
+	if (!WC_CLIENTID || !WC_SECRET){
+		let resp_data = {
+			status: {"status":"error"},
+			error: "WorldCat client ID and secret not set in environment variables.",
+			results: {
+				isbns: [],
+				records: []
+			}			
+		}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(resp_data);
+		return
+	}
+
+	const token = await worldCatAuthToken()		
+	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
+
+	let queryParams = {}
+	queryParams = {
+		// q: "bn:1931499047",
+		// q: "bn:9781685035709", // NO RESULTS
+		q: "bn:" + request.params.isbn,
+		// itemSubType: 'book-printbook',
+		// offset: 0,
+		// limit: 10
+	}
+
+
+	try{
+		const resp = await got(URL, {
+			searchParams: queryParams,
+			headers: {
+				'Authorization': 'Bearer ' + token,
+				'Accept': "application/json",
+				'User-Agent': 'marva-backend/ndmso@loc.gov'
+			}
+		});
+
+		const data = JSON.parse(resp.body)
+		let resp_data = {
+			status: {"status":"success"},
+			results: {
+				isbns: [],
+				records: []
+			}
+		}
+		// console.log("data: ", data)
+		if (data && data.numberOfRecords> 0 ){
+			let isbns = []
+			for (let record of data.briefRecords){
+				// console.log("record: ", record)
+				if (record.isbns && record.isbns.length > 0){
+					for (let isbn of record.isbns){
+						if (isbns.indexOf(isbn) == -1){
+							isbns.push(isbn)
+						}
+					}
+				}
+				
+
+				marc_data = await worldCatMetadataApi(token, record.oclcNumber)
+
+				const marc = Marc.parse(marc_data.results, 'marcxml');
+				rawMarc = marc
+				marcRecord = Marc.format(marc, 'Text')
+
+				// record.marcXML = rawMarc.as('marcxml')//marc_data.results
+				// record.marcRaw = rawMarc
+				record.marcJSON = JSON.parse(rawMarc.as('mij'))
+				// record.marcHTML = marcRecordHtmlify(rawMarc)
+				// record.rawResult = marc_data.results
+				resp_data.results.records.push(record)
+
+
+			}
+			resp_data.results.isbns = isbns
+
+
+		}
+
+		response.set('Content-Type', 'application/json');
+		response.status(200).send(resp_data);
+		
+		// return resp_data
+	} catch(error){
+		// console.error("Error: ", error)
+		// console.error("Error: ", error.response.statusCode)
+		// console.error("Error: ", error.response)
+
+		console.error('Error Response Body:', error.response.body);
+
+		let resp_data = {
+			status: {"status":"error"},
+			error: error
+		}
+		response.set('Content-Type', 'application/json');
+		response.status(500).send(error.response.body);
+
+		// return resp_data
+	}
+
+
+
+
+	
+
+
+
+});
+
+
+
+
 
 console.log('listending on 5200')
 app.listen(5200);
