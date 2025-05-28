@@ -2955,7 +2955,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:identifiedBy/bf:Local[bf:source/bf:Source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
+      <xsl:apply-templates select="bf:Instance/bf:identifiedBy/bf:Local[bf:source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -4493,6 +4493,9 @@
                   <xsl:when test="$agentURI != '' and (contains($agentURI, '/agents/') or contains($agentURI, '/gnd/'))">
                     <xsl:value-of select="$agentURI"/>
                   </xsl:when>
+                  <xsl:when test="$agentURI != '' and contains($agentURI, 'id.loc.gov/authorities/')">
+                    <xsl:value-of select="concat(substring-before($agentURI,'authorities/names'), 'rwo/agents/', substring-after($agentURI,'authorities/names/'))"/>
+                  </xsl:when>
                   <xsl:when test="@rdf:about[                   contains(., '/agents/') or contains(., '/gnd/') or contains(., '/isni/')                    ]">
                     <xsl:for-each select="@rdf:about[                     contains(., '/agents/') or contains(., '/gnd/') or contains(., '/isni/')                     ]">
                       <xsl:choose>
@@ -4548,7 +4551,7 @@
           <xsl:choose>
             <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
               <xsl:variable name="vvNameTag-6">
-                <xsl:value-of select="concat('880-0', position())"/>
+                <xsl:value-of select="concat('880-0', '1')"/>
               </xsl:variable>
               <xsl:if test="$vvNameTag-6 != ''">
                 <marc:subfield code="6">
@@ -4598,7 +4601,7 @@
                 <xsl:text> </xsl:text>
               </xsl:attribute>
               <xsl:variable name="v880-6">
-                <xsl:value-of select="concat($vNameTag, '-0', position(), '/', $v880Script)"/>
+                <xsl:value-of select="concat($vNameTag, '-0', '1', '/', $v880Script)"/>
               </xsl:variable>
               <xsl:if test="$v880-6 != ''">
                 <marc:subfield code="6">
@@ -4622,392 +4625,290 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:choose>
-        <xsl:when test="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:variable name="vTitleResourcePreNS">
-              <xsl:call-template name="tGetRelResource">
-                <xsl:with-param name="pUri" select="@rdf:about"/>
-                <xsl:with-param name="pContext" select="."/>
-              </xsl:call-template>
+      <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ]">
+        <xsl:variable name="vTitleResourcePreNS">
+          <xsl:call-template name="tGetRelResource">
+            <xsl:with-param name="pUri" select="@rdf:about"/>
+            <xsl:with-param name="pContext" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vTitleResource" select="exsl:node-set($vTitleResourcePreNS)"/>
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang">
+              <xsl:variable name="vLangTag" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after($vLangTag,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vRelVariantPreNS">
+          <xsl:if test="$v880Script != '' and self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]">
+            <xsl:call-template name="tGetMiniMARCFromKey">
+              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]"/>
+            </xsl:call-template>
+          </xsl:if>
+        </xsl:variable>
+        <xsl:variable name="vRelVariant" select="exsl:node-set($vRelVariantPreNS)"/>
+        <xsl:choose>
+          <xsl:when test="$xslProcessor='libxslt' and contains(@rdf:about, 'resources/hubs') and not(bflc:marcKey)">
+            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 130 output.</xsl:message>
+          </xsl:when>
+        </xsl:choose>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="bf:mainTitle/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">130</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:variable name="vInd">
+              <xsl:choose>
+                <xsl:when test="bf:title/bf:Title/bflc:nonSortNum">
+                  <xsl:value-of select="bf:title/bf:Title/bflc:nonSortNum"/>
+                </xsl:when>
+                <xsl:when test="bf:title/bf:Title/bflc:titleSortKey and (string-length(bflc:titleSortKey) &lt; string-length(bf:title/bf:Title/bf:mainTitle))">
+                  <xsl:value-of select="string-length(bf:title/bf:Title/bf:mainTitle) - string-length(bf:title/bf:Title/bflc:titleSortKey)"/>
+                </xsl:when>
+              </xsl:choose>
             </xsl:variable>
-            <xsl:variable name="vTitleResource" select="exsl:node-set($vTitleResourcePreNS)"/>
             <xsl:choose>
-              <xsl:when test="position()=1">
-                <xsl:variable name="vXmlLang">
-                  <xsl:value-of select="bf:mainTitle/@xml:lang"/>
-                </xsl:variable>
-                <marc:datafield>
-                  <xsl:attribute name="tag">130</xsl:attribute>
-                  <xsl:if test="$vXmlLang != ''">
-                    <xsl:attribute name="xml:lang">
-                      <xsl:value-of select="$vXmlLang"/>
-                    </xsl:attribute>
-                  </xsl:if>
-                  <xsl:choose>
-                    <xsl:when test="$xslProcessor='libxslt' and contains(@rdf:about, 'resources/hubs') and not(bflc:marcKey)">
-                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 130 output.</xsl:message>
-                    </xsl:when>
-                  </xsl:choose>
-                  <xsl:attribute name="ind1">
-                    <xsl:variable name="vInd">
-                      <xsl:choose>
-                        <xsl:when test="bf:title/bf:Title/bflc:nonSortNum">
-                          <xsl:value-of select="bf:title/bf:Title/bflc:nonSortNum"/>
-                        </xsl:when>
-                        <xsl:when test="bf:title/bf:Title/bflc:titleSortKey and (string-length(bflc:titleSortKey) &lt; string-length(bf:title/bf:Title/bf:mainTitle))">
-                          <xsl:value-of select="string-length(bf:title/bf:Title/bf:mainTitle) - string-length(bf:title/bf:Title/bflc:titleSortKey)"/>
-                        </xsl:when>
-                      </xsl:choose>
-                    </xsl:variable>
-                    <xsl:choose>
-                      <xsl:when test="$vInd != ''">
-                        <xsl:value-of select="$vInd"/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:text>0</xsl:text>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                  </xsl:attribute>
-                  <xsl:attribute name="ind2">
-                    <xsl:text> </xsl:text>
-                  </xsl:attribute>
-                  <xsl:choose>
-                    <xsl:when test="$vTitleResource//marc:datafield[@tag='130']">
-                      <xsl:for-each select="$vTitleResource//marc:datafield[@tag='130']/marc:subfield[contains('adfghklmnoprst',@code)]">
-                        <marc:subfield>
-                          <xsl:attribute name="code">
-                            <xsl:value-of select="@code"/>
-                          </xsl:attribute>
-                          <xsl:value-of select="."/>
-                        </marc:subfield>
-                      </xsl:for-each>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:variable name="v130-a">
-                        <xsl:choose>
-                          <xsl:when test="bf:title/bf:Title/rdfs:label">
-                            <xsl:for-each select="bf:title/bf:Title/rdfs:label">
-                              <xsl:choose>
-                                <xsl:when test="position() = 1">
-                                  <xsl:call-template name="tChopPunct">
-                                    <xsl:with-param name="pString" select="."/>
-                                  </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                                </xsl:otherwise>
-                              </xsl:choose>
-                            </xsl:for-each>
-                          </xsl:when>
-                          <xsl:when test="bf:title/bf:Title/bf:mainTitle">
-                            <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
-                              <xsl:choose>
-                                <xsl:when test="position() = 1">
-                                  <xsl:call-template name="tChopPunct">
-                                    <xsl:with-param name="pString" select="."/>
-                                  </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                                </xsl:otherwise>
-                              </xsl:choose>
-                            </xsl:for-each>
-                          </xsl:when>
-                        </xsl:choose>
-                      </xsl:variable>
-                      <xsl:if test="$v130-a != ''">
-                        <marc:subfield code="a">
-                          <xsl:value-of select="$v130-a"/>
-                        </marc:subfield>
-                      </xsl:if>
-                      <xsl:for-each select="bf:legalDate">
-                        <marc:subfield code="d">
-                          <xsl:value-of select="."/>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:originDate">
-                        <xsl:choose>
-                          <xsl:when test="position() = 1">
-                            <marc:subfield code="f">
-                              <xsl:value-of select="."/>
-                            </marc:subfield>
-                          </xsl:when>
-                          <xsl:otherwise>
-                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $f.</xsl:message>
-                          </xsl:otherwise>
-                        </xsl:choose>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:musicMedium/bf:MusicMedium/rdfs:label">
-                        <marc:subfield code="m">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:title/bf:Title/bf:partNumber">
-                        <marc:subfield code="n">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:title/bf:Title/bf:partName">
-                        <marc:subfield code="p">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:choose>
-                        <xsl:when test="rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Arrangement'">
-                          <marc:subfield code="o">arranged</marc:subfield>
-                        </xsl:when>
-                      </xsl:choose>
-                      <xsl:for-each select="bf:musicKey">
-                        <marc:subfield code="r">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:version">
-                        <marc:subfield code="s">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                  <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-                    <marc:subfield code="1">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="bf:identifiedBy/bf:Identifier">
-                    <marc:subfield code="0">
-                      <xsl:variable name="vIdType">
-                        <xsl:call-template name="tChopPunct">
-                          <xsl:with-param name="pString" select="bf:source/bf:Source/bf:code"/>
-                        </xsl:call-template>
-                      </xsl:variable>
-                      <xsl:choose>
-                        <xsl:when test="$vIdType != ''">
-                          <xsl:value-of select="concat('(',$vIdType,')',rdf:value)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                          <xsl:value-of select="rdf:value"/>
-                        </xsl:otherwise>
-                      </xsl:choose>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="bf:source/bf:Source/bf:code">
-                    <marc:subfield code="2">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                </marc:datafield>
+              <xsl:when test="$vInd != ''">
+                <xsl:value-of select="$vInd"/>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target field (130).</xsl:message>
+                <xsl:text>0</xsl:text>
               </xsl:otherwise>
             </xsl:choose>
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:for-each select="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ]">
-            <xsl:variable name="vTitleResourcePreNS">
-              <xsl:call-template name="tGetRelResource">
-                <xsl:with-param name="pUri" select="@rdf:about"/>
-                <xsl:with-param name="pContext" select="."/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:variable name="vTitleResource" select="exsl:node-set($vTitleResourcePreNS)"/>
-            <xsl:choose>
-              <xsl:when test="position()=1">
-                <xsl:variable name="vXmlLang">
-                  <xsl:value-of select="bf:mainTitle/@xml:lang"/>
-                </xsl:variable>
-                <marc:datafield>
-                  <xsl:attribute name="tag">130</xsl:attribute>
-                  <xsl:if test="$vXmlLang != ''">
-                    <xsl:attribute name="xml:lang">
-                      <xsl:value-of select="$vXmlLang"/>
-                    </xsl:attribute>
-                  </xsl:if>
-                  <xsl:choose>
-                    <xsl:when test="$xslProcessor='libxslt' and contains(@rdf:about, 'resources/hubs') and not(bflc:marcKey)">
-                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 130 output.</xsl:message>
-                    </xsl:when>
-                  </xsl:choose>
-                  <xsl:attribute name="ind1">
-                    <xsl:variable name="vInd">
-                      <xsl:choose>
-                        <xsl:when test="bf:title/bf:Title/bflc:nonSortNum">
-                          <xsl:value-of select="bf:title/bf:Title/bflc:nonSortNum"/>
-                        </xsl:when>
-                        <xsl:when test="bf:title/bf:Title/bflc:titleSortKey and (string-length(bflc:titleSortKey) &lt; string-length(bf:title/bf:Title/bf:mainTitle))">
-                          <xsl:value-of select="string-length(bf:title/bf:Title/bf:mainTitle) - string-length(bf:title/bf:Title/bflc:titleSortKey)"/>
-                        </xsl:when>
-                      </xsl:choose>
-                    </xsl:variable>
-                    <xsl:choose>
-                      <xsl:when test="$vInd != ''">
-                        <xsl:value-of select="$vInd"/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:text>0</xsl:text>
-                      </xsl:otherwise>
-                    </xsl:choose>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
+              <xsl:variable name="v130-6">
+                <xsl:value-of select="concat('880-0', '1')"/>
+              </xsl:variable>
+              <xsl:if test="$v130-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v130-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:choose>
+            <xsl:when test="$vTitleResource//marc:datafield[@tag='130']">
+              <xsl:for-each select="$vTitleResource//marc:datafield[@tag='130']/marc:subfield[contains('adfghklmnoprst',@code)]">
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="@code"/>
                   </xsl:attribute>
-                  <xsl:attribute name="ind2">
-                    <xsl:text> </xsl:text>
-                  </xsl:attribute>
-                  <xsl:choose>
-                    <xsl:when test="$vTitleResource//marc:datafield[@tag='130']">
-                      <xsl:for-each select="$vTitleResource//marc:datafield[@tag='130']/marc:subfield[contains('adfghklmnoprst',@code)]">
-                        <marc:subfield>
-                          <xsl:attribute name="code">
-                            <xsl:value-of select="@code"/>
-                          </xsl:attribute>
-                          <xsl:value-of select="."/>
-                        </marc:subfield>
-                      </xsl:for-each>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:variable name="v130-a">
-                        <xsl:choose>
-                          <xsl:when test="bf:title/bf:Title/rdfs:label">
-                            <xsl:for-each select="bf:title/bf:Title/rdfs:label">
-                              <xsl:choose>
-                                <xsl:when test="position() = 1">
-                                  <xsl:call-template name="tChopPunct">
-                                    <xsl:with-param name="pString" select="."/>
-                                  </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                                </xsl:otherwise>
-                              </xsl:choose>
-                            </xsl:for-each>
-                          </xsl:when>
-                          <xsl:when test="bf:title/bf:Title/bf:mainTitle">
-                            <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
-                              <xsl:choose>
-                                <xsl:when test="position() = 1">
-                                  <xsl:call-template name="tChopPunct">
-                                    <xsl:with-param name="pString" select="."/>
-                                  </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                                </xsl:otherwise>
-                              </xsl:choose>
-                            </xsl:for-each>
-                          </xsl:when>
-                        </xsl:choose>
-                      </xsl:variable>
-                      <xsl:if test="$v130-a != ''">
-                        <marc:subfield code="a">
-                          <xsl:value-of select="$v130-a"/>
-                        </marc:subfield>
-                      </xsl:if>
-                      <xsl:for-each select="bf:legalDate">
-                        <marc:subfield code="d">
-                          <xsl:value-of select="."/>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:originDate">
-                        <xsl:choose>
-                          <xsl:when test="position() = 1">
-                            <marc:subfield code="f">
-                              <xsl:value-of select="."/>
-                            </marc:subfield>
-                          </xsl:when>
-                          <xsl:otherwise>
-                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $f.</xsl:message>
-                          </xsl:otherwise>
-                        </xsl:choose>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:musicMedium/bf:MusicMedium/rdfs:label">
-                        <marc:subfield code="m">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:title/bf:Title/bf:partNumber">
-                        <marc:subfield code="n">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:title/bf:Title/bf:partName">
-                        <marc:subfield code="p">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:variable name="v130-a">
+                <xsl:choose>
+                  <xsl:when test="bf:title/bf:Title/rdfs:label">
+                    <xsl:for-each select="bf:title/bf:Title/rdfs:label">
                       <xsl:choose>
-                        <xsl:when test="rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Arrangement'">
-                          <marc:subfield code="o">arranged</marc:subfield>
-                        </xsl:when>
-                      </xsl:choose>
-                      <xsl:for-each select="bf:musicKey">
-                        <marc:subfield code="r">
+                        <xsl:when test="position() = 1">
                           <xsl:call-template name="tChopPunct">
                             <xsl:with-param name="pString" select="."/>
                           </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                      <xsl:for-each select="bf:version">
-                        <marc:subfield code="s">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </marc:subfield>
-                      </xsl:for-each>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                  <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-                    <marc:subfield code="1">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="bf:identifiedBy/bf:Identifier">
-                    <marc:subfield code="0">
-                      <xsl:variable name="vIdType">
-                        <xsl:call-template name="tChopPunct">
-                          <xsl:with-param name="pString" select="bf:source/bf:Source/bf:code"/>
-                        </xsl:call-template>
-                      </xsl:variable>
-                      <xsl:choose>
-                        <xsl:when test="$vIdType != ''">
-                          <xsl:value-of select="concat('(',$vIdType,')',rdf:value)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                          <xsl:value-of select="rdf:value"/>
+                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
                         </xsl:otherwise>
                       </xsl:choose>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="bf:source/bf:Source/bf:code">
-                    <marc:subfield code="2">
+                    </xsl:for-each>
+                  </xsl:when>
+                  <xsl:when test="bf:title/bf:Title/bf:mainTitle">
+                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
+                      <xsl:choose>
+                        <xsl:when test="position() = 1">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="."/>
+                          </xsl:call-template>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:for-each>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v130-a != ''">
+                <marc:subfield code="a">
+                  <xsl:value-of select="$v130-a"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:for-each select="bf:legalDate">
+                <marc:subfield code="d">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:originDate">
+                <xsl:choose>
+                  <xsl:when test="position() = 1">
+                    <marc:subfield code="f">
                       <xsl:value-of select="."/>
                     </marc:subfield>
-                  </xsl:for-each>
-                </marc:datafield>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target field (130).</xsl:message>
-              </xsl:otherwise>
-            </xsl:choose>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $f.</xsl:message>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each>
+              <xsl:for-each select="bf:musicMedium/bf:MusicMedium/rdfs:label">
+                <marc:subfield code="m">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:title/bf:Title/bf:partNumber">
+                <marc:subfield code="n">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:title/bf:Title/bf:partName">
+                <marc:subfield code="p">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:choose>
+                <xsl:when test="rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Arrangement'">
+                  <marc:subfield code="o">arranged</marc:subfield>
+                </xsl:when>
+              </xsl:choose>
+              <xsl:for-each select="bf:musicKey">
+                <marc:subfield code="r">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:version">
+                <marc:subfield code="s">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
+            <marc:subfield code="1">
+              <xsl:value-of select="."/>
+            </marc:subfield>
           </xsl:for-each>
-        </xsl:otherwise>
-      </xsl:choose>
+          <xsl:for-each select="bf:identifiedBy/bf:Identifier">
+            <marc:subfield code="0">
+              <xsl:variable name="vIdType">
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="bf:source/bf:Source/bf:code"/>
+                </xsl:call-template>
+              </xsl:variable>
+              <xsl:choose>
+                <xsl:when test="$vIdType != ''">
+                  <xsl:value-of select="concat('(',$vIdType,')',rdf:value)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="rdf:value"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </marc:subfield>
+          </xsl:for-each>
+          <xsl:for-each select="bf:source/bf:Source/bf:code">
+            <marc:subfield code="2">
+              <xsl:value-of select="."/>
+            </marc:subfield>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
+            <marc:datafield>
+              <xsl:attribute name="tag">880</xsl:attribute>
+              <xsl:attribute name="ind1">
+                <xsl:variable name="vInd">
+                  <xsl:choose>
+                    <xsl:when test="$vRelVariant//marc:datafield[@tag!='']/@ind1 != ' '">
+                      <xsl:value-of select="$vRelVariant//marc:datafield[@tag!='']/@ind1"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:choose>
+                  <xsl:when test="$vInd != ''">
+                    <xsl:value-of select="$vInd"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>0</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="ind2">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:variable name="v880-6">
+                <xsl:value-of select="concat('130-0', '1', '/', $v880Script)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v880-6"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:for-each select="$vRelVariant//marc:datafield[@tag!='']/marc:subfield[contains('adfghklmnoprst',@code)]">
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="@code"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
+                <marc:subfield code="1">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:identifiedBy/bf:Identifier">
+                <marc:subfield code="0">
+                  <xsl:variable name="vIdType">
+                    <xsl:call-template name="tChopPunct">
+                      <xsl:with-param name="pString" select="bf:source/bf:Source/bf:code"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:choose>
+                    <xsl:when test="$vIdType != ''">
+                      <xsl:value-of select="concat('(',$vIdType,')',rdf:value)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="rdf:value"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:source/bf:Source/bf:code">
+                <marc:subfield code="2">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+            </marc:datafield>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:apply-templates select="bf:Instance/bf:title/*[local-name() = 'AbbreviatedTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/AbbreviatedTitle']] |                     bf:Work/bf:title/*[local-name() = 'AbbreviatedTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/AbbreviatedTitle']]" mode="generate-210">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
@@ -5016,162 +4917,153 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:choose>
-        <xsl:when test="bf:Work/bf:expressionOf[contains(@rdf:resource, 'hubs')][../bf:contribution/*[local-name()='PrimaryContribution'] or ../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]] |                     bf:Work/bf:expressionOf/bf:*[contains(@rdf:about, 'hubs') or bflc:marcKey or marc:record][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="bf:Work/bf:expressionOf[contains(@rdf:resource, 'hubs')][../bf:contribution/*[local-name()='PrimaryContribution'] or ../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]] |                     bf:Work/bf:expressionOf/bf:*[contains(@rdf:about, 'hubs') or bflc:marcKey or marc:record][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:variable name="relURI">
-              <xsl:choose>
-                <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
-                  <xsl:value-of select="@rdf:resource"/>
-                </xsl:when>
-                <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
-                  <xsl:value-of select="@rdf:about"/>
-                </xsl:when>
-              </xsl:choose>
-            </xsl:variable>
-            <xsl:variable name="vRelResourcePreNS">
-              <xsl:call-template name="tGetRelResource">
-                <xsl:with-param name="pRelUri" select="$relURI"/>
-                <xsl:with-param name="pContext" select="."/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">240</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
-                </xsl:attribute>
+      <xsl:for-each select="bf:Work/bf:expressionOf[contains(@rdf:resource, 'hubs')][../bf:contribution/*[local-name()='PrimaryContribution'] or ../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]] |                     bf:Work/bf:expressionOf/bf:*[contains(@rdf:about, 'hubs') or bflc:marcKey or marc:record][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]       ">
+        <xsl:variable name="relURI">
+          <xsl:choose>
+            <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
+              <xsl:value-of select="@rdf:resource"/>
+            </xsl:when>
+            <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
+              <xsl:value-of select="@rdf:about"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vRelResourcePreNS">
+          <xsl:call-template name="tGetRelResource">
+            <xsl:with-param name="pRelUri" select="$relURI"/>
+            <xsl:with-param name="pContext" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang">
+              <xsl:variable name="vLangTag" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after($vLangTag,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vRelVariantPreNS">
+          <xsl:if test="$v880Script != '' and self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]">
+            <xsl:call-template name="tGetMiniMARCFromKey">
+              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]"/>
+            </xsl:call-template>
+          </xsl:if>
+        </xsl:variable>
+        <xsl:variable name="vRelVariant" select="exsl:node-set($vRelVariantPreNS)"/>
+        <xsl:choose>
+          <xsl:when test="$xslProcessor='libxslt' and contains($relURI, 'resources/hubs') and not(bflc:marcKey)">
+            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 240 output.</xsl:message>
+          </xsl:when>
+        </xsl:choose>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">240</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text>1</xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text>0</xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
+              <xsl:variable name="v240-6">
+                <xsl:value-of select="concat('880-0', '2')"/>
+              </xsl:variable>
+              <xsl:if test="$v240-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v240-6"/>
+                </marc:subfield>
               </xsl:if>
-              <xsl:choose>
-                <xsl:when test="$xslProcessor='libxslt' and contains($relURI, 'resources/hubs') and not(bflc:marcKey)">
-                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 240 output.</xsl:message>
-                </xsl:when>
-              </xsl:choose>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:choose>
+            <xsl:when test="$vRelResource//marc:datafield[@tag = '240']">
+              <xsl:for-each select="$vRelResource//marc:datafield[@tag = '240']/marc:subfield">
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="@code"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]">
+              <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/marc:subfield[(@code = 't' or preceding-sibling::marc:subfield[@code = 't']) and contains('dgfhklmnoprst',@code)]">
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="translate(@code, 't', 'a')"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:variable name="v240-1">
+            <xsl:choose>
+              <xsl:when test="$relURI != ''">
+                <xsl:value-of select="$relURI"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v240-1 != ''">
+            <marc:subfield code="1">
+              <xsl:value-of select="$v240-1"/>
+            </marc:subfield>
+          </xsl:if>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
+            <marc:datafield>
+              <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
                 <xsl:text>1</xsl:text>
               </xsl:attribute>
               <xsl:attribute name="ind2">
                 <xsl:text>0</xsl:text>
               </xsl:attribute>
-              <xsl:choose>
-                <xsl:when test="$vRelResource//marc:datafield[@tag = '240']">
-                  <xsl:for-each select="$vRelResource//marc:datafield[@tag = '240']/marc:subfield">
-                    <marc:subfield>
-                      <xsl:attribute name="code">
-                        <xsl:value-of select="@code"/>
-                      </xsl:attribute>
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                </xsl:when>
-                <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/marc:subfield[(@code = 't' or preceding-sibling::marc:subfield[@code = 't']) and contains('dgfhklmnoprst',@code)]">
-                    <marc:subfield>
-                      <xsl:attribute name="code">
-                        <xsl:value-of select="translate(@code, 't', 'a')"/>
-                      </xsl:attribute>
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                </xsl:when>
-              </xsl:choose>
-              <xsl:variable name="v240-1">
+              <xsl:variable name="v880-6">
+                <xsl:value-of select="concat('240-0', '2', '/', $v880Script)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v880-6"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:for-each select="$vRelVariant//marc:datafield[starts-with(@tag, '1')]/marc:subfield[(@code = 't' or preceding-sibling::marc:subfield[@code = 't']) and contains('dgfhklmnoprst',@code)]">
+                <marc:subfield>
+                  <xsl:attribute name="code">
+                    <xsl:value-of select="translate(@code, 't', 'a')"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:variable name="v880-1">
                 <xsl:choose>
                   <xsl:when test="$relURI != ''">
                     <xsl:value-of select="$relURI"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
-              <xsl:if test="$v240-1 != ''">
+              <xsl:if test="$v880-1 != ''">
                 <marc:subfield code="1">
-                  <xsl:value-of select="$v240-1"/>
+                  <xsl:value-of select="$v880-1"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:for-each select="bf:Work/bf:expressionOf[contains(@rdf:resource, 'hubs')][../bf:contribution/*[local-name()='PrimaryContribution'] or ../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]] |                     bf:Work/bf:expressionOf/bf:*[contains(@rdf:about, 'hubs') or bflc:marcKey or marc:record][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]       ">
-            <xsl:variable name="relURI">
-              <xsl:choose>
-                <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
-                  <xsl:value-of select="@rdf:resource"/>
-                </xsl:when>
-                <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
-                  <xsl:value-of select="@rdf:about"/>
-                </xsl:when>
-              </xsl:choose>
-            </xsl:variable>
-            <xsl:variable name="vRelResourcePreNS">
-              <xsl:call-template name="tGetRelResource">
-                <xsl:with-param name="pRelUri" select="$relURI"/>
-                <xsl:with-param name="pContext" select="."/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">240</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
-                </xsl:attribute>
-              </xsl:if>
-              <xsl:choose>
-                <xsl:when test="$xslProcessor='libxslt' and contains($relURI, 'resources/hubs') and not(bflc:marcKey)">
-                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 240 output.</xsl:message>
-                </xsl:when>
-              </xsl:choose>
-              <xsl:attribute name="ind1">
-                <xsl:text>1</xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text>0</xsl:text>
-              </xsl:attribute>
-              <xsl:choose>
-                <xsl:when test="$vRelResource//marc:datafield[@tag = '240']">
-                  <xsl:for-each select="$vRelResource//marc:datafield[@tag = '240']/marc:subfield">
-                    <marc:subfield>
-                      <xsl:attribute name="code">
-                        <xsl:value-of select="@code"/>
-                      </xsl:attribute>
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                </xsl:when>
-                <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]">
-                  <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/marc:subfield[(@code = 't' or preceding-sibling::marc:subfield[@code = 't']) and contains('dgfhklmnoprst',@code)]">
-                    <marc:subfield>
-                      <xsl:attribute name="code">
-                        <xsl:value-of select="translate(@code, 't', 'a')"/>
-                      </xsl:attribute>
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                </xsl:when>
-              </xsl:choose>
-              <xsl:variable name="v240-1">
-                <xsl:choose>
-                  <xsl:when test="$relURI != ''">
-                    <xsl:value-of select="$relURI"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v240-1 != ''">
-                <marc:subfield code="1">
-                  <xsl:value-of select="$v240-1"/>
-                </marc:subfield>
-              </xsl:if>
-            </marc:datafield>
-          </xsl:for-each>
-        </xsl:otherwise>
-      </xsl:choose>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:choose>
         <xsl:when test="bf:Work/bf:expressionOf/child::node()[         not(contains(@rdf:resource, 'hubs')) and not(contains(@rdf:about, 'hubs')) and          not(contains(@rdf:resource, 'REPLACE')) and not(contains(@rdf:about, 'REPLACE')) and          not(bflc:marcKey or marc:record) and          (local-name() = 'Hub' or local-name() = 'Work') and bf:title][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
           <xsl:for-each select="bf:Work/bf:expressionOf/child::node()[         not(contains(@rdf:resource, 'hubs')) and not(contains(@rdf:about, 'hubs')) and          not(contains(@rdf:resource, 'REPLACE')) and not(contains(@rdf:about, 'REPLACE')) and          not(bflc:marcKey or marc:record) and          (local-name() = 'Hub' or local-name() = 'Work') and bf:title][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]][not(bf:mainTitle/@xml:lang) or contains(translate(bf:mainTitle/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
@@ -5647,7 +5539,7 @@
               <xsl:variable name="v880-6">
                 <xsl:choose>
                   <xsl:when test="$v880Script != ''">
-                    <xsl:value-of select="concat('245-02/',$v880Script)"/>
+                    <xsl:value-of select="concat('245-03/',$v880Script)"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:text>245-01</xsl:text>
@@ -5848,7 +5740,7 @@
         <xsl:variable name="vOccurrenceNumber">
           <xsl:if test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(               local-name()='VariantTitle' or               local-name()='ParallelTitle' or               local-name()='TranscribedTitle' or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/ParallelTitle'] or               rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/TranscribedTitle']               ) and                not(rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']) and               not(bf:variantType = 'translated') and               not(bf:variantType = 'former') and               bf:mainTitle[@xml:lang]])"/>
-            <xsl:value-of select="3 + $prevTitleCount"/>
+            <xsl:value-of select="4 + $prevTitleCount"/>
           </xsl:if>
         </xsl:variable>
         <xsl:variable name="vTag">
@@ -6648,7 +6540,7 @@
           <xsl:choose>
             <xsl:when test="$v880/@xml:lang">
               <xsl:variable name="v250-6">
-                <xsl:value-of select="'880-24'"/>
+                <xsl:value-of select="'880-20'"/>
               </xsl:variable>
               <xsl:if test="$v250-6 != ''">
                 <marc:subfield code="6">
@@ -6688,7 +6580,7 @@
                 <xsl:text> </xsl:text>
               </xsl:attribute>
               <xsl:variable name="v880-6">
-                <xsl:value-of select="concat('250-24/',$v880Script)"/>
+                <xsl:value-of select="concat('250-20/',$v880Script)"/>
               </xsl:variable>
               <xsl:if test="$v880-6 != ''">
                 <marc:subfield code="6">
@@ -6824,7 +6716,7 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="v880Occurence">
-          <xsl:value-of select="30+position()"/>
+          <xsl:value-of select="21+position()"/>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="$v880Occurence &lt; 41">
@@ -7085,7 +6977,7 @@
                               <xsl:text> :</xsl:text>
                             </xsl:if>
                             <xsl:if test="not(../bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]) and ../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                              <xsl:text> ,</xsl:text>
+                              <xsl:text>,</xsl:text>
                             </xsl:if>
                           </xsl:if>
                         </marc:subfield>
@@ -7112,7 +7004,7 @@
                         <marc:subfield code="b">
                           <xsl:value-of select="."/>
                           <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                            <xsl:text>,</xsl:text>
+                            <xsl:text> :</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
                             <xsl:if test="../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
@@ -7595,7 +7487,7 @@
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
         <xsl:variable name="v880Occurence">
-          <xsl:value-of select="20+position()"/>
+          <xsl:value-of select="35+position()"/>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="bf:title/bf:Title/bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
@@ -7997,6 +7889,165 @@
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Instance/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]|bf:Work/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]|//bf:Item/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != '' and ancestor::bf:Instance">
+              <xsl:value-of select="count(../preceding-sibling::bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) + 50"/>
+            </xsl:when>
+            <xsl:when test="$v880Script != '' and ancestor::bf:Work">
+              <xsl:value-of select="count(../preceding-sibling::bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) + 40"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vTag">
+          <xsl:choose>
+            <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and                      ( translate(bf:noteType,$upper,$lower)='with' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/with')">
+              <xsl:text>501</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Instance' and                      (translate(bf:noteType,$upper,$lower)='report type' or                      rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/report')">
+              <xsl:text>513</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Instance' and                      ( translate(bf:noteType,$upper,$lower)='issuance information' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuance')">
+              <xsl:text>515</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Instance' and                      ( translate(bf:noteType,$upper,$lower)='type of computer data' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/computer')">
+              <xsl:text>516</xsl:text>
+            </xsl:when>
+            <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and                      ( translate(bf:noteType,$upper,$lower)='reproduction version' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/repro')">
+              <xsl:text>533</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Instance' and                      ( translate(bf:noteType,$upper,$lower)='issuing body' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuing')">
+              <xsl:text>550</xsl:text>
+            </xsl:when>
+            <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and                      ( translate(bf:noteType,$upper,$lower)='exhibition' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/exhibit')">
+              <xsl:text>585</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Work' and                      ( translate(bf:noteType,$upper,$lower)='credits' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits')">
+              <xsl:text>508</xsl:text>
+            </xsl:when>
+            <xsl:when test="local-name(../..)='Work' and                      ( translate(bf:noteType,$upper,$lower)='participants' or                      rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants')">
+              <xsl:text>511</xsl:text>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vCast">
+          <xsl:choose>
+            <xsl:when test="$vTag='511' and starts-with(rdfs:label[1], 'Cast:')">
+              <xsl:text>true</xsl:text>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vSimple880sf6">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vSimple880">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <marc:datafield>
+                  <xsl:attribute name="tag">880</xsl:attribute>
+                  <xsl:choose>
+                    <xsl:when test="$vCast = 'true'">
+                      <xsl:attribute name="ind1">
+                        <xsl:text>1</xsl:text>
+                      </xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:attribute name="ind1">
+                        <xsl:text> </xsl:text>
+                      </xsl:attribute>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                  <xsl:attribute name="ind2">
+                    <xsl:text> </xsl:text>
+                  </xsl:attribute>
+                  <xsl:variable name="v880-6">
+                    <xsl:value-of select="concat($vTag, '-', $v880Occurrence, '/', $v880Script)"/>
+                  </xsl:variable>
+                  <xsl:if test="$v880-6 != ''">
+                    <marc:subfield code="6">
+                      <xsl:value-of select="$v880-6"/>
+                    </marc:subfield>
+                  </xsl:if>
+                  <xsl:choose>
+                    <xsl:when test="$vTag = '508' or $vTag = '511' or $vTag = '533' or $vTag = '585'">
+                      <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <marc:subfield code="3">
+                              <xsl:call-template name="tChopPunct">
+                                <xsl:with-param name="pString" select="."/>
+                              </xsl:call-template>
+                            </marc:subfield>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $3.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
+                  </xsl:choose>
+                  <xsl:choose>
+                    <xsl:when test="$vCast = 'true'">
+                      <xsl:variable name="v880-a">
+                        <xsl:value-of select="substring-after(., 'Cast: ')"/>
+                      </xsl:variable>
+                      <xsl:if test="$v880-a != ''">
+                        <marc:subfield code="a">
+                          <xsl:value-of select="$v880-a"/>
+                        </marc:subfield>
+                      </xsl:if>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <marc:subfield code="a">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                  <xsl:choose>
+                    <xsl:when test="$vTag = '501' or $vTag = '533' or $vTag = '585'">
+                      <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                        <xsl:choose>
+                          <xsl:when test="position() = 1">
+                            <marc:subfield code="5">
+                              <xsl:value-of select="."/>
+                            </marc:subfield>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $5.</xsl:message>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each>
+                    </xsl:when>
+                  </xsl:choose>
+                </marc:datafield>
+              </xsl:for-each>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
         <xsl:choose>
           <xsl:when test="local-name(../..)='Instance' and                   (rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/computer' or translate(bf:noteType,$upper,$lower)='computer file characteristics')">
             <xsl:variable name="vXmlLang">
@@ -8065,148 +8116,285 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='with' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/with')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">501</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">501</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
+                  </xsl:when>
+                </xsl:choose>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="5">
+                        <xsl:value-of select="."/>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 501 $5.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="(                     local-name(../..)='Work' and                      (                        translate(bf:noteType,$upper,$lower)='credits' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits'                     )                   )">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">508</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
+                  </xsl:when>
+                </xsl:choose>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 508 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="(                     local-name(../..)='Work' and                      (                        translate(bf:noteType,$upper,$lower)='participants' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants'                     )                   )">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">511</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:choose>
+                  <xsl:when test="$vCast = 'true'">
+                    <xsl:attribute name="ind1">
+                      <xsl:text>1</xsl:text>
+                    </xsl:attribute>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:attribute name="ind1">
+                      <xsl:text> </xsl:text>
+                    </xsl:attribute>
+                  </xsl:otherwise>
+                </xsl:choose>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
+                  </xsl:when>
+                </xsl:choose>
+                <xsl:choose>
+                  <xsl:when test="$vCast = 'true'">
+                    <xsl:variable name="v511-a">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="substring-after(.,'Cast:')"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:if test="$v511-a != ''">
+                      <marc:subfield code="a">
+                        <xsl:value-of select="$v511-a"/>
+                      </marc:subfield>
+                    </xsl:if>
+                  </xsl:when>
+                  <xsl:otherwise>
                     <marc:subfield code="a">
                       <xsl:call-template name="tChopPunct">
                         <xsl:with-param name="pString" select="."/>
                       </xsl:call-template>
                     </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 501 $a.</xsl:message>
                   </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="5">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 501 $5.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 511 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='report type' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/report')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">513</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">513</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 513 $a.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='issuance information' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuance')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">515</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">515</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 515 $a.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='type of computer data' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/computer')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">516</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">516</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 516 $a.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='additional physical form' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/addphys')">
             <marc:datafield>
@@ -8265,57 +8453,60 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='reproduction version' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/repro')">
-            <marc:datafield>
-              <xsl:attribute name="tag">533</xsl:attribute>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">533</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="3">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 533 $3.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="rdfs:label">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 533 $a.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/*/*[local-name()='code']">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="5">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 533 $5.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 533 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="../bflc:applicableInstitution/*/*[local-name()='code']">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="5">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 533 $5.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='original version' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/orig')">
             <marc:datafield>
@@ -8361,7 +8552,7 @@
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='funding information' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/fundinfo')">
             <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
+              <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
             </xsl:variable>
             <marc:datafield>
               <xsl:attribute name="tag">536</xsl:attribute>
@@ -8376,7 +8567,19 @@
               <xsl:attribute name="ind2">
                 <xsl:text> </xsl:text>
               </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+              <xsl:choose>
+                <xsl:when test="$v880Script != ''">
+                  <xsl:variable name="v536-6">
+                    <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+                  </xsl:variable>
+                  <xsl:if test="$v536-6 != ''">
+                    <marc:subfield code="6">
+                      <xsl:value-of select="$v536-6"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+              </xsl:choose>
+              <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
                 <xsl:choose>
                   <xsl:when test="starts-with(.,'Contract:')">
                     <xsl:variable name="v536-b">
@@ -8460,6 +8663,118 @@
                 </xsl:choose>
               </xsl:for-each>
             </marc:datafield>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:variable name="vXmlLang">
+                  <xsl:value-of select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang"/>
+                </xsl:variable>
+                <marc:datafield>
+                  <xsl:attribute name="tag">536</xsl:attribute>
+                  <xsl:if test="$vXmlLang != ''">
+                    <xsl:attribute name="xml:lang">
+                      <xsl:value-of select="$vXmlLang"/>
+                    </xsl:attribute>
+                  </xsl:if>
+                  <xsl:attribute name="ind1">
+                    <xsl:text> </xsl:text>
+                  </xsl:attribute>
+                  <xsl:attribute name="ind2">
+                    <xsl:text> </xsl:text>
+                  </xsl:attribute>
+                  <xsl:variable name="v536-6">
+                    <xsl:value-of select="concat('536-', $v880Occurrence, '/', $v880Script)"/>
+                  </xsl:variable>
+                  <xsl:if test="$v536-6 != ''">
+                    <marc:subfield code="6">
+                      <xsl:value-of select="$v536-6"/>
+                    </marc:subfield>
+                  </xsl:if>
+                  <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:choose>
+                      <xsl:when test="starts-with(.,'Contract:')">
+                        <xsl:variable name="v536-b">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Contract:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-b != ''">
+                          <marc:subfield code="b">
+                            <xsl:value-of select="$v536-b"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Grant:')">
+                        <xsl:variable name="v536-c">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Grant:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-c != ''">
+                          <marc:subfield code="c">
+                            <xsl:value-of select="$v536-c"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Program element:')">
+                        <xsl:variable name="v536-e">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Program element:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-e != ''">
+                          <marc:subfield code="e">
+                            <xsl:value-of select="$v536-e"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Project:')">
+                        <xsl:variable name="v536-f">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Project:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-f != ''">
+                          <marc:subfield code="f">
+                            <xsl:value-of select="$v536-f"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Task:')">
+                        <xsl:variable name="v536-g">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Task:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-g != ''">
+                          <marc:subfield code="g">
+                            <xsl:value-of select="$v536-g"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Work unit:')">
+                        <xsl:variable name="v536-h">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="substring-after(.,'Work unit:')"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:if test="$v536-h != ''">
+                          <marc:subfield code="h">
+                            <xsl:value-of select="$v536-h"/>
+                          </marc:subfield>
+                        </xsl:if>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <marc:subfield code="a">
+                          <xsl:call-template name="tChopPunct">
+                            <xsl:with-param name="pString" select="."/>
+                          </xsl:call-template>
+                        </marc:subfield>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:for-each>
+                </marc:datafield>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and                   (translate(bf:noteType,$upper,$lower)='biographical data' or translate(bf:noteType,$upper,$lower)='administrative history' or                   rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biogdata' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/adminhist')">
             <xsl:variable name="vXmlLang">
@@ -8517,37 +8832,40 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='issuing body' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuing')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">550</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">550</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 550 $a.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and                   (translate(bf:noteType,$upper,$lower)='index' or translate(bf:noteType,$upper,$lower)='finding aid' or                   rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/index' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/finding')">
             <xsl:variable name="vXmlLang">
@@ -8605,37 +8923,40 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='documentation' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">556</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">556</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text>8</xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text>8</xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 556 $a.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='related material' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/related')">
             <xsl:variable name="vXmlLang">
@@ -8676,102 +8997,185 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='exhibition' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/exhibit')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">585</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">585</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
                 <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="3">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:copy-of select="$vSimple880sf6"/>
                   </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 585 $3.</xsl:message>
-                  </xsl:otherwise>
                 </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="rdfs:label">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 585 $a.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="5">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 585 $5.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 585 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="5">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 585 $5.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:copy-of select="$vSimple880"/>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='description source' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/descsource')">
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">588</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
-                </xsl:attribute>
-              </xsl:if>
-              <xsl:attribute name="ind1">
-                <xsl:variable name="vInd">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">588</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:variable name="vInd">
+                    <xsl:choose>
+                      <xsl:when test="starts-with(.,'Source of description:') or starts-with(rdfs:label,'Description based on:')">
+                        <xsl:text>0</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="starts-with(.,'Latest issue consulted:')">
+                        <xsl:text>1</xsl:text>
+                      </xsl:when>
+                    </xsl:choose>
+                  </xsl:variable>
                   <xsl:choose>
-                    <xsl:when test="starts-with(rdfs:label,'Source of description:') or starts-with(rdfs:label,'Description based on:')">
-                      <xsl:text>0</xsl:text>
+                    <xsl:when test="$vInd != ''">
+                      <xsl:value-of select="$vInd"/>
                     </xsl:when>
-                    <xsl:when test="starts-with(rdfs:label,'Latest issue consulted:')">
-                      <xsl:text>1</xsl:text>
+                    <xsl:otherwise>
+                      <xsl:text> </xsl:text>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:variable name="v588-6">
+                      <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+                    </xsl:variable>
+                    <xsl:if test="$v588-6 != ''">
+                      <marc:subfield code="6">
+                        <xsl:value-of select="$v588-6"/>
+                      </marc:subfield>
+                    </xsl:if>
+                  </xsl:when>
+                </xsl:choose>
+                <xsl:variable name="v588-a">
+                  <xsl:choose>
+                    <xsl:when test="starts-with(.,'Source of description:')">
+                      <xsl:value-of select="normalize-space(substring-after(.,'Source of description:'))"/>
                     </xsl:when>
+                    <xsl:when test="starts-with(.,'Latest issue consulted:')">
+                      <xsl:value-of select="normalize-space(substring-after(.,'Latest issue consulted:'))"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="."/>
+                    </xsl:otherwise>
                   </xsl:choose>
                 </xsl:variable>
-                <xsl:choose>
-                  <xsl:when test="$vInd != ''">
-                    <xsl:value-of select="$vInd"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:text> </xsl:text>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:attribute>
-              <xsl:attribute name="ind2">
-                <xsl:text> </xsl:text>
-              </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
+                <xsl:if test="$v588-a != ''">
+                  <marc:subfield code="a">
+                    <xsl:value-of select="$v588-a"/>
+                  </marc:subfield>
+                </xsl:if>
+                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="5">
+                        <xsl:value-of select="."/>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 588 $5.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <marc:datafield>
+                    <xsl:attribute name="tag">880</xsl:attribute>
+                    <xsl:attribute name="ind1">
+                      <xsl:variable name="vInd">
+                        <xsl:choose>
+                          <xsl:when test="starts-with(.,'Source of description:') or starts-with(rdfs:label,'Description based on:')">
+                            <xsl:text>0</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="starts-with(.,'Latest issue consulted:')">
+                            <xsl:text>1</xsl:text>
+                          </xsl:when>
+                        </xsl:choose>
+                      </xsl:variable>
+                      <xsl:choose>
+                        <xsl:when test="$vInd != ''">
+                          <xsl:value-of select="$vInd"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:text> </xsl:text>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:attribute>
+                    <xsl:attribute name="ind2">
+                      <xsl:text> </xsl:text>
+                    </xsl:attribute>
+                    <xsl:variable name="v880-6">
+                      <xsl:value-of select="concat('588-', $v880Occurrence, '/', $v880Script)"/>
+                    </xsl:variable>
+                    <xsl:if test="$v880-6 != ''">
+                      <marc:subfield code="6">
+                        <xsl:value-of select="$v880-6"/>
+                      </marc:subfield>
+                    </xsl:if>
+                    <xsl:variable name="v880-a">
                       <xsl:choose>
                         <xsl:when test="starts-with(.,'Source of description:')">
                           <xsl:value-of select="normalize-space(substring-after(.,'Source of description:'))"/>
@@ -8783,26 +9187,28 @@
                           <xsl:value-of select="."/>
                         </xsl:otherwise>
                       </xsl:choose>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 588 $a.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="5">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 588 $5.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-            </marc:datafield>
+                    </xsl:variable>
+                    <xsl:if test="$v880-a != ''">
+                      <marc:subfield code="a">
+                        <xsl:value-of select="$v880-a"/>
+                      </marc:subfield>
+                    </xsl:if>
+                    <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                      <xsl:choose>
+                        <xsl:when test="position() = 1">
+                          <marc:subfield code="5">
+                            <xsl:value-of select="."/>
+                          </marc:subfield>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $5.</xsl:message>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:for-each>
+                  </marc:datafield>
+                </xsl:for-each>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Work' and          (           translate(bf:noteType,$upper,$lower)='language' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/lang' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/award' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/suppl'         ))"/>
           <xsl:when test="(           local-name(../..)='Work' and            contains(rdf:type/@rdf:resource, 'http://id.loc.gov/vocabulary/resourceComponents')         )"/>
@@ -8810,94 +9216,761 @@
           <xsl:when test="(         local-name(../..)='Instance' and          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio'         )"/>
           <xsl:when test="(local-name(../..)='Instance' and          (         rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas'         ))"/>
           <xsl:otherwise>
-            <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
-            </xsl:variable>
-            <marc:datafield>
-              <xsl:attribute name="tag">500</xsl:attribute>
-              <xsl:if test="$vXmlLang != ''">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$vXmlLang"/>
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))][1]">
+              <xsl:variable name="vXmlLang">
+                <xsl:value-of select="./@xml:lang"/>
+              </xsl:variable>
+              <marc:datafield>
+                <xsl:attribute name="tag">500</xsl:attribute>
+                <xsl:if test="$vXmlLang != ''">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$vXmlLang"/>
+                  </xsl:attribute>
+                </xsl:if>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
                 </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="$v880Script != ''">
+                    <xsl:variable name="v500-6">
+                      <xsl:value-of select="concat('500-', $v880Occurrence)"/>
+                    </xsl:variable>
+                    <xsl:if test="$v500-6 != ''">
+                      <marc:subfield code="6">
+                        <xsl:value-of select="$v500-6"/>
+                      </marc:subfield>
+                    </xsl:if>
+                  </xsl:when>
+                </xsl:choose>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 500 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+                <xsl:variable name="v500-a">
+                  <xsl:variable name="vNoteText">
+                    <xsl:for-each select="../rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                      <xsl:choose>
+                        <xsl:when test="position() = last()">
+                          <xsl:value-of select="."/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:value-of select="concat(.,' ')"/>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:for-each>
+                  </xsl:variable>
+                  <!-- Do not chop punctuation - 20241119 -->
+                  <!--
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="$vNoteText"/>
+                </xsl:call-template>
+                -->
+                  <xsl:value-of select="$vNoteText"/>
+                </xsl:variable>
+                <xsl:if test="$v500-a != ''">
+                  <marc:subfield code="a">
+                    <xsl:value-of select="$v500-a"/>
+                  </marc:subfield>
+                </xsl:if>
+                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="5">
+                        <xsl:value-of select="."/>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 500 $5.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+            <xsl:choose>
+              <xsl:when test="$v880Script != ''">
+                <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <marc:datafield>
+                    <xsl:attribute name="tag">880</xsl:attribute>
+                    <xsl:attribute name="ind1">
+                      <xsl:text> </xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="ind2">
+                      <xsl:text> </xsl:text>
+                    </xsl:attribute>
+                    <xsl:variable name="v880-6">
+                      <xsl:value-of select="concat('500-', $v880Occurrence, '/', $v880Script)"/>
+                    </xsl:variable>
+                    <xsl:if test="$v880-6 != ''">
+                      <marc:subfield code="6">
+                        <xsl:value-of select="$v880-6"/>
+                      </marc:subfield>
+                    </xsl:if>
+                    <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                      <xsl:choose>
+                        <xsl:when test="position() = 1">
+                          <marc:subfield code="3">
+                            <xsl:call-template name="tChopPunct">
+                              <xsl:with-param name="pString" select="."/>
+                            </xsl:call-template>
+                          </marc:subfield>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $3.</xsl:message>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:for-each>
+                    <xsl:variable name="v880-a">
+                      <xsl:variable name="vNoteText">
+                        <xsl:for-each select="../rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                          <xsl:choose>
+                            <xsl:when test="position() = last()">
+                              <xsl:value-of select="."/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="concat(.,' ')"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:for-each>
+                      </xsl:variable>
+                      <!-- Do not chop punctuation - 20241119 -->
+                      <!--
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="$vNoteText"/>
+                </xsl:call-template>
+                -->
+                      <xsl:value-of select="$vNoteText"/>
+                    </xsl:variable>
+                    <xsl:if test="$v880-a != ''">
+                      <marc:subfield code="a">
+                        <xsl:value-of select="$v880-a"/>
+                      </marc:subfield>
+                    </xsl:if>
+                    <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                      <xsl:choose>
+                        <xsl:when test="position() = 1">
+                          <marc:subfield code="5">
+                            <xsl:value-of select="."/>
+                          </marc:subfield>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $5.</xsl:message>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:for-each>
+                  </marc:datafield>
+                </xsl:for-each>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+      <xsl:for-each select="bf:Work/bf:dissertation/bf:Dissertation">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+            <xsl:when test="bf:degree[@xml:lang and not(contains(translate(bf:degree/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(bf:degree/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+            <xsl:when test="bf:grantingInstitution/*/rdfs:label[@xml:lang and not(contains(translate(bf:grantingInstitution/*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(bf:grantingInstitution/*/rdfs:label,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != '' and ancestor::bf:Work">
+              <!-- 
+              This should be the next in the numerical sequence for work notes, 
+              when also accounting for tableOfContents and supplementary content 
+              and dissertation .. -->
+              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">502</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v502-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v502-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v502-6"/>
+                </marc:subfield>
               </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:degree[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="b">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $b.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="c">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $c.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:date[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="d">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $d.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:note/*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <marc:subfield code="g">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:for-each>
+          <xsl:for-each select="bf:identifiedBy/*/rdf:value[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <marc:subfield code="o">
+              <xsl:value-of select="."/>
+            </marc:subfield>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <marc:datafield>
+              <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
                 <xsl:text> </xsl:text>
               </xsl:attribute>
               <xsl:attribute name="ind2">
                 <xsl:text> </xsl:text>
               </xsl:attribute>
-              <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+              <xsl:variable name="v880-6">
+                <xsl:value-of select="concat('502-', $v880Occurrence, '/', $v880Script)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v880-6"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
-                    <marc:subfield code="3">
+                    <marc:subfield code="a">
                       <xsl:call-template name="tChopPunct">
                         <xsl:with-param name="pString" select="."/>
                       </xsl:call-template>
                     </marc:subfield>
                   </xsl:when>
                   <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 500 $3.</xsl:message>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $a.</xsl:message>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:variable name="v500-a">
-                <xsl:variable name="vNoteText">
-                  <xsl:for-each select="rdfs:label">
-                    <xsl:choose>
-                      <xsl:when test="position() = last()">
-                        <xsl:value-of select="."/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:value-of select="concat(.,' ')"/>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                  </xsl:for-each>
-                </xsl:variable>
-                <!-- Do not chop punctuation - 20241119 -->
-                <!--
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="$vNoteText"/>
-              </xsl:call-template>
-              -->
-                <xsl:value-of select="$vNoteText"/>
-              </xsl:variable>
-              <xsl:if test="$v500-a != ''">
-                <marc:subfield code="a">
-                  <xsl:value-of select="$v500-a"/>
-                </marc:subfield>
-              </xsl:if>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
+              <xsl:for-each select="bf:degree[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
-                    <marc:subfield code="5">
-                      <xsl:value-of select="."/>
+                    <marc:subfield code="b">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
                     </marc:subfield>
                   </xsl:when>
                   <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 500 $5.</xsl:message>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $b.</xsl:message>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+              <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <xsl:choose>
+                  <xsl:when test="position() = 1">
+                    <marc:subfield code="c">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
+                    </marc:subfield>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $c.</xsl:message>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each>
+              <xsl:for-each select="bf:date[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <xsl:choose>
+                  <xsl:when test="position() = 1">
+                    <marc:subfield code="d">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
+                    </marc:subfield>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $d.</xsl:message>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each>
+              <xsl:for-each select="bf:note/*/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <marc:subfield code="g">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:for-each>
+              <xsl:for-each select="bf:identifiedBy/*/rdf:value[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <marc:subfield code="o">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:for-each>
             </marc:datafield>
-          </xsl:otherwise>
+          </xsl:when>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:apply-templates select="bf:Work/bf:dissertation/bf:Dissertation" mode="generate-502">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]  |                     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]       " mode="generate-504">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio' and rdfs:label[. != '']]       " mode="generate-504">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label]" mode="generate-505">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
+      <xsl:for-each select="bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]  |     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]     ">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != '' and ancestor::bf:Work">
+              <!-- 
+              This should be the next in the numerical sequence for work notes, 
+              when also accounting for tableOfContents and supplementary content .. -->
+              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +                position()"/>
+            </xsl:when>
+            <xsl:when test="$v880Script != '' and ancestor::bf:Instance">
+              <!-- 
+              This should be the next in the numerical sequence for instance notes, 
+              when also accounting for supplementary content .. -->
+              <xsl:value-of select="             49 +              count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +              count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +              position()"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">504</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v504-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v504-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v504-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="rdfs:label">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:count">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="b">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $b.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">880</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:variable name="v880-6">
+                  <xsl:value-of select="concat('504-', $v880Occurrence, '/', $v880Script)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-6 != ''">
+                  <marc:subfield code="6">
+                    <xsl:value-of select="$v880-6"/>
+                  </marc:subfield>
+                </xsl:if>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="bf:count">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="b">
+                        <xsl:value-of select="."/>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $b.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
+      <xsl:for-each select="bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio' and rdfs:label[. != '']]">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <!-- 
+              This should be the next in the numerical sequence for instance notes, 
+              when also accounting for supplementary content .. -->
+              <xsl:value-of select="               49 +                count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +                position() +                1"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">504</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v504-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v504-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v504-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="rdfs:label">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:count">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="b">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $b.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">880</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:variable name="v880-6">
+                  <xsl:value-of select="concat('504-', $v880Occurrence, '/', $v880Script)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-6 != ''">
+                  <marc:subfield code="6">
+                    <xsl:value-of select="$v880-6"/>
+                  </marc:subfield>
+                </xsl:if>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="bf:count">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="b">
+                        <xsl:value-of select="."/>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $b.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
+      <xsl:for-each select="bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label]">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <!-- This should be the next in the numerical sequence for work notes. -->
+              <xsl:value-of select="39 + count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) + position()"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">505</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:variable name="vInd">
+              <xsl:choose>
+                <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/incmp']">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
+                <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/part']">
+                  <xsl:text>2</xsl:text>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$vInd != ''">
+                <xsl:value-of select="$vInd"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>0</xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v505-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v505-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v505-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 505 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+            <marc:subfield code="u">
+              <xsl:value-of select="."/>
+            </marc:subfield>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">880</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:variable name="vInd">
+                    <xsl:choose>
+                      <xsl:when test="../bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/incmp']">
+                        <xsl:text>1</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="../bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/part']">
+                        <xsl:text>2</xsl:text>
+                      </xsl:when>
+                    </xsl:choose>
+                  </xsl:variable>
+                  <xsl:choose>
+                    <xsl:when test="$vInd != ''">
+                      <xsl:value-of select="$vInd"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:text>0</xsl:text>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:variable name="v880-6">
+                  <xsl:value-of select="concat('505-', $v880Occurrence, '/', $v880Script)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-6 != ''">
+                  <marc:subfield code="6">
+                    <xsl:value-of select="$v880-6"/>
+                  </marc:subfield>
+                </xsl:if>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="../bf:electronicLocator/@rdf:resource|../rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+                  <marc:subfield code="u">
+                    <xsl:value-of select="."/>
+                  </marc:subfield>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:for-each select="bf:Instance/bf:usageAndAccessPolicy/* | //bf:Item/bf:usageAndAccessPolicy/*">
         <xsl:choose>
           <xsl:when test="local-name()='UsePolicy' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/UsePolicy'">
@@ -9124,15 +10197,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:apply-templates select="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits']/rdfs:label" mode="generate-508">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
       <xsl:apply-templates select="bf:Work/bf:relation/bf:Relation[bf:relationship//@rdf:*[1]='http://id.loc.gov/vocabulary/relationship/references']/bf:associatedResource/bf:Work |                     bf:Work/bf:relation/bf:Relation[bf:relationship//@rdf:*[1]='http://id.loc.gov/vocabulary/relationship/indexedin']/bf:associatedResource/bf:Work |                     bf:Work/bflc:indexedIn/bf:Work |                     bf:Work/bf:references/bf:Work" mode="generate-510">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Instance/bf:credits[starts-with(text(),'Cast:')] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants']/rdfs:label" mode="generate-511">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -9140,10 +10205,133 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:summary/bf:Summary[rdfs:label]" mode="generate-520">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
+      <xsl:for-each select="bf:Work/bf:summary/bf:Summary[rdfs:label]">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <!-- This should be the next in the numerical sequence for work notes, when also accounting for tableOfContents .. -->
+              <xsl:value-of select="                             39 +                              count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                              count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                              position()"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">520</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v520-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v520-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v520-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="3">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 520 $3.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:value-of select="."/>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 520 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+            <marc:subfield code="u">
+              <xsl:value-of select="."/>
+            </marc:subfield>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">880</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:variable name="v880-6">
+                  <xsl:value-of select="concat('520-', $v880Occurrence, '/', $v880Script)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-6 != ''">
+                  <marc:subfield code="6">
+                    <xsl:value-of select="$v880-6"/>
+                  </marc:subfield>
+                </xsl:if>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+                  <marc:subfield code="u">
+                    <xsl:value-of select="."/>
+                  </marc:subfield>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:apply-templates select="bf:Work/bf:geographicCoverage/*[               not(                 bf:source/@rdf:resource='http://id.loc.gov/authorities/classification/G' or                  bf:source/bf:Source/@rdf:about='http://id.loc.gov/authorities/classification/G'               ) and not(@rdf:about) and rdfs:label]" mode="generate-522">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
@@ -9168,11 +10356,163 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource = 'http://id.loc.gov/vocabulary/mnotetype/lang' and rdfs:label]" mode="generate-546">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:notation/bf:Notation|bf:Work/bf:notation/bf:Script" mode="generate-546">
+      <xsl:for-each select="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource = 'http://id.loc.gov/vocabulary/mnotetype/lang' and rdfs:label]">
+        <xsl:variable name="v880Script">
+          <xsl:choose>
+            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:variable name="vlang">
+                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
+              </xsl:variable>
+              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Occurrence">
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <!-- This should be the next in the numerical sequence for work notes, 
+                 when also accounting for tableOfContents, supplementarycontent, dissertation, and padding .. -->
+              <xsl:value-of select="               41 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vXmlLang">
+          <xsl:value-of select="rdfs:label/@xml:lang"/>
+        </xsl:variable>
+        <marc:datafield>
+          <xsl:attribute name="tag">546</xsl:attribute>
+          <xsl:if test="$vXmlLang != ''">
+            <xsl:attribute name="xml:lang">
+              <xsl:value-of select="$vXmlLang"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="ind1">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="ind2">
+            <xsl:text> </xsl:text>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="$v880Script != ''">
+              <xsl:variable name="v546-6">
+                <xsl:value-of select="concat('880-', $v880Occurrence)"/>
+              </xsl:variable>
+              <xsl:if test="$v546-6 != ''">
+                <marc:subfield code="6">
+                  <xsl:value-of select="$v546-6"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="3">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 546 $3.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:choose>
+              <xsl:when test="position() = 1">
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 546 $a.</xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')] | ancestor::bf:Work/bf:notation/bf:Notation[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <marc:subfield code="b">
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="."/>
+                </xsl:call-template>
+              </marc:subfield>
+            </xsl:for-each>
+          </xsl:for-each>
+          <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[not(@rdf:about)] | ancestor::bf:Work/bf:notation/bf:Notation[not(@rdf:about)]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <marc:subfield code="b">
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="."/>
+                </xsl:call-template>
+              </marc:subfield>
+            </xsl:for-each>
+          </xsl:for-each>
+        </marc:datafield>
+        <xsl:choose>
+          <xsl:when test="$v880Script != ''">
+            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <marc:datafield>
+                <xsl:attribute name="tag">880</xsl:attribute>
+                <xsl:attribute name="ind1">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="ind2">
+                  <xsl:text> </xsl:text>
+                </xsl:attribute>
+                <xsl:variable name="v880-6">
+                  <xsl:value-of select="concat('546-', $v880Occurrence, '/', $v880Script)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-6 != ''">
+                  <marc:subfield code="6">
+                    <xsl:value-of select="$v880-6"/>
+                  </marc:subfield>
+                </xsl:if>
+                <xsl:for-each select="../bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+                  <xsl:choose>
+                    <xsl:when test="position() = 1">
+                      <marc:subfield code="3">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </marc:subfield>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $3.</xsl:message>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:for-each>
+                <marc:subfield code="a">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </marc:subfield>
+                <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')] | ancestor::bf:Work/bf:notation/bf:Notation[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')]">
+                  <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                    <marc:subfield code="b">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
+                    </marc:subfield>
+                  </xsl:for-each>
+                </xsl:for-each>
+                <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[not(@rdf:about)] | ancestor::bf:Work/bf:notation/bf:Notation[not(@rdf:about)]">
+                  <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                    <marc:subfield code="b">
+                      <xsl:call-template name="tChopPunct">
+                        <xsl:with-param name="pString" select="."/>
+                      </xsl:call-template>
+                    </marc:subfield>
+                  </xsl:for-each>
+                </xsl:for-each>
+              </marc:datafield>
+            </xsl:for-each>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
+      <xsl:apply-templates select="bf:Work[not(bf:note/bf:Note/rdf:type/@rdf:resource[.='http://id.loc.gov/vocabulary/mnotetype/lang'])]/bf:notation/bf:Notation[rdfs:label] |                      bf:Work[not(bf:note/bf:Note/rdf:type/@rdf:resource[.='http://id.loc.gov/vocabulary/mnotetype/lang'])]/bf:notation/bf:Script[rdfs:label]" mode="generate-546">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -9196,6 +10536,61 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
+      <xsl:for-each select="bf:Instance/bf:credits">
+        <xsl:choose>
+          <xsl:when test="starts-with(., 'Cast:')">
+            <xsl:variable name="vXmlLang">
+              <xsl:value-of select="./@xml:lang"/>
+            </xsl:variable>
+            <marc:datafield>
+              <xsl:attribute name="tag">511</xsl:attribute>
+              <xsl:if test="$vXmlLang != ''">
+                <xsl:attribute name="xml:lang">
+                  <xsl:value-of select="$vXmlLang"/>
+                </xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="ind1">
+                <xsl:text>1</xsl:text>
+              </xsl:attribute>
+              <xsl:attribute name="ind2">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:variable name="v511-a">
+                <xsl:value-of select="substring-after(., 'Cast: ')"/>
+              </xsl:variable>
+              <xsl:if test="$v511-a != ''">
+                <marc:subfield code="a">
+                  <xsl:value-of select="$v511-a"/>
+                </marc:subfield>
+              </xsl:if>
+            </marc:datafield>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:variable name="vXmlLang">
+              <xsl:value-of select="./@xml:lang"/>
+            </xsl:variable>
+            <marc:datafield>
+              <xsl:attribute name="tag">508</xsl:attribute>
+              <xsl:if test="$vXmlLang != ''">
+                <xsl:attribute name="xml:lang">
+                  <xsl:value-of select="$vXmlLang"/>
+                </xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="ind1">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:attribute name="ind2">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <marc:subfield code="a">
+                <xsl:call-template name="tChopPunct">
+                  <xsl:with-param name="pString" select="."/>
+                </xsl:call-template>
+              </marc:subfield>
+            </marc:datafield>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:for-each select="bf:Work/bf:subject">
         <xsl:choose>
           <xsl:when test="self::node()/*/bflc:marcKey |                   self::node()/*/marc:record |                   self::node()[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |                   self::node()/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |                   self::node()[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |                   self::node()/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |                   self::node()[contains(@rdf:resource, 'id.worldcat.org/fast/')] |                   self::node()/*[contains(@rdf:about, 'id.worldcat.org/fast/')]               ">
@@ -9347,7 +10742,7 @@
             <xsl:variable name="vOccurrenceNumber">
               <xsl:if test="$v880Script != ''">
                 <xsl:variable name="previousSubjectCount" select="count(preceding-sibling::bf:subject[*/madsrdf:componentList/*[1]/bflc:marcKey[@xml:lang] or */bflc:marcKey[@xml:lang]])"/>
-                <xsl:value-of select="50 + $previousSubjectCount"/>
+                <xsl:value-of select="60 + $previousSubjectCount"/>
               </xsl:if>
             </xsl:variable>
             <xsl:variable name="vShared0and1">
@@ -13159,6 +14554,13 @@
       <xsl:choose>
         <xsl:when test="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
           <xsl:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ][not(*/rdfs:label/@xml:lang) or contains(translate(*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:variable name="relURI">
+              <xsl:choose>
+                <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+                  <xsl:value-of select="bf:*/@rdf:about"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="vInd2Val">
               <xsl:choose>
                 <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -13179,6 +14581,9 @@
                 <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
                   <xsl:text>6</xsl:text>
                 </xsl:when>
+                <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>7</xsl:text>
+                </xsl:when>
                 <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
                   <xsl:text>7</xsl:text>
                 </xsl:when>
@@ -13186,6 +14591,9 @@
             </xsl:variable>
             <xsl:variable name="vSf2val">
               <xsl:choose>
+                <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>rbmscv</xsl:text>
+                </xsl:when>
                 <xsl:when test="$vInd2Val = '7'">
                   <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
                     <xsl:variable name="vSourceUri">
@@ -13544,16 +14952,18 @@
                       <xsl:value-of select="$v655-a"/>
                     </marc:subfield>
                   </xsl:if>
-                  <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$relURI != ''">
+                      <xsl:variable name="v655-0">
+                        <xsl:value-of select="$relURI"/>
+                      </xsl:variable>
+                      <xsl:if test="$v655-0 != ''">
+                        <marc:subfield code="0">
+                          <xsl:value-of select="$v655-0"/>
+                        </marc:subfield>
+                      </xsl:if>
+                    </xsl:when>
+                  </xsl:choose>
                   <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
                     <marc:subfield code="0">
                       <xsl:variable name="vIdType">
@@ -13602,6 +15012,13 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:for-each select="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]">
+            <xsl:variable name="relURI">
+              <xsl:choose>
+                <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+                  <xsl:value-of select="bf:*/@rdf:about"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="vInd2Val">
               <xsl:choose>
                 <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -13622,6 +15039,9 @@
                 <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
                   <xsl:text>6</xsl:text>
                 </xsl:when>
+                <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>7</xsl:text>
+                </xsl:when>
                 <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
                   <xsl:text>7</xsl:text>
                 </xsl:when>
@@ -13629,6 +15049,9 @@
             </xsl:variable>
             <xsl:variable name="vSf2val">
               <xsl:choose>
+                <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+                  <xsl:text>rbmscv</xsl:text>
+                </xsl:when>
                 <xsl:when test="$vInd2Val = '7'">
                   <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
                     <xsl:variable name="vSourceUri">
@@ -13987,16 +15410,18 @@
                       <xsl:value-of select="$v655-a"/>
                     </marc:subfield>
                   </xsl:if>
-                  <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
-                  <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-                    <marc:subfield code="0">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:for-each>
+                  <xsl:choose>
+                    <xsl:when test="$relURI != ''">
+                      <xsl:variable name="v655-0">
+                        <xsl:value-of select="$relURI"/>
+                      </xsl:variable>
+                      <xsl:if test="$v655-0 != ''">
+                        <marc:subfield code="0">
+                          <xsl:value-of select="$v655-0"/>
+                        </marc:subfield>
+                      </xsl:if>
+                    </xsl:when>
+                  </xsl:choose>
                   <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
                     <marc:subfield code="0">
                       <xsl:variable name="vIdType">
@@ -14193,6 +15618,26 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-0">
                     <xsl:value-of select="$relURI"/>
@@ -14205,6 +15650,16 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-1">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+                    <marc:subfield code="1">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-1">
                     <xsl:value-of select="$relURI"/>
@@ -14367,6 +15822,26 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+                <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-0">
+                    <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-0">
                     <xsl:value-of select="$relURI"/>
@@ -14379,6 +15854,16 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
+                <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+                  <xsl:variable name="vvAddedEntryNameLookupTag-1">
+                    <xsl:value-of select="$relURI"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+                    <marc:subfield code="1">
+                      <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
                 <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
                   <xsl:variable name="vvAddedEntryNameLookupTag-1">
                     <xsl:value-of select="$relURI"/>
@@ -14566,6 +16051,26 @@
             </xsl:when>
           </xsl:choose>
           <xsl:choose>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+              <xsl:variable name="v-0">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+              <xsl:variable name="v-0">
+                <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+              </xsl:variable>
+              <xsl:if test="$v-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
             <xsl:when test="not(contains($relURI,'example.org')) and            not(contains($relURI,'REPLACE')) and            not(contains($relURI,'rwo')) and            not(contains($relURI,'id.oclc.org/worldcat/entity/')) and            not(contains($relURI,'isni.org/isni/')) and            not(contains($relURI,'viaf.org/viaf/')) and            not(contains($relURI,'d-nb.info/gnd/'))">
               <xsl:variable name="v-0">
                 <xsl:value-of select="$relURI"/>
@@ -14578,6 +16083,26 @@
             </xsl:when>
           </xsl:choose>
           <xsl:choose>
+            <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+              <xsl:variable name="v-1">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v-1 != ''">
+                <marc:subfield code="1">
+                  <xsl:value-of select="$v-1"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+            <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+              <xsl:variable name="v-1">
+                <xsl:value-of select="concat(substring-before($relURI,'authorities/names'), 'rwo/agents/', substring-after($relURI,'authorities/names/'))"/>
+              </xsl:variable>
+              <xsl:if test="$v-1 != ''">
+                <marc:subfield code="1">
+                  <xsl:value-of select="$v-1"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
             <xsl:when test="contains($relURI,'id.oclc.org/worldcat/entity/') or            contains($relURI,'isni.org/isni/') or            contains($relURI,'viaf.org/viaf/') or            contains($relURI,'d-nb.info/gnd/')">
               <xsl:variable name="v-1">
                 <xsl:value-of select="$relURI"/>
@@ -14662,7 +16187,7 @@
               <xsl:choose>
                 <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
                   <xsl:variable name="vvAddedEntryNameMarcKeyTag-6">
-                    <xsl:value-of select="concat('880-7', position())"/>
+                    <xsl:value-of select="concat('880-', 69+position())"/>
                   </xsl:variable>
                   <xsl:if test="$vvAddedEntryNameMarcKeyTag-6 != ''">
                     <marc:subfield code="6">
@@ -14728,7 +16253,7 @@
               <xsl:variable name="v880-6">
                 <xsl:choose>
                   <xsl:when test="$vRelResource//marc:datafield[@tag!='']">
-                    <xsl:value-of select="concat($vAddedEntryNameMarcKeyTag, '-7', position(), '/', $v880Script)"/>
+                    <xsl:value-of select="concat($vAddedEntryNameMarcKeyTag, '-', 69+position(), '/', $v880Script)"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:value-of select="concat($vAddedEntryNameMarcKeyTag, '-00', '/', $v880Script)"/>
@@ -15339,14 +16864,16 @@
         </xsl:variable>
         <xsl:variable name="iSubfieldShared">
           <xsl:for-each select="ancestor::bf:Relation/bf:relationship[           (            @rdf:resource and            not(contains($vRelStrs, @rdf:resource)) and            not(contains(@rdf:resource, 'ontologies/bibframe'))           ) or           (            bf:Relationship/@rdf:about and            not(contains($vRelStrs, bf:Relationship/@rdf:about)) and           not(contains(bf:Relationship/@rdf:about, 'ontologies/bibframe'))           )           ]/bf:Relationship[rdfs:label or madsrdf:authoritativeLabel]                       |                       ancestor::bflc:Relationship/bflc:relation[           (            @rdf:resource and            not(contains($vRelStrs, @rdf:resource)) and            not(contains(@rdf:resource, 'ontologies/bibframe'))           ) or           (            bf:Relationship/@rdf:about and            not(contains($vRelStrs, bf:Relationship/@rdf:about)) and           not(contains(bf:Relationship/@rdf:about, 'ontologies/bibframe'))           )           ]/bflc:Relation[rdfs:label or madsrdf:authoritativeLabel]                       ">
-            <xsl:choose>
-              <xsl:when test="madsrdf:authoritativeLabel">
-                <xsl:value-of select="madsrdf:authoritativeLabel"/>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:value-of select="rdfs:label"/>
-              </xsl:otherwise>
-            </xsl:choose>
+            <marc:subfield code="i">
+              <xsl:choose>
+                <xsl:when test="madsrdf:authoritativeLabel">
+                  <xsl:value-of select="madsrdf:authoritativeLabel"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="rdfs:label"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </marc:subfield>
           </xsl:for-each>
         </xsl:variable>
         <xsl:variable name="vShared">
@@ -21888,7 +23415,8 @@
                         Except those that remain commented out.  The comment is from 2022.
                       -->
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026048' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026048'">b</xsl:when>
-                      <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026057' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026057'">c</xsl:when>
+                      <!-- Catalogs -->
+                      <xsl:when test="(                                         @rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026057' or                                         */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026057' or                                          */madsrdf:authoritativeLabel[contains(., 'catalogs')] or                                          */rdfs:label[contains(., 'catalogs')] or                                          @rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026058' or                                         */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026058' or                                          @rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026088' or                                         */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026088' or                                         @rdf:resource='http://id.loc.gov/authorities/genreForms/gf2015026050' or                                         */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2015026050'                                       )                                      and                                       not(                                           preceding-sibling::bf:genreForm/@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026057' or                                           preceding-sibling::bf:genreForm/*/@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026057' or                                            preceding-sibling::bf:genreForm/*/madsrdf:authoritativeLabel[contains(., 'catalogs')] or                                            preceding-sibling::bf:genreForm/*/rdfs:label[contains(., 'catalogs')] or                                            preceding-sibling::bf:genreForm/@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026058' or                                           preceding-sibling::bf:genreForm/*/@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026058' or                                            preceding-sibling::bf:genreForm/@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026088' or                                           preceding-sibling::bf:genreForm/*/@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026088' or                                           preceding-sibling::bf:genreForm/@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2015026050' or                                           preceding-sibling::bf:genreForm/*/@rdf:about='http://id.loc.gov/authorities/genreForms/gf2015026050'                                       )                                 ">c</xsl:when>
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026086' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026086'">d</xsl:when>
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026092' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026092'">e</xsl:when>
                       <xsl:when test="@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026109' or                                       */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026109'">f</xsl:when>
@@ -22203,6 +23731,16 @@
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026339' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026339']">1</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm/*/madsrdf:authoritativeLabel[contains(., 'fiction')]">1</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm/*/rdfs:label[contains(., 'fiction')]">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm/*/madsrdf:authoritativeLabel[contains(., '(Fiction)')]">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026243'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026259'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2018026099'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2015026019'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026456'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2015026020'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026518'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026542'">1</xsl:when>
+                        <xsl:when test="bf:Work/bf:genreForm//@rdf:*[1]='http://id.loc.gov/authorities/genreForms/gf2014026559'">1</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026297' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026297']">d</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2014026094' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2014026094']">e</xsl:when>
                         <xsl:when test="bf:Work/bf:genreForm[@rdf:resource='http://id.loc.gov/authorities/genreForms/gf2015026020' or */@rdf:about='http://id.loc.gov/authorities/genreForms/gf2015026020']">f</xsl:when>
@@ -22559,7 +24097,7 @@
       </xsl:choose>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:identifiedBy/bf:Local[bf:source/bf:Source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
+  <xsl:template match="bf:Instance/bf:identifiedBy/bf:Local[bf:source]|bf:Instance/bf:adminMetadata/bf:AdminMetadata/bf:identifiedBy/bf:Local[bf:source//@rdf:*[.='http://id.loc.gov/authorities/names/no2004037399']]" mode="generate-016">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vSourceUri">
@@ -22641,9 +24179,12 @@
               <xsl:variable name="v016-2">
                 <xsl:choose>
                   <xsl:when test="contains($vSourceUri,'id.loc.gov')">
-                    <xsl:call-template name="tUriCode">
-                      <xsl:with-param name="pUri" select="$vSourceUri"/>
-                    </xsl:call-template>
+                    <xsl:variable name="vC">
+                      <xsl:call-template name="tUriCode">
+                        <xsl:with-param name="pUri" select="$vSourceUri"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="translate($vC, $lower, $upper)"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:value-of select="$vSourceUri"/>
@@ -25681,198 +27222,6 @@
       </xsl:if>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:expressionOf/bf:*[(local-name() = 'Hub' or local-name() = 'Work') and                                                    (                                                     (                                                       bf:title and                                                        not(../../bf:contribution/bf:PrimaryContribution) and                                                        not(../../bf:contribution/bflc:PrimaryContribution) and                                                        not(../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')])                                                     )                                                   ) or (                                                     bflc:marcKey[starts-with(., '130')]                                                   )                                             ]" mode="generate-130">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vTitleResourcePreNS">
-      <xsl:call-template name="tGetRelResource">
-        <xsl:with-param name="pUri" select="@rdf:about"/>
-        <xsl:with-param name="pContext" select="."/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="vTitleResource" select="exsl:node-set($vTitleResourcePreNS)"/>
-    <xsl:choose>
-      <xsl:when test="position() = 1">
-        <xsl:variable name="vXmlLang">
-          <xsl:value-of select="bf:mainTitle/@xml:lang"/>
-        </xsl:variable>
-        <marc:datafield>
-          <xsl:attribute name="tag">130</xsl:attribute>
-          <xsl:if test="$vXmlLang != ''">
-            <xsl:attribute name="xml:lang">
-              <xsl:value-of select="$vXmlLang"/>
-            </xsl:attribute>
-          </xsl:if>
-          <xsl:choose>
-            <xsl:when test="$xslProcessor='libxslt' and contains(@rdf:about, 'resources/hubs') and not(bflc:marcKey)">
-              <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 130 output.</xsl:message>
-            </xsl:when>
-          </xsl:choose>
-          <xsl:attribute name="ind1">
-            <xsl:variable name="vInd">
-              <xsl:choose>
-                <xsl:when test="bf:title/bf:Title/bflc:nonSortNum">
-                  <xsl:value-of select="bf:title/bf:Title/bflc:nonSortNum"/>
-                </xsl:when>
-                <xsl:when test="bf:title/bf:Title/bflc:titleSortKey and (string-length(bflc:titleSortKey) &lt; string-length(bf:title/bf:Title/bf:mainTitle))">
-                  <xsl:value-of select="string-length(bf:title/bf:Title/bf:mainTitle) - string-length(bf:title/bf:Title/bflc:titleSortKey)"/>
-                </xsl:when>
-              </xsl:choose>
-            </xsl:variable>
-            <xsl:choose>
-              <xsl:when test="$vInd != ''">
-                <xsl:value-of select="$vInd"/>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>0</xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:attribute>
-          <xsl:attribute name="ind2">
-            <xsl:text> </xsl:text>
-          </xsl:attribute>
-          <xsl:choose>
-            <xsl:when test="$vTitleResource//marc:datafield[@tag='130']">
-              <xsl:for-each select="$vTitleResource//marc:datafield[@tag='130']/marc:subfield[contains('adfghklmnoprst',@code)]">
-                <marc:subfield>
-                  <xsl:attribute name="code">
-                    <xsl:value-of select="@code"/>
-                  </xsl:attribute>
-                  <xsl:value-of select="."/>
-                </marc:subfield>
-              </xsl:for-each>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:variable name="v130-a">
-                <xsl:choose>
-                  <xsl:when test="bf:title/bf:Title/rdfs:label">
-                    <xsl:for-each select="bf:title/bf:Title/rdfs:label">
-                      <xsl:choose>
-                        <xsl:when test="position() = 1">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </xsl:when>
-                        <xsl:otherwise>
-                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                        </xsl:otherwise>
-                      </xsl:choose>
-                    </xsl:for-each>
-                  </xsl:when>
-                  <xsl:when test="bf:title/bf:Title/bf:mainTitle">
-                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
-                      <xsl:choose>
-                        <xsl:when test="position() = 1">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
-                        </xsl:when>
-                        <xsl:otherwise>
-                          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $a.</xsl:message>
-                        </xsl:otherwise>
-                      </xsl:choose>
-                    </xsl:for-each>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v130-a != ''">
-                <marc:subfield code="a">
-                  <xsl:value-of select="$v130-a"/>
-                </marc:subfield>
-              </xsl:if>
-              <xsl:for-each select="bf:legalDate">
-                <marc:subfield code="d">
-                  <xsl:value-of select="."/>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:for-each select="bf:originDate">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="f">
-                      <xsl:value-of select="."/>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 130 $f.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bf:musicMedium/bf:MusicMedium/rdfs:label">
-                <marc:subfield code="m">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:for-each select="bf:title/bf:Title/bf:partNumber">
-                <marc:subfield code="n">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:for-each select="bf:title/bf:Title/bf:partName">
-                <marc:subfield code="p">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:choose>
-                <xsl:when test="rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Arrangement'">
-                  <marc:subfield code="o">arranged</marc:subfield>
-                </xsl:when>
-              </xsl:choose>
-              <xsl:for-each select="bf:musicKey">
-                <marc:subfield code="r">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:for-each select="bf:version">
-                <marc:subfield code="s">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:for-each select="@rdf:about[not(contains(.,'example.org')) and not(contains(., 'REPLACE'))]">
-            <marc:subfield code="1">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-          <xsl:for-each select="bf:identifiedBy/bf:Identifier">
-            <marc:subfield code="0">
-              <xsl:variable name="vIdType">
-                <xsl:call-template name="tChopPunct">
-                  <xsl:with-param name="pString" select="bf:source/bf:Source/bf:code"/>
-                </xsl:call-template>
-              </xsl:variable>
-              <xsl:choose>
-                <xsl:when test="$vIdType != ''">
-                  <xsl:value-of select="concat('(',$vIdType,')',rdf:value)"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:value-of select="rdf:value"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </marc:subfield>
-          </xsl:for-each>
-          <xsl:for-each select="bf:source/bf:Source/bf:code">
-            <marc:subfield code="2">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-        </marc:datafield>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target field (130).</xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
   <xsl:template match="bf:Instance/bf:title/*[local-name() = 'AbbreviatedTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/AbbreviatedTitle']] |                     bf:Work/bf:title/*[local-name() = 'AbbreviatedTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/AbbreviatedTitle']]" mode="generate-210">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
@@ -26007,83 +27356,6 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:expressionOf[contains(@rdf:resource, 'hubs')][../bf:contribution/*[local-name()='PrimaryContribution'] or ../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]] |                     bf:Work/bf:expressionOf/bf:*[contains(@rdf:about, 'hubs') or bflc:marcKey or marc:record][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]       " mode="generate-240">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="relURI">
-      <xsl:choose>
-        <xsl:when test="contains(@rdf:resource,'id.loc.gov/resources/hubs')">
-          <xsl:value-of select="@rdf:resource"/>
-        </xsl:when>
-        <xsl:when test="contains(@rdf:about,'id.loc.gov/resources/hubs')">
-          <xsl:value-of select="@rdf:about"/>
-        </xsl:when>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:variable name="vRelResourcePreNS">
-      <xsl:call-template name="tGetRelResource">
-        <xsl:with-param name="pRelUri" select="$relURI"/>
-        <xsl:with-param name="pContext" select="."/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">240</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:choose>
-        <xsl:when test="$xslProcessor='libxslt' and contains($relURI, 'resources/hubs') and not(bflc:marcKey)">
-          <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed expressionOf node/Hub.  No 240 output.</xsl:message>
-        </xsl:when>
-      </xsl:choose>
-      <xsl:attribute name="ind1">
-        <xsl:text>1</xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text>0</xsl:text>
-      </xsl:attribute>
-      <xsl:choose>
-        <xsl:when test="$vRelResource//marc:datafield[@tag = '240']">
-          <xsl:for-each select="$vRelResource//marc:datafield[@tag = '240']/marc:subfield">
-            <marc:subfield>
-              <xsl:attribute name="code">
-                <xsl:value-of select="@code"/>
-              </xsl:attribute>
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:when test="$vRelResource//marc:datafield[starts-with(@tag, '1')]">
-          <xsl:for-each select="$vRelResource//marc:datafield[starts-with(@tag, '1')]/marc:subfield[(@code = 't' or preceding-sibling::marc:subfield[@code = 't']) and contains('dgfhklmnoprst',@code)]">
-            <marc:subfield>
-              <xsl:attribute name="code">
-                <xsl:value-of select="translate(@code, 't', 'a')"/>
-              </xsl:attribute>
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-        </xsl:when>
-      </xsl:choose>
-      <xsl:variable name="v240-1">
-        <xsl:choose>
-          <xsl:when test="$relURI != ''">
-            <xsl:value-of select="$relURI"/>
-          </xsl:when>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:if test="$v240-1 != ''">
-        <marc:subfield code="1">
-          <xsl:value-of select="$v240-1"/>
-        </marc:subfield>
-      </xsl:if>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bf:expressionOf/child::node()[         not(contains(@rdf:resource, 'hubs')) and not(contains(@rdf:about, 'hubs')) and          not(contains(@rdf:resource, 'REPLACE')) and not(contains(@rdf:about, 'REPLACE')) and          not(bflc:marcKey or marc:record) and          (local-name() = 'Hub' or local-name() = 'Work') and bf:title][../../bf:contribution/*[local-name()='PrimaryContribution'] or ../../bf:contribution/*/rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]" mode="generate-240">
@@ -26446,7 +27718,7 @@
           </xsl:attribute>
           <xsl:choose>
             <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-              <marc:subfield code="6">880-02</marc:subfield>
+              <marc:subfield code="6">880-03</marc:subfield>
             </xsl:when>
           </xsl:choose>
           <xsl:variable name="v245-a">
@@ -29323,284 +30595,6 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:dissertation/bf:Dissertation" mode="generate-502">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">502</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:degree">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="b">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $b.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:grantingInstitution/*/rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="c">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $c.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:date">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="d">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 502 $d.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:note/*/rdfs:label">
-        <marc:subfield code="g">
-          <xsl:call-template name="tChopPunct">
-            <xsl:with-param name="pString" select="."/>
-          </xsl:call-template>
-        </marc:subfield>
-      </xsl:for-each>
-      <xsl:for-each select="bf:identifiedBy/*/rdf:value">
-        <marc:subfield code="o">
-          <xsl:value-of select="."/>
-        </marc:subfield>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]  |                     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]       " mode="generate-504">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">504</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:count">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="b">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $b.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio' and rdfs:label[. != '']]       " mode="generate-504">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">504</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:count">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="b">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 504 $b.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label]" mode="generate-505">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">505</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:variable name="vInd">
-          <xsl:choose>
-            <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/incmp']">
-              <xsl:text>1</xsl:text>
-            </xsl:when>
-            <xsl:when test="bf:status//@rdf:*[.='http://id.loc.gov/vocabulary/mstatus/part']">
-              <xsl:text>2</xsl:text>
-            </xsl:when>
-          </xsl:choose>
-        </xsl:variable>
-        <xsl:choose>
-          <xsl:when test="$vInd != ''">
-            <xsl:value-of select="$vInd"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>0</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 505 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
-        <marc:subfield code="u">
-          <xsl:value-of select="."/>
-        </marc:subfield>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Instance/bf:credits[not(starts-with(text(),'Cast:'))] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits']/rdfs:label" mode="generate-508">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="./@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">508</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <marc:subfield code="a">
-        <xsl:call-template name="tChopPunct">
-          <xsl:with-param name="pString" select="."/>
-        </xsl:call-template>
-      </marc:subfield>
-      <xsl:for-each select="ancestor::bf:Note/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="3">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 508 $3.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
   <xsl:template match="bf:Work/bf:relation/bf:Relation[bf:relationship//@rdf:*[1]='http://id.loc.gov/vocabulary/relationship/references']/bf:associatedResource/bf:Work |                     bf:Work/bf:relation/bf:Relation[bf:relationship//@rdf:*[1]='http://id.loc.gov/vocabulary/relationship/indexedin']/bf:associatedResource/bf:Work |                     bf:Work/bflc:indexedIn/bf:Work |                     bf:Work/bf:references/bf:Work" mode="generate-510">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
@@ -29719,74 +30713,6 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:credits[starts-with(text(),'Cast:')] |                     bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants']/rdfs:label" mode="generate-511">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="./@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">511</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:variable name="vInd">
-          <xsl:choose>
-            <xsl:when test="contains(., 'Cast:')">
-              <xsl:text>1</xsl:text>
-            </xsl:when>
-          </xsl:choose>
-        </xsl:variable>
-        <xsl:choose>
-          <xsl:when test="$vInd != ''">
-            <xsl:value-of select="$vInd"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>0</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="ancestor::bf:Note/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="3">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 511 $3.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:variable name="v511-a">
-        <xsl:choose>
-          <xsl:when test="contains(., 'Cast:')">
-            <xsl:call-template name="tChopPunct">
-              <xsl:with-param name="pString" select="substring-after(.,'Cast:')"/>
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:call-template name="tChopPunct">
-              <xsl:with-param name="pString" select="."/>
-            </xsl:call-template>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:if test="$v511-a != ''">
-        <marc:subfield code="a">
-          <xsl:value-of select="$v511-a"/>
-        </marc:subfield>
-      </xsl:if>
-    </marc:datafield>
-  </xsl:template>
   <xsl:template match="bf:Work/bf:capture/bf:Capture[not(bf:date[@rdf:datatype='http://id.loc.gov/datatypes/edtf']) and not(bf:place/@rdf:resource)]" mode="generate-518">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
@@ -29853,58 +30779,6 @@
           <xsl:call-template name="tChopPunct">
             <xsl:with-param name="pString" select="."/>
           </xsl:call-template>
-        </marc:subfield>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:summary/bf:Summary[rdfs:label]" mode="generate-520">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">520</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="3">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 520 $3.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 520 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
-        <marc:subfield code="u">
-          <xsl:value-of select="."/>
         </marc:subfield>
       </xsl:for-each>
     </marc:datafield>
@@ -30158,56 +31032,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource = 'http://id.loc.gov/vocabulary/mnotetype/lang' and rdfs:label]" mode="generate-546">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vXmlLang">
-      <xsl:value-of select="rdfs:label/@xml:lang"/>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">546</xsl:attribute>
-      <xsl:if test="$vXmlLang != ''">
-        <xsl:attribute name="xml:lang">
-          <xsl:value-of select="$vXmlLang"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="3">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 546 $3.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:for-each select="rdfs:label">
-        <xsl:choose>
-          <xsl:when test="position() = 1">
-            <marc:subfield code="a">
-              <xsl:call-template name="tChopPunct">
-                <xsl:with-param name="pString" select="."/>
-              </xsl:call-template>
-            </marc:subfield>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 546 $a.</xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:notation/bf:Notation|bf:Work/bf:notation/bf:Script" mode="generate-546">
+  <xsl:template match="bf:Work[not(bf:note/bf:Note/rdf:type/@rdf:resource[.='http://id.loc.gov/vocabulary/mnotetype/lang'])]/bf:notation/bf:Notation[rdfs:label] |                      bf:Work[not(bf:note/bf:Note/rdf:type/@rdf:resource[.='http://id.loc.gov/vocabulary/mnotetype/lang'])]/bf:notation/bf:Script[rdfs:label]" mode="generate-546">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vXmlLang">
@@ -30798,6 +31623,13 @@
   <xsl:template match="bf:Work/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ] |                      //bf:Item/bf:genreForm[                       not(@rdf:resource) and                        (                         not(contains(bf:*/@rdf:about, '/authorities/')) and                          (*/rdfs:label or */madsrdf:authoritativeLabel)                       ) and                       not(*/marc:record) and not(*/bflc:marcKey)                     ]" mode="generate-655">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
+    <xsl:variable name="relURI">
+      <xsl:choose>
+        <xsl:when test="not(contains(.,'example.org')) and not(contains(bf:*/@rdf:about, 'REPLACE'))">
+          <xsl:value-of select="bf:*/@rdf:about"/>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="vInd2Val">
       <xsl:choose>
         <xsl:when test="*/bf:source/bf:Source/bf:code='lcsh' or             */madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects' or */@rdf:about='http://id.loc.gov/authorities/subjects'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='lcsh'">
@@ -30818,6 +31650,9 @@
         <xsl:when test="*/bf:source/bf:Source/bf:code='rvm' or             */bf:source[@rdf:resource='http://id.loc.gov/vocabulary/subjectSchemes/rvm' or */@rdf:about='http://id.loc.gov/vocabulary/subjectSchemes/rvm'] or             */madsrdf:componentList/*[1]/bf:source/bf:Source/bf:code='rvm'">
           <xsl:text>6</xsl:text>
         </xsl:when>
+        <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+          <xsl:text>7</xsl:text>
+        </xsl:when>
         <xsl:when test="*/bf:source or */madsrdf:componentList/*[1]/bf:source">
           <xsl:text>7</xsl:text>
         </xsl:when>
@@ -30825,6 +31660,9 @@
     </xsl:variable>
     <xsl:variable name="vSf2val">
       <xsl:choose>
+        <xsl:when test="$vInd2Val = '7' and contains($relURI, '/vocabulary/rbmscv/')">
+          <xsl:text>rbmscv</xsl:text>
+        </xsl:when>
         <xsl:when test="$vInd2Val = '7'">
           <xsl:for-each select="*/bf:source|*/madsrdf:componentList/*[1]/bf:source">
             <xsl:variable name="vSourceUri">
@@ -31183,16 +32021,18 @@
               <xsl:value-of select="$v655-a"/>
             </marc:subfield>
           </xsl:if>
-          <xsl:for-each select="@rdf:resource[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-            <marc:subfield code="0">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
-          <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
-            <marc:subfield code="0">
-              <xsl:value-of select="."/>
-            </marc:subfield>
-          </xsl:for-each>
+          <xsl:choose>
+            <xsl:when test="$relURI != ''">
+              <xsl:variable name="v655-0">
+                <xsl:value-of select="$relURI"/>
+              </xsl:variable>
+              <xsl:if test="$v655-0 != ''">
+                <marc:subfield code="0">
+                  <xsl:value-of select="$v655-0"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
           <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
             <marc:subfield code="0">
               <xsl:variable name="vIdType">
@@ -31387,6 +32227,26 @@
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
+        <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
+          <xsl:variable name="vvAddedEntryNameLookupTag-0">
+            <xsl:value-of select="$relURI"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+            <marc:subfield code="0">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
+        <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/rwo/agents/')">
+          <xsl:variable name="vvAddedEntryNameLookupTag-0">
+            <xsl:value-of select="concat(substring-before($relURI,'rwo/agents'), 'authorities/names/', substring-after($relURI,'rwo/agents/'))"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-0 != ''">
+            <marc:subfield code="0">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-0"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
         <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'rwo'))">
           <xsl:variable name="vvAddedEntryNameLookupTag-0">
             <xsl:value-of select="$relURI"/>
@@ -31399,6 +32259,16 @@
         </xsl:when>
       </xsl:choose>
       <xsl:choose>
+        <xsl:when test="$relURI != '' and (contains($relURI, '/agents/') or contains($relURI, '/gnd/'))">
+          <xsl:variable name="vvAddedEntryNameLookupTag-1">
+            <xsl:value-of select="$relURI"/>
+          </xsl:variable>
+          <xsl:if test="$vvAddedEntryNameLookupTag-1 != ''">
+            <marc:subfield code="1">
+              <xsl:value-of select="$vvAddedEntryNameLookupTag-1"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
         <xsl:when test="not(contains($relURI,'example.org')) and not(contains($relURI,'REPLACE')) and not(contains($relURI,'authorities'))">
           <xsl:variable name="vvAddedEntryNameLookupTag-1">
             <xsl:value-of select="$relURI"/>
@@ -33429,34 +34299,6 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:choose>
-        <xsl:when test="$vLanguageUri != '' or bf:language/*[local-name()='code']">
-          <xsl:variable name="vvLinkTagFromWork2-e">
-            <xsl:choose>
-              <xsl:when test="bf:language/*[local-name()='code']">
-                <xsl:value-of select="bf:language/*[local-name()='code']"/>
-              </xsl:when>
-              <xsl:when test="$vLanguageUri != ''">
-                <xsl:choose>
-                  <xsl:when test="contains($vLanguageUri,'id.loc.gov')">
-                    <xsl:call-template name="tUriCode">
-                      <xsl:with-param name="pUri" select="$vLanguageUri"/>
-                    </xsl:call-template>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="$vLanguageUri"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$vvLinkTagFromWork2-e != ''">
-            <marc:subfield code="e">
-              <xsl:value-of select="$vvLinkTagFromWork2-e"/>
-            </marc:subfield>
-          </xsl:if>
-        </xsl:when>
-      </xsl:choose>
       <xsl:choose>
         <xsl:when test="$vPlaceUri != '' or bf:hasInstance/bf:Instance/bf:provisionActivity/bf:ProvisionActivity/bf:place/*[local-name()='code']">
           <xsl:variable name="vvLinkTagFromWork2-f">
