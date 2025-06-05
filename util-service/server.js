@@ -1497,7 +1497,7 @@ app.post('/nacostub/production', async (request, response) => {
 });
 
 app.get('/myrecords/production/:user', function(request, response){
-	console.log('recsProdByUser',recsProdByUser)
+	// console.log('recsProdByUser',recsProdByUser)
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
 	}else{
