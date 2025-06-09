@@ -28951,8 +28951,22 @@
       </xsl:for-each>
       <xsl:variable name="v300-b">
         <xsl:choose>
-          <xsl:when test="bf:note/bf:Note[translate(bf:noteType,$upper,$lower)='physical details' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/physical']/rdfs:label">
-            <xsl:for-each select="bf:note/bf:Note[translate(bf:noteType,$upper,$lower)='physical details' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/physical']/rdfs:label">
+          <xsl:when test="bf:note/bf:Note[translate(bf:noteType,$upper,$lower)='physical details' or rdf:type//@rdf:*[1]='http://id.loc.gov/vocabulary/mnotetype/physical']/rdfs:label">
+            <xsl:for-each select="bf:note/bf:Note[translate(bf:noteType,$upper,$lower)='physical details' or rdf:type//@rdf:*[1]='http://id.loc.gov/vocabulary/mnotetype/physical']/rdfs:label">
+              <xsl:choose>
+                <xsl:when test="position() = 1">
+                  <xsl:call-template name="tChopPunct">
+                    <xsl:with-param name="pString" select="."/>
+                  </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 300 $b.</xsl:message>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:for-each>
+          </xsl:when>
+          <xsl:when test="bf:note/bf:Note/rdfs:label">
+            <xsl:for-each select="bf:note/bf:Note/rdfs:label">
               <xsl:choose>
                 <xsl:when test="position() = 1">
                   <xsl:call-template name="tChopPunct">
