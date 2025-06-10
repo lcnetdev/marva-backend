@@ -3213,6 +3213,57 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 
 });
 
+app.post('/related/works/contributor/', async (request, response) => {
+
+	var uris = request.body.uris
+	console.log("uris: ", uris)
+	let results = {}
+
+	if (uris){
+
+		for (let uri of uris){
+			let uriResult = fetch(`https://id.loc.gov/resources/works/relationships/contributorto/?label=${uri}&page=0`, {
+			"headers": {
+				"accept": "*/*",
+				"accept-language": "en-US,en;q=0.9,ru;q=0.8",
+				"cache-control": "no-cache",
+				"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+				"Referrer-Policy": "strict-origin-when-cross-origin"
+			},
+			"body": null,
+			"method": "GET"
+			});
+
+			let uriResultJson;
+			try {
+				uriResultJson = await uriResult.then(res => res.json());
+			} catch (error) {
+				console.error("Error fetching or parsing JSON for URI:", uri, error);
+				// Optionally, add the error or a placeholder to results
+				// results.push({uri: uri, error: "Failed to fetch or parse"});
+				continue; // Skip to the next URI if an error occurs
+			}
+			results[uri] = uriResultJson;
+			
+		}
+	}
+
+
+
+	
+
+
+	response.set('Content-Type', 'application/json');
+	response.status(200).json(results);
+
+});
+
+
+
+
+
+
+
 
 
 
