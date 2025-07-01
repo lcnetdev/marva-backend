@@ -50,6 +50,7 @@ const STAGINGNACOSTUB = process.env.STAGINGNACOSTUB;
 const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
 const WC_CLIENTID = process.env.WC_CLIENTID;
 const WC_SECRET = process.env.WC_SECRET;
+const LCAP_SYNC = process.env.LCAP_SYNC;
 
 
 // disable some features when running in bibframe.org mode
@@ -3259,7 +3260,22 @@ app.post('/related/works/contributor/', async (request, response) => {
 });
 
 
+app.get('/lcap/sync/lccn/:lccn', async (request, response) => {
+	if (!LCAP_SYNC) {
+		return response.status(500).send("LCAP_SYNC environment variable not set.");
+	}
 
+	const url = LCAP_SYNC.replace('<LCCN>', request.params.lccn);
+
+	try {
+		const lcapResponse = await got(url).json();
+		response.status(200).json(lcapResponse);
+	} catch (error) {
+		console.error("LCAP Sync Error:", error);
+		const errorBody = error.response ? error.response.body : 'Error fetching from LCAP sync endpoint.';
+		response.status(500).send(errorBody);
+	}
+});
 
 
 
