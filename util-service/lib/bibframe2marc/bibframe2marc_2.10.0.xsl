@@ -2677,6 +2677,9 @@
             <xsl:when test="$vAdminMetadata/bf:identifiedBy/bf:Local[not(bf:source) or bf:source/@rdf:resource='http://id.loc.gov/vocabulary/organizations/dlc' or bf:source/bf:Source/@rdf:about='http://id.loc.gov/vocabulary/organizations/dlc' or bf:source/bf:Source/rdfs:label='DLC']/rdf:value">
               <xsl:value-of select="$vAdminMetadata/bf:identifiedBy/bf:Local[not(bf:source) or bf:source/@rdf:resource='http://id.loc.gov/vocabulary/organizations/dlc' or bf:source/bf:Source/@rdf:about='http://id.loc.gov/vocabulary/organizations/dlc' or bf:source/bf:Source/rdfs:label='DLC']/rdf:value"/>
             </xsl:when>
+            <xsl:when test="$vAdminMetadata/bf:identifiedBy/bf:Local[not(bf:source) or bf:source/@rdf:resource='http://id.loc.gov/vocabulary/organizations/dlcmrc' or bf:source/bf:Source/@rdf:about='http://id.loc.gov/vocabulary/organizations/dlcmrc' or bf:source/bf:Source/rdfs:label='DLC']/rdf:value">
+              <xsl:value-of select="$vAdminMetadata/bf:identifiedBy/bf:Local[not(bf:source) or bf:source/@rdf:resource='http://id.loc.gov/vocabulary/organizations/dlcmrc' or bf:source/bf:Source/@rdf:about='http://id.loc.gov/vocabulary/organizations/dlcmrc' or bf:source/bf:Source/rdfs:label='DLC']/rdf:value"/>
+            </xsl:when>
             <xsl:otherwise>
               <xsl:value-of select="generate-id()"/>
             </xsl:otherwise>
@@ -9755,7 +9758,7 @@
           <xsl:when test="(           local-name(../..)='Work' and            contains(rdf:type/@rdf:resource, 'http://id.loc.gov/vocabulary/resourceComponents')         )"/>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and                    (                   (translate(bf:noteType,$upper,$lower)='physical details' or translate(bf:noteType,$upper,$lower)='accompanying material' or translate(bf:noteType,$upper,$lower)='binding' or translate(bf:noteType,$upper,$lower)='action') or                    (rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/physical' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/accmat' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/binding' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/action')                   )"/>
           <xsl:when test="(         local-name(../..)='Instance' and          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio'         )"/>
-          <xsl:when test="(local-name(../..)='Instance' and          (         rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas'         ))"/>
+          <xsl:when test="(local-name(../..)='Instance' and          (           rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas' or           rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/refcitation'         ))"/>
           <xsl:otherwise>
             <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))][1]">
               <xsl:variable name="vXmlLang">
@@ -17461,7 +17464,27 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
+        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'                 ][1]/@xml:lang"/>
         <xsl:variable name="vRelResourcePreNS">
+          <!--<xsl:choose>
+          <xsl:when test="self::node()/bflc:marcKey[not(@xml:lang)]">
+            <xsl:call-template name="tGetMiniMARCFromKey">
+              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[not(@xml:lang)][1]"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$vLangTagLabel != ''">
+            <xsl:call-template name="tGetMiniMARCFromKey">
+              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[@xml:lang = $vLangTagLabel][1]"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="self::node()/bflc:marcKey[@xml:lang]" /><!-\- marcKey with @xml:lang and likely in a non-latin script -\->
+          <xsl:otherwise>
+            <xsl:call-template name="tGetRelResource">
+              <xsl:with-param name="pRelUri" select="$relURI"/>
+              <xsl:with-param name="pContext" select="."/>
+            </xsl:call-template>
+          </xsl:otherwise>
+        </xsl:choose>-->
           <xsl:call-template name="tGetRelResource">
             <xsl:with-param name="pRelUri" select="$relURI"/>
             <xsl:with-param name="pContext" select="."/>
@@ -17504,7 +17527,6 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'               ][1]/@xml:lang"/>
         <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
         <xsl:variable name="v880Script">
           <xsl:choose>
