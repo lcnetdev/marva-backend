@@ -3999,10 +3999,88 @@
           </marc:datafield>
         </xsl:when>
       </xsl:choose>
-      <xsl:apply-templates select="bf:Work/bf:creationDate[@rdf:datatype='http://id.loc.gov/datatypes/edtf']" mode="generate-046">
-        <xsl:with-param name="vRecordId" select="$vRecordId"/>
-        <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
-      </xsl:apply-templates>
+      <xsl:for-each select="bf:Work/bf:originDate[@rdf:datatype='http://id.loc.gov/datatypes/edtf']">
+        <xsl:variable name="vCF008PreNS">
+          <xsl:apply-templates select="ancestor::rdf:RDF" mode="generate-008">
+            <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
+          </xsl:apply-templates>
+        </xsl:variable>
+        <xsl:variable name="vCF008" select="exsl:node-set($vCF008PreNS)"/>
+        <xsl:variable name="vDateType">
+          <xsl:value-of select="substring($vCF008, 7, 1)"/>
+        </xsl:variable>
+        <xsl:variable name="v046DateTime1">
+          <xsl:call-template name="EDTF-Date1">
+            <xsl:with-param name="pEDTFDate" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="v046DateTime2">
+          <xsl:call-template name="EDTF-Date2">
+            <xsl:with-param name="pEDTFDate" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="v046Date1">
+          <xsl:call-template name="EDTF-DatePart">
+            <xsl:with-param name="pEDTFDate" select="$v046DateTime1"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="v046Time1">
+          <xsl:call-template name="EDTF-TimePart">
+            <xsl:with-param name="pEDTFDate" select="$v046DateTime1"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$vDateType != 'r'">
+            <marc:datafield>
+              <xsl:attribute name="tag">046</xsl:attribute>
+              <xsl:attribute name="ind1">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:attribute name="ind2">
+                <xsl:text> </xsl:text>
+              </xsl:attribute>
+              <xsl:variable name="v046-k">
+                <xsl:value-of select="concat(translate($v046Date1,'-',''),translate($v046Time1,':',''))"/>
+              </xsl:variable>
+              <xsl:if test="$v046-k != ''">
+                <marc:subfield code="k">
+                  <xsl:value-of select="$v046-k"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:choose>
+                <xsl:when test="$v046DateTime2">
+                  <xsl:variable name="v046-l">
+                    <xsl:variable name="v046Date2">
+                      <xsl:call-template name="EDTF-DatePart">
+                        <xsl:with-param name="pEDTFDate" select="$v046DateTime2"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:variable name="v046Time2">
+                      <xsl:call-template name="EDTF-TimePart">
+                        <xsl:with-param name="pEDTFDate" select="$v046DateTime2"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat(translate($v046Date2,'-',''),translate($v046Time2,':',''))"/>
+                  </xsl:variable>
+                  <xsl:if test="$v046-l != ''">
+                    <marc:subfield code="l">
+                      <xsl:value-of select="$v046-l"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+              </xsl:choose>
+              <xsl:variable name="v046-2">
+                <xsl:value-of select="'edtf'"/>
+              </xsl:variable>
+              <xsl:if test="$v046-2 != ''">
+                <marc:subfield code="2">
+                  <xsl:value-of select="$v046-2"/>
+                </marc:subfield>
+              </xsl:if>
+            </marc:datafield>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:for-each>
       <xsl:choose>
         <xsl:when test="bf:Work/bf:instrument/bf:MusicInstrument or       bf:Work/bf:ensemble/bf:MusicEnsemble or       bf:Work/bf:voice/bf:MusicVoice">
           <marc:datafield>
@@ -23623,9 +23701,6 @@
                   <xsl:when test="string-length($date1) = 4 and $cDateExists = 1">
                     <xsl:value-of select="translate(concat('t', $date1, $date2), 'X', 'u')"/>
                   </xsl:when>
-                  <xsl:when test="string-length($date1) = 4 and $cOriginDateExists = 1">
-                    <xsl:value-of select="translate(concat('r', $date1, $date2), 'X', 'u')"/>
-                  </xsl:when>
                   <xsl:when test="$vPA/bf:*/bf:status/bf:Status/@rdf:about = 'http://id.loc.gov/vocabulary/mstatus/current' and                     string-length($date1) = 4 and string-length($date2) = 4">
                     <xsl:value-of select="translate(concat('c', $date1, $date2), 'X', 'u')"/>
                   </xsl:when>
@@ -23644,24 +23719,23 @@
                   <xsl:when test="string-length($date1)=4 and string-length($date2)=5 and                      (contains($date2, '~') or contains($date2, '?') or contains($date2, '%'))">
                     <xsl:value-of select="translate(concat('q', $date1, substring($date2, 1, 4)), 'X', 'u')"/>
                   </xsl:when>
-                  <xsl:when test="string-length($date1)=4 and string-length($date2)=4">
+                  <xsl:when test="string-length($date1)=4 and string-length($date2)=4 and $cOriginDateExists = 0">
                     <xsl:value-of select="translate(concat('m', $date1, $date2), 'X', 'u')"/>
                   </xsl:when>
-                  <xsl:when test="$date2 != ''">
-                    <xsl:choose>
-                      <xsl:when test="contains($date2, '-')">
-                        <xsl:value-of select="translate(concat('e', $date1, translate($date2, '-', '')), 'X', 'u')"/>
-                      </xsl:when>
-                      <xsl:when test="$date1='XXXX' and $date2='XXXX'">
-                        <xsl:value-of select="concat('n', '    ', '    ')"/>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:value-of select="translate(concat('e', $date1, $date2, '  '), 'X', 'u')"/>
-                      </xsl:otherwise>
-                    </xsl:choose>
+                  <xsl:when test="contains($date2, '-')">
+                    <xsl:value-of select="translate(concat('e', $date1, translate($date2, '-', '')), 'X', 'u')"/>
+                  </xsl:when>
+                  <xsl:when test="$date1='XXXX' and $date2='XXXX'">
+                    <xsl:value-of select="concat('n', '    ', '    ')"/>
                   </xsl:when>
                   <xsl:when test="string-length($date1) = 4 and $date1='XXXX'">
                     <xsl:value-of select="concat('n', '    ', '    ')"/>
+                  </xsl:when>
+                  <xsl:when test="string-length($date1) = 4 and $cOriginDateExists = 1 and $date1 != $date2">
+                    <xsl:value-of select="translate(concat('r', $date1, $date2), 'X', 'u')"/>
+                  </xsl:when>
+                  <xsl:when test="$date2 != '' and $date1 != $date2">
+                    <xsl:value-of select="translate(concat('e', $date1, $date2, '  '), 'X', 'u')"/>
                   </xsl:when>
                   <xsl:when test="string-length($date1) = 4">
                     <xsl:value-of select="translate(concat('s', $date1, '    '), 'X', 'u')"/>
@@ -26376,77 +26450,6 @@
           </xsl:choose>
         </marc:subfield>
       </xsl:for-each>
-    </marc:datafield>
-  </xsl:template>
-  <xsl:template match="bf:Work/bf:creationDate[@rdf:datatype='http://id.loc.gov/datatypes/edtf']" mode="generate-046">
-    <xsl:param name="vRecordId"/>
-    <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="v046DateTime1">
-      <xsl:call-template name="EDTF-Date1">
-        <xsl:with-param name="pEDTFDate" select="."/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="v046DateTime2">
-      <xsl:call-template name="EDTF-Date2">
-        <xsl:with-param name="pEDTFDate" select="."/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="v046Date1">
-      <xsl:call-template name="EDTF-DatePart">
-        <xsl:with-param name="pEDTFDate" select="$v046DateTime1"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="v046Time1">
-      <xsl:call-template name="EDTF-TimePart">
-        <xsl:with-param name="pEDTFDate" select="$v046DateTime1"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <marc:datafield>
-      <xsl:attribute name="tag">046</xsl:attribute>
-      <xsl:attribute name="ind1">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="ind2">
-        <xsl:text> </xsl:text>
-      </xsl:attribute>
-      <xsl:variable name="v046-k">
-        <xsl:value-of select="concat(translate($v046Date1,'-',''),translate($v046Time1,':',''))"/>
-      </xsl:variable>
-      <xsl:if test="$v046-k != ''">
-        <marc:subfield code="k">
-          <xsl:value-of select="$v046-k"/>
-        </marc:subfield>
-      </xsl:if>
-      <xsl:choose>
-        <xsl:when test="$v046DateTime2">
-          <xsl:variable name="v046-l">
-            <xsl:variable name="v046Date2">
-              <xsl:call-template name="EDTF-DatePart">
-                <xsl:with-param name="pEDTFDate" select="$v046DateTime2"/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:variable name="v046Time2">
-              <xsl:call-template name="EDTF-TimePart">
-                <xsl:with-param name="pEDTFDate" select="$v046DateTime2"/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:value-of select="concat(translate($v046Date2,'-',''),translate($v046Time2,':',''))"/>
-          </xsl:variable>
-          <xsl:if test="$v046-l != ''">
-            <marc:subfield code="l">
-              <xsl:value-of select="$v046-l"/>
-            </marc:subfield>
-          </xsl:if>
-        </xsl:when>
-      </xsl:choose>
-      <xsl:variable name="v046-2">
-        <xsl:value-of select="'edtf'"/>
-      </xsl:variable>
-      <xsl:if test="$v046-2 != ''">
-        <marc:subfield code="2">
-          <xsl:value-of select="$v046-2"/>
-        </marc:subfield>
-      </xsl:if>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bf:classification/*[bf:classificationPortion/text() and (local-name()='ClassificationLcc' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/ClassificationLcc') and not(bf:assigner[@rdf:resource='http://id.loc.gov/authorities/names/no2004037399' or */rdf:about='http://id.loc.gov/authorities/names/no2004037399' or */rdfs:label='Library and Archives Canada'])]" mode="generate-050">
