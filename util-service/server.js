@@ -2036,10 +2036,14 @@ app.delete('/templates/:doc', async (request, response) => {
 
 
 
-app.post("/validate", async (request, response) => {
+app.post("/validate/:loc", async (request, response) => {
 	var rdfxml = request.body.rdfxml;
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
+
+	if (loc == ' stage'){
+		url = url.replace("preprod", "preprod-8299")
+	}
 
 	let postLogEntry = {
 		'postingDate': new Date(),
