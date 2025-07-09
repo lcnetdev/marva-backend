@@ -2041,6 +2041,7 @@ app.post("/validate/:loc", async (request, response) => {
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
 
+	let loc = request.params.loc
 	if (loc == 'stage'){
 		url = url.replace("preprod", "preprod-8299")
 	}
