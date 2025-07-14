@@ -77,6 +77,10 @@
       <lang>latn</lang>
       <code>(B</code>
     </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>thai</lang>
+      <code>Thai</code>
+    </script>
   </xsl:variable>
   <xsl:variable name="df045BCEtimePeriods">
     <timePeriod xmlns:bf2marc="http://www.loc.gov/bf2marc">
@@ -4205,7 +4209,7 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:choose>
-        <xsl:when test="/descendant::node()[bf:Title|bf:ProvisionActivity|bf:editionStatement|bf:Series]//@xml:lang[contains(., '-') and not(contains(., 'atn'))]">
+        <xsl:when test="/descendant::node()[bf:Title|bf:ProvisionActivity|bf:editionStatement|bf:Series]//@xml:lang[contains(., '-') and not(contains(., 'atn')) and not(contains(., 'hai'))]">
           <marc:datafield>
             <xsl:attribute name="tag">066</xsl:attribute>
             <xsl:attribute name="ind1">
@@ -4680,7 +4684,7 @@
           <xsl:copy-of select="$vShared"/>
           <xsl:if test="$vLangTagLabel!=''">
             <marc:subfield code="7">
-              <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+              <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
             </marc:subfield>
           </xsl:if>
         </marc:datafield>
@@ -4732,7 +4736,7 @@
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -4963,7 +4967,7 @@
           <xsl:variable name="v130-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -5041,7 +5045,7 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -5168,7 +5172,7 @@
           <xsl:variable name="v240-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -5217,7 +5221,7 @@
                 </marc:subfield>
               </xsl:if>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -5898,7 +5902,7 @@
                 </marc:subfield>
               </xsl:if>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -6216,7 +6220,7 @@
           <xsl:variable name="vvTag-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -6434,7 +6438,7 @@
                 </xsl:choose>
               </xsl:for-each>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -6580,7 +6584,7 @@
           <xsl:variable name="v247-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -6722,7 +6726,7 @@
                 </xsl:choose>
               </xsl:for-each>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -6789,7 +6793,7 @@
           <xsl:variable name="v250-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -6837,7 +6841,7 @@
                 </marc:subfield>
               </xsl:if>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -7163,7 +7167,7 @@
               <xsl:variable name="v264-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -7333,7 +7337,7 @@
                     </xsl:when>
                   </xsl:choose>
                   <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-7 != ''">
                     <marc:subfield code="7">
@@ -7944,7 +7948,7 @@
               <xsl:variable name="v490-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -8126,7 +8130,7 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -8428,7 +8432,7 @@
                     </xsl:when>
                   </xsl:choose>
                   <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-7 != ''">
                     <marc:subfield code="7">
@@ -8550,7 +8554,7 @@
                 <xsl:variable name="v501-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8612,7 +8616,7 @@
                 <xsl:variable name="v508-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8699,7 +8703,7 @@
                 <xsl:variable name="v511-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8747,7 +8751,7 @@
                 <xsl:variable name="v513-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8795,7 +8799,7 @@
                 <xsl:variable name="v515-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8843,7 +8847,7 @@
                 <xsl:variable name="v516-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8914,7 +8918,7 @@
                 <xsl:variable name="v530-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -8982,7 +8986,7 @@
                 <xsl:variable name="v533-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9039,7 +9043,7 @@
                 <xsl:variable name="v534-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9171,7 +9175,7 @@
               <xsl:variable name="v536-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -9283,7 +9287,7 @@
                     </xsl:choose>
                   </xsl:for-each>
                   <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                   </xsl:variable>
                   <xsl:if test="$v880-7 != ''">
                     <marc:subfield code="7">
@@ -9350,7 +9354,7 @@
               <xsl:variable name="v545-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -9392,7 +9396,7 @@
                 <xsl:variable name="v550-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9471,7 +9475,7 @@
                 <xsl:variable name="v555-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9519,7 +9523,7 @@
                 <xsl:variable name="v556-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9575,7 +9579,7 @@
               <xsl:variable name="v581-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -9645,7 +9649,7 @@
                 <xsl:variable name="v585-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9742,7 +9746,7 @@
                 <xsl:variable name="v588-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -9820,7 +9824,7 @@
                       </xsl:choose>
                     </xsl:for-each>
                     <xsl:variable name="v880-7">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                     </xsl:variable>
                     <xsl:if test="$v880-7 != ''">
                       <marc:subfield code="7">
@@ -9922,7 +9926,7 @@
                 <xsl:variable name="v500-7">
                   <xsl:choose>
                     <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -10005,7 +10009,7 @@
                       </xsl:choose>
                     </xsl:for-each>
                     <xsl:variable name="v880-7">
-                      <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                      <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                     </xsl:variable>
                     <xsl:if test="$v880-7 != ''">
                       <marc:subfield code="7">
@@ -10322,7 +10326,7 @@
           <xsl:variable name="v504-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -10369,7 +10373,7 @@
                   </xsl:choose>
                 </xsl:for-each>
                 <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                 </xsl:variable>
                 <xsl:if test="$v880-7 != ''">
                   <marc:subfield code="7">
@@ -10457,7 +10461,7 @@
           <xsl:variable name="v504-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -10504,7 +10508,7 @@
                   </xsl:choose>
                 </xsl:for-each>
                 <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                 </xsl:variable>
                 <xsl:if test="$v880-7 != ''">
                   <marc:subfield code="7">
@@ -10598,7 +10602,7 @@
           <xsl:variable name="v505-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -10655,7 +10659,7 @@
                   </marc:subfield>
                 </xsl:for-each>
                 <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                 </xsl:variable>
                 <xsl:if test="$v880-7 != ''">
                   <marc:subfield code="7">
@@ -10986,7 +10990,7 @@
               <xsl:variable name="v520-7">
                 <xsl:choose>
                   <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -11042,7 +11046,7 @@
                   </marc:subfield>
                 </xsl:for-each>
                 <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                 </xsl:variable>
                 <xsl:if test="$v880-7 != ''">
                   <marc:subfield code="7">
@@ -11173,7 +11177,7 @@
           <xsl:variable name="v546-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -11240,7 +11244,7 @@
                   </xsl:for-each>
                 </xsl:for-each>
                 <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
                 </xsl:variable>
                 <xsl:if test="$v880-7 != ''">
                   <marc:subfield code="7">
@@ -16959,7 +16963,7 @@
               <xsl:copy-of select="$vShared"/>
               <xsl:if test="$vLangTagLabel!=''">
                 <marc:subfield code="7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -17032,7 +17036,7 @@
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -17804,7 +17808,7 @@
               <xsl:copy-of select="$vShared"/>
               <xsl:if test="$vLangTagLabel!=''">
                 <marc:subfield code="7">
-                  <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                  <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -17911,7 +17915,7 @@
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -19943,7 +19947,7 @@
           <xsl:variable name="v740-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -20024,7 +20028,7 @@
                 </xsl:choose>
               </xsl:for-each>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -21482,7 +21486,7 @@
           <xsl:variable name="vvSeriesMarcKeyTag-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -21634,7 +21638,7 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagScript)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
               </xsl:variable>
               <xsl:if test="$v880-7 != ''">
                 <marc:subfield code="7">
@@ -28823,7 +28827,7 @@
           <xsl:variable name="v245-7">
             <xsl:choose>
               <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('[bcp47]', $vLangTagLabel)"/>
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
