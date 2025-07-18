@@ -23,7 +23,7 @@
   <xsl:variable name="xslProcessor">
     <xsl:value-of select="system-property('xsl:vendor')"/>
   </xsl:variable>
-  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v2.10-dev</xsl:variable>
+  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v2.10</xsl:variable>
   <xsl:variable name="df880script">
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>arab</lang>
@@ -7508,10 +7508,10 @@
         </xsl:variable>
         <xsl:variable name="vSharedDollar2">
           <xsl:choose>
-            <xsl:when test="contains(self::node()//@rdf:*[1], 'id.loc.gov/authorities/demographicTerms')">
+            <xsl:when test="contains(self::node()/@rdf:resource, 'id.loc.gov/authorities/demographicTerms') or                      contains(*/@rdf:about, 'id.loc.gov/authorities/demographicTerms')">
               <marc:subfield code="2">lcdgt</marc:subfield>
             </xsl:when>
-            <xsl:when test="contains(self::node()//@rdf:*[1], 'id.loc.gov/authorities/subjects')">
+            <xsl:when test="contains(self::node()/@rdf:resource, 'id.loc.gov/authorities/subjects') or                      contains(*/@rdf:about, 'id.loc.gov/authorities/subjects')">
               <marc:subfield code="2">lcsh</marc:subfield>
             </xsl:when>
             <xsl:when test="*/bf:source/bf:Source/*[local-name()='code']">
@@ -8300,7 +8300,13 @@
                             <xsl:when test="contains(../rdf:type/@rdf:resource, 'index')">
                               <xsl:text> </xsl:text>
                             </xsl:when>
+                            <xsl:when test="contains(../bf:noteType, 'index')">
+                              <xsl:text> </xsl:text>
+                            </xsl:when>
                             <xsl:when test="contains(../rdf:type/@rdf:resource, 'finding')">
+                              <xsl:text>0</xsl:text>
+                            </xsl:when>
+                            <xsl:when test="contains(../bf:noteType, 'finding')">
                               <xsl:text>0</xsl:text>
                             </xsl:when>
                             <xsl:otherwise>
@@ -8408,7 +8414,7 @@
                   </xsl:choose>
                   <xsl:choose>
                     <xsl:when test="$vTag = '530' or $vTag = '555'">
-                      <xsl:for-each select="../bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+                      <xsl:for-each select="../bf:electronicLocator/@rdf:resource|../rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
                         <marc:subfield code="u">
                           <xsl:value-of select="."/>
                         </marc:subfield>
@@ -8910,7 +8916,7 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:for-each select="../bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+                <xsl:for-each select="../bf:electronicLocator/@rdf:resource|../rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
                   <marc:subfield code="u">
                     <xsl:value-of select="."/>
                   </marc:subfield>
@@ -9428,10 +9434,10 @@
                 <xsl:attribute name="ind1">
                   <xsl:variable name="vInd">
                     <xsl:choose>
-                      <xsl:when test="translate(bf:noteType,$upper,$lower)='index' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/index'">
+                      <xsl:when test="translate(../bf:noteType,$upper,$lower)='index' or ../rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/index'">
                         <xsl:text> </xsl:text>
                       </xsl:when>
-                      <xsl:when test="translate(bf:noteType,$upper,$lower)='finding aid' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/finding'">
+                      <xsl:when test="translate(../bf:noteType,$upper,$lower)='finding aid' or ../rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/finding'">
                         <xsl:text>0</xsl:text>
                       </xsl:when>
                     </xsl:choose>
@@ -9467,7 +9473,7 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:for-each select="bf:electronicLocator/@rdf:resource|rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
+                <xsl:for-each select="../bf:electronicLocator/@rdf:resource|../rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']">
                   <marc:subfield code="u">
                     <xsl:value-of select="."/>
                   </marc:subfield>
