@@ -4682,11 +4682,11 @@
             </marc:subfield>
           </xsl:for-each>
           <xsl:copy-of select="$vShared"/>
-          <xsl:if test="$vLangTagLabel!=''">
-            <marc:subfield code="7">
-              <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-            </marc:subfield>
-          </xsl:if>
+          <!--<xsl:if test="$vLangTagLabel!=''">
+          <marc:subfield code="7">
+            <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
+          </marc:subfield>
+        </xsl:if>-->
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
@@ -4735,14 +4735,6 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -4964,18 +4956,6 @@
               <xsl:value-of select="."/>
             </marc:subfield>
           </xsl:for-each>
-          <xsl:variable name="v130-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v130-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v130-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
@@ -5044,14 +5024,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -5169,18 +5141,6 @@
               <xsl:value-of select="$v240-1"/>
             </marc:subfield>
           </xsl:if>
-          <xsl:variable name="v240-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v240-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v240-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
@@ -5218,14 +5178,6 @@
               <xsl:if test="$v880-1 != ''">
                 <marc:subfield code="1">
                   <xsl:value-of select="$v880-1"/>
-                </marc:subfield>
-              </xsl:if>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -5901,14 +5853,6 @@
                   <xsl:value-of select="$v880-c"/>
                 </marc:subfield>
               </xsl:if>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -6217,18 +6161,6 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:variable name="vvTag-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$vvTag-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$vvTag-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
@@ -6437,14 +6369,6 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -6581,18 +6505,6 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:variable name="v247-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v247-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v247-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
@@ -6725,14 +6637,6 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -6790,18 +6694,6 @@
               <xsl:value-of select="$v250-a"/>
             </marc:subfield>
           </xsl:if>
-          <xsl:variable name="v250-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v250-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v250-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880/@xml:lang">
@@ -6838,14 +6730,6 @@
               <xsl:if test="$v880-a != ''">
                 <marc:subfield code="a">
                   <xsl:value-of select="$v880-a"/>
-                </marc:subfield>
-              </xsl:if>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -7164,18 +7048,6 @@
                   </xsl:for-each>
                 </xsl:when>
               </xsl:choose>
-              <xsl:variable name="v264-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v264-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v264-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
@@ -7336,14 +7208,6 @@
                       </xsl:for-each>
                     </xsl:when>
                   </xsl:choose>
-                  <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                  </xsl:variable>
-                  <xsl:if test="$v880-7 != ''">
-                    <marc:subfield code="7">
-                      <xsl:value-of select="$v880-7"/>
-                    </marc:subfield>
-                  </xsl:if>
                 </marc:datafield>
               </xsl:when>
             </xsl:choose>
@@ -7945,18 +7809,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v490-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v490-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v490-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -8129,14 +7981,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -8437,14 +8281,6 @@
                       </xsl:for-each>
                     </xsl:when>
                   </xsl:choose>
-                  <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                  </xsl:variable>
-                  <xsl:if test="$v880-7 != ''">
-                    <marc:subfield code="7">
-                      <xsl:value-of select="$v880-7"/>
-                    </marc:subfield>
-                  </xsl:if>
                 </marc:datafield>
               </xsl:for-each>
             </xsl:when>
@@ -8557,18 +8393,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v501-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v501-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v501-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8619,18 +8443,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v508-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v508-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v508-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8706,18 +8518,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v511-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v511-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v511-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8754,18 +8554,6 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:variable name="v513-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v513-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v513-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8802,18 +8590,6 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:variable name="v515-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v515-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v515-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8850,18 +8626,6 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:variable name="v516-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v516-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v516-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8921,18 +8685,6 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
-                <xsl:variable name="v530-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v530-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v530-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8989,18 +8741,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v533-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v533-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v533-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9046,18 +8786,6 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
-                <xsl:variable name="v534-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v534-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v534-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9178,18 +8906,6 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:variable name="v536-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v536-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v536-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
@@ -9292,14 +9008,6 @@
                       </xsl:otherwise>
                     </xsl:choose>
                   </xsl:for-each>
-                  <xsl:variable name="v880-7">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                  </xsl:variable>
-                  <xsl:if test="$v880-7 != ''">
-                    <marc:subfield code="7">
-                      <xsl:value-of select="$v880-7"/>
-                    </marc:subfield>
-                  </xsl:if>
                 </marc:datafield>
               </xsl:when>
             </xsl:choose>
@@ -9357,18 +9065,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v545-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v545-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v545-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='issuing body' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuing')">
@@ -9399,18 +9095,6 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:variable name="v550-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v550-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v550-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9478,18 +9162,6 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
-                <xsl:variable name="v555-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v555-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v555-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9526,18 +9198,6 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:variable name="v556-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v556-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v556-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9582,18 +9242,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v581-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v581-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v581-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='exhibition' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/exhibit')">
@@ -9652,18 +9300,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v585-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v585-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v585-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9749,18 +9385,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v588-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v588-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v588-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9829,14 +9453,6 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
-                    <xsl:variable name="v880-7">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                    </xsl:variable>
-                    <xsl:if test="$v880-7 != ''">
-                      <marc:subfield code="7">
-                        <xsl:value-of select="$v880-7"/>
-                      </marc:subfield>
-                    </xsl:if>
                   </marc:datafield>
                 </xsl:for-each>
               </xsl:when>
@@ -9929,18 +9545,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v500-7">
-                  <xsl:choose>
-                    <xsl:when test="$vLangTagLabel!=''">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="$v500-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v500-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -10014,14 +9618,6 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
-                    <xsl:variable name="v880-7">
-                      <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                    </xsl:variable>
-                    <xsl:if test="$v880-7 != ''">
-                      <marc:subfield code="7">
-                        <xsl:value-of select="$v880-7"/>
-                      </marc:subfield>
-                    </xsl:if>
                   </marc:datafield>
                 </xsl:for-each>
               </xsl:when>
@@ -10329,18 +9925,6 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:variable name="v504-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v504-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v504-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
@@ -10378,14 +9962,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                </xsl:variable>
-                <xsl:if test="$v880-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v880-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -10464,18 +10040,6 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:variable name="v504-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v504-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v504-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
@@ -10513,14 +10077,6 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                </xsl:variable>
-                <xsl:if test="$v880-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v880-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -10605,18 +10161,6 @@
               <xsl:value-of select="."/>
             </marc:subfield>
           </xsl:for-each>
-          <xsl:variable name="v505-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v505-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v505-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
@@ -10664,14 +10208,6 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
-                <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                </xsl:variable>
-                <xsl:if test="$v880-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v880-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -10993,18 +10529,6 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:variable name="v520-7">
-                <xsl:choose>
-                  <xsl:when test="$vLangTagLabel!=''">
-                    <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                  </xsl:when>
-                </xsl:choose>
-              </xsl:variable>
-              <xsl:if test="$v520-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v520-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -11051,14 +10575,6 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
-                <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                </xsl:variable>
-                <xsl:if test="$v880-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v880-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -11180,18 +10696,6 @@
               </marc:subfield>
             </xsl:for-each>
           </xsl:for-each>
-          <xsl:variable name="v546-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v546-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v546-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
@@ -11249,14 +10753,6 @@
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:for-each>
-                <xsl:variable name="v880-7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-                </xsl:variable>
-                <xsl:if test="$v880-7 != ''">
-                  <marc:subfield code="7">
-                    <xsl:value-of select="$v880-7"/>
-                  </marc:subfield>
-                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -16967,11 +16463,11 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
-              <xsl:if test="$vLangTagLabel!=''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                </marc:subfield>
-              </xsl:if>
+              <!--<xsl:if test="$vLangTagLabel!=''">
+          <marc:subfield code="7">
+            <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
+          </marc:subfield>
+        </xsl:if>-->
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -17041,14 +16537,6 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -17812,11 +17300,11 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:copy-of select="$vShared"/>
-              <xsl:if test="$vLangTagLabel!=''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-                </marc:subfield>
-              </xsl:if>
+              <!--<xsl:if test="$vLangTagLabel!=''">
+              <marc:subfield code="7">
+                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
+              </marc:subfield>
+            </xsl:if>-->
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -17920,14 +17408,6 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -19950,18 +19430,6 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:variable name="v740-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v740-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v740-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vLangTagScript != ''">
@@ -20033,14 +19501,6 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -21489,18 +20949,6 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
-          <xsl:variable name="vvSeriesMarcKeyTag-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$vvSeriesMarcKeyTag-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$vvSeriesMarcKeyTag-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
@@ -21643,14 +21091,6 @@
                   </xsl:if>
                 </xsl:when>
               </xsl:choose>
-              <xsl:variable name="v880-7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagScript)"/>
-              </xsl:variable>
-              <xsl:if test="$v880-7 != ''">
-                <marc:subfield code="7">
-                  <xsl:value-of select="$v880-7"/>
-                </marc:subfield>
-              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -28830,18 +28270,6 @@
               <xsl:value-of select="$v245-c"/>
             </marc:subfield>
           </xsl:if>
-          <xsl:variable name="v245-7">
-            <xsl:choose>
-              <xsl:when test="$vLangTagLabel!=''">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <xsl:if test="$v245-7 != ''">
-            <marc:subfield code="7">
-              <xsl:value-of select="$v245-7"/>
-            </marc:subfield>
-          </xsl:if>
         </marc:datafield>
       </xsl:when>
       <xsl:otherwise>
@@ -32118,21 +31546,6 @@
       <xsl:attribute name="ind2">
         <xsl:text> </xsl:text>
       </xsl:attribute>
-      <xsl:choose>
-        <xsl:when test="ancestor::bf:Relation">
-          <xsl:variable name="vLinkage">
-            <xsl:value-of select="concat( count(ancestor::bf:relation/preceding::bf:relation) + 10, '\p' )"/>
-          </xsl:variable>
-          <xsl:variable name="v580-8">
-            <xsl:value-of select="$vLinkage"/>
-          </xsl:variable>
-          <xsl:if test="$v580-8 != ''">
-            <marc:subfield code="8">
-              <xsl:value-of select="$v580-8"/>
-            </marc:subfield>
-          </xsl:if>
-        </xsl:when>
-      </xsl:choose>
       <xsl:variable name="v580-a">
         <xsl:call-template name="tChopPunct">
           <xsl:with-param name="pString" select="."/>
@@ -35060,21 +34473,6 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
-      <xsl:choose>
-        <xsl:when test="ancestor::bf:Relation/bf:note">
-          <xsl:variable name="vLinkage">
-            <xsl:value-of select="concat( count(ancestor::bf:relation/preceding::bf:relation) + 10, '\p' )"/>
-          </xsl:variable>
-          <xsl:variable name="vvLinkTagFromWork2-8">
-            <xsl:value-of select="$vLinkage"/>
-          </xsl:variable>
-          <xsl:if test="$vvLinkTagFromWork2-8 != ''">
-            <marc:subfield code="8">
-              <xsl:value-of select="$vvLinkTagFromWork2-8"/>
-            </marc:subfield>
-          </xsl:if>
-        </xsl:when>
-      </xsl:choose>
       <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
         <xsl:choose>
           <xsl:when test="position() = 1">
