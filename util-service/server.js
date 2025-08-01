@@ -145,11 +145,12 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsStageByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsStageByUser[doc.index.user]){
-	 						recsStageByUser[doc.index.user] = {}
+						let userName = doc.index.user.replace(/  /g, ' ');
+	 					if (!recsStageByUser[userName]){
+	 						recsStageByUser[userName] = {}
 	 					}
-	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 					recsStageByUser[userName][doc.index.eid] = doc.index
+	 					recsStageByUser[userName][doc.index.eid]._id = doc._id
 	 				}
 	 			}
  			}
@@ -203,11 +204,13 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsProdByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsProdByUser[doc.index.user]){
-	 						recsProdByUser[doc.index.user] = {}
+						let userName = doc.index.user.replace(/  /g, ' ');
+
+	 					if (!recsProdByUser[userName]){
+	 						recsProdByUser[userName] = {}
 	 					}
-	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 					recsProdByUser[userName][doc.index.eid] = doc.index
+	 					recsProdByUser[userName][doc.index.eid]._id = doc._id
 	 				}
 	 			}
  			}
@@ -1498,7 +1501,6 @@ app.post('/nacostub/production', async (request, response) => {
 });
 
 app.get('/myrecords/production/:user', function(request, response){
-	// console.log('recsProdByUser',recsProdByUser)
 	if (request.params.user){
 		response.json(recsProdByUser[request.params.user]);
 	}else{
@@ -1517,6 +1519,8 @@ app.get('/logs/posts', function(request, response){
 
 
 app.get('/myrecords/staging/:user', function(request, response){
+		// console.log('recsStageByUser',recsStageByUser)
+
 	if (request.params.user){
 		response.json(recsStageByUser[request.params.user]);
 	}else{
