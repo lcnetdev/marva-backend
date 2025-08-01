@@ -145,11 +145,12 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsStageByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsStageByUser[doc.index.user]){
-	 						recsStageByUser[doc.index.user] = {}
+						let userName = doc.index.user.replace(/  /g, ' ');
+	 					if (!recsStageByUser[userName]){
+	 						recsStageByUser[userName] = {}
 	 					}
-	 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 					recsStageByUser[userName][doc.index.eid] = doc.index
+	 					recsStageByUser[userName][doc.index.eid]._id = doc._id
 	 				}
 	 			}
  			}
@@ -203,11 +204,13 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsProdByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-	 					if (!recsProdByUser[doc.index.user]){
-	 						recsProdByUser[doc.index.user] = {}
+						let userName = doc.index.user.replace(/  /g, ' ');
+
+	 					if (!recsProdByUser[userName]){
+	 						recsProdByUser[userName] = {}
 	 					}
-	 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-	 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
+	 					recsProdByUser[userName][doc.index.eid] = doc.index
+	 					recsProdByUser[userName][doc.index.eid]._id = doc._id
 	 				}
 	 			}
  			}
