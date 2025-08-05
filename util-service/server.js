@@ -145,7 +145,12 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsStageByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-						let userName = doc.index.user.replace(/  /g, ' ');
+						let userName
+						try{
+							userName = doc.index.user.replace(/  /g, ' ');
+						catch{
+							userName = doc.index.user
+						}
 	 					if (!recsStageByUser[userName]){
 	 						recsStageByUser[userName] = {}
 	 					}
@@ -204,8 +209,12 @@ MongoClient.connect(uri, function(err, client) {
 	 					recsProdByEid[doc.index.eid]._id = doc._id
 	 				}
 	 				if (doc.index.user && doc.index.eid){
-						let userName = doc.index.user.replace(/  /g, ' ');
-
+						let userName
+						try{
+							userName = doc.index.user.replace(/  /g, ' ');
+						catch{
+							userName = doc.index.user
+						}
 	 					if (!recsProdByUser[userName]){
 	 						recsProdByUser[userName] = {}
 	 					}
