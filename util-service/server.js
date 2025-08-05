@@ -148,7 +148,7 @@ MongoClient.connect(uri, function(err, client) {
 						let userName
 						try{
 							userName = doc.index.user.replace(/  /g, ' ');
-						catch{
+						}catch{
 							userName = doc.index.user
 						}
 	 					if (!recsStageByUser[userName]){
@@ -212,7 +212,7 @@ MongoClient.connect(uri, function(err, client) {
 						let userName
 						try{
 							userName = doc.index.user.replace(/  /g, ' ');
-						catch{
+						}catch{
 							userName = doc.index.user
 						}
 	 					if (!recsProdByUser[userName]){
