@@ -3,7 +3,7 @@ services:
 
 
   util:
-    build: 
+    build:
       context: ./
       dockerfile: config/util.docker
     container_name: 'util'
@@ -18,13 +18,10 @@ services:
     environment:
       # 1 means to use nodmon and reload on change (dev)
       # 2 means to use forever ever ever ever (prod)
-      - MODE=1
-      - DEPLOYPW="test"
-      - STATSPW="stats"
-      - STAGINGPOSTURL=""
-      - MLUSER=""
-      - MLPASS=""
       - EDITORVERSION=0.5.0
+    env_file:
+      - path: ".env"
+        required: true
     # ports:
     #   - 5001:5001
 
@@ -35,7 +32,7 @@ services:
     environment:
       - TXL_FLASK_SECRET=1234567890
 
-    # build: 
+    # build:
     #   context: ./scriptshifter/
     #   dockerfile: Dockerfile
     # container_name: 'scriptshifter'
@@ -45,7 +42,7 @@ services:
     #   - TXL_FLASK_SECRET=1234567890
     # # ports:
     # #  - 5003:8000
-  
+
 
   database:
     image: 'mongo:4.4.4'
@@ -59,23 +56,23 @@ services:
     volumes:
       - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./database_files:/data/db
-    
+
     # we don't need to expose the mongo server, it only talks internally to the other containers
     #ports:
     #  - '37017-37019:27017-27019'
-    
+
 
 
 
   ldpjs-staging:
-    build: 
+    build:
       context: ./
       dockerfile: config/ldpjs.docker
     container_name: 'ldpjs-staging'
     platform: linux/amd64
     depends_on:
-      - 'database'    
-    volumes:      
+      - 'database'
+    volumes:
       - ./ldpjs:/app # make the app directory from the git submodule
       - ./config/ldpjs_config_staging.js:/app/config/index.js # copy over our own
       - ./config/ldpjs_server_staging.js:/app/server.js # copy over our own
@@ -85,14 +82,14 @@ services:
     #   - 9501:3000
 
   ldpjs-production:
-    build: 
+    build:
       context: ./
       dockerfile: config/ldpjs.docker
     container_name: 'ldpjs-production'
     platform: linux/amd64
     depends_on:
-      - 'database'    
-    volumes:      
+      - 'database'
+    volumes:
       - ./ldpjs:/app # make the app directory from the git submodule
       - ./config/ldpjs_config_production.js:/app/config/index.js # copy over our own
       - ./config/ldpjs_server_production.js:/app/server.js # copy over our own
@@ -116,7 +113,7 @@ services:
       - ./dist/staging:/staging
       - ./dist/profile-editor:/profile-editor
       - ./dist/prod-quartz:/prod-quartz
-      - ./dist/stage-quartz:/stage-quartz            
+      - ./dist/stage-quartz:/stage-quartz
     ports:
       - 9401:8080
       - 9400:80
