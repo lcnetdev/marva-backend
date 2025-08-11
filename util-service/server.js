@@ -3301,9 +3301,45 @@ app.get('/lcap/sync/lccn/:lccn', async (request, response) => {
 
 // user Preferences
 // Save the user's preference to MongoDB
-app.post('/prefs/:user', (request, response) => {
+app.post('/prefs/:user', async (request, response) => {
+	let result = false
+	let user = request.params.user
+	let newPrefs = request.body
+	let msg ="???"
 
+	console.log("newPrefs: ", newPrefs)
+
+	MongoClient.connect(uri, function(err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
+		dbo.collection('userPrefs').findOne({'user': user})
+			.then( (doc)=> {
+				if (!doc){
+					// need to add it to the db
+					dbo.collection('userPrefs').insertOne(
+						{ user: user,prefs: newPrefs},
+						function(err, result){
+							if (err){
+								msg = "Error inserting preferences: " + err
+							} else {
+								msg = "Success!" + result
+							}
+							response.status(200).json({'msg': msg});
+						}
+					)
+				} else {
+					// need to update db
+					dbo.collection('userPrefs').updateOne(
+						{'_id': new mongo.ObjectID(doc['_id'])},
+						{ $set: {prefs: newPrefs}}
+					)
+
+					response.status(200).json({'msg': 'updated'});
+				}
+			})
+	});
 });
+
 
 // Get the user's preference from MongoDB
 app.get('/prefs/:user', (request, response) => {
@@ -3311,13 +3347,15 @@ app.get('/prefs/:user', (request, response) => {
 	let result = false
 	let user = request.params.user
 
+	console.info("user: ", user)
+
 	MongoClient.connect(uri, function(err, db) {
 		if (err) throw err;
 		var dbo = db.db("bfe2");
 		dbo.collection('userPrefs').findOne({'user': user})
 			.then( (doc)=> {
 					console.info("result!: ", doc)
-					response.status(200).json({'result': doc});
+					response.status(200).json({'result': doc.prefs});
 				}
 			)
 	});
