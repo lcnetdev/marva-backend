@@ -3302,12 +3302,12 @@ app.get('/lcap/sync/lccn/:lccn', async (request, response) => {
 // user Preferences
 // Save the user's preference to MongoDB
 app.post('/prefs/:user', async (request, response) => {
-	let result = false
 	let user = request.params.user
 	let newPrefs = request.body
 	let msg ="???"
 
-	console.log("newPrefs: ", newPrefs)
+	console.info("saving")
+	console.info(">>>>>", Object.keys(newPrefs))
 
 	MongoClient.connect(uri, function(err, db) {
 		if (err) throw err;
