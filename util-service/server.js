@@ -3318,10 +3318,11 @@ app.post('/prefs/:user', async (request, response) => {
 						function(err, result){
 							if (err){
 								msg = "Error inserting preferences: " + err
+								response.status(500).json({'msg': msg});
 							} else {
 								msg = "Success!" + result
+								response.status(200).json({'msg': msg});
 							}
-							response.status(200).json({'msg': msg});
 						}
 					)
 				} else {
