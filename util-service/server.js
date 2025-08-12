@@ -3306,9 +3306,6 @@ app.post('/prefs/:user', async (request, response) => {
 	let newPrefs = request.body
 	let msg ="???"
 
-	console.info("saving")
-	console.info(">>>>>", Object.keys(newPrefs))
-
 	MongoClient.connect(uri, function(err, db) {
 		if (err) throw err;
 		var dbo = db.db("bfe2");
@@ -3343,18 +3340,13 @@ app.post('/prefs/:user', async (request, response) => {
 
 // Get the user's preference from MongoDB
 app.get('/prefs/:user', (request, response) => {
-
-	let result = false
 	let user = request.params.user
-
-	console.info("user: ", user)
 
 	MongoClient.connect(uri, function(err, db) {
 		if (err) throw err;
 		var dbo = db.db("bfe2");
 		dbo.collection('userPrefs').findOne({'user': user})
 			.then( (doc)=> {
-					console.info("result!: ", doc)
 					response.status(200).json({'result': doc.prefs});
 				}
 			)
