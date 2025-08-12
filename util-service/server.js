@@ -114,6 +114,20 @@ MongoClient.connect(uri, function(err, client) {
     	}
     })
 
+	// User Preferences
+	db.collection('userPrefs').findOne({}).then(function(doc) {
+    	if(!doc){
+    		// no doc here means there is no collection, so insert our first number
+    		db.collection("userPrefs").insertOne({ user: 'test0123456789', prefs: ":)" },
+	        	function(err, result) {
+	        		console.log("Inserted the first ID")
+	        		db.collection('userPrefs').findOne({}).then(function(doc) {
+	        			userPref = doc
+	        		})
+	        })
+    	}
+    })
+
     // build an intial index
     // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
     //     if(err){
@@ -2971,6 +2985,8 @@ app.post('/worldcat/search/', async (request, response) => {
 	 * Return a list of results limited to 10?
 	 */
 
+	console.log("searcing worldcat")
+
 	let wcQuery = request.body.query
 	let wcIndex = request.body.index
 	let wcType = request.body.type
@@ -3128,14 +3144,14 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 			results: {
 				isbns: [],
 				records: []
-			}			
+			}
 		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 		return
 	}
 
-	const token = await worldCatAuthToken()		
+	const token = await worldCatAuthToken()
 	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
 
 	let queryParams = {}
@@ -3179,7 +3195,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 						}
 					}
 				}
-				
+
 
 				marc_data = await worldCatMetadataApi(token, record.oclcNumber)
 
@@ -3203,7 +3219,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 
 		response.set('Content-Type', 'application/json');
 		response.status(200).send(resp_data);
-		
+
 		// return resp_data
 	} catch(error){
 		// console.error("Error: ", error)
@@ -3225,7 +3241,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 
 
 
-	
+
 
 
 
@@ -3262,13 +3278,13 @@ app.post('/related/works/contributor/', async (request, response) => {
 				continue; // Skip to the next URI if an error occurs
 			}
 			results[uri] = uriResultJson;
-			
+
 		}
 	}
 
 
 
-	
+
 
 
 	response.set('Content-Type', 'application/json');
@@ -3293,6 +3309,62 @@ app.get('/lcap/sync/lccn/:lccn', async (request, response) => {
 		response.status(500).send(errorBody);
 	}
 });
+
+
+// user Preferences
+// Save the user's preference to MongoDB
+app.post('/prefs/:user', async (request, response) => {
+	let user = request.params.user
+	let newPrefs = request.body
+	let msg ="???"
+
+	MongoClient.connect(uri, function(err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
+		dbo.collection('userPrefs').findOne({'user': user})
+			.then( (doc)=> {
+				if (!doc){
+					// need to add it to the db
+					dbo.collection('userPrefs').insertOne(
+						{ user: user,prefs: newPrefs},
+						function(err, result){
+							if (err){
+								msg = "Error inserting preferences: " + err
+								response.status(500).json({'msg': msg});
+							} else {
+								msg = "Success!" + result
+								response.status(200).json({'msg': msg});
+							}
+						}
+					)
+				} else {
+					// need to update db
+					dbo.collection('userPrefs').updateOne(
+						{'_id': new mongo.ObjectID(doc['_id'])},
+						{ $set: {prefs: newPrefs}}
+					)
+
+					response.status(200).json({'msg': 'updated'});
+				}
+			})
+	});
+});
+
+
+// Get the user's preference from MongoDB
+app.get('/prefs/:user', (request, response) => {
+	let user = request.params.user
+
+	MongoClient.connect(uri, function(err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
+		dbo.collection('userPrefs').findOne({'user': user})
+			.then( (doc)=> {
+					response.status(200).json({'result': doc.prefs});
+				}
+			)
+	});
+})
 
 
 
