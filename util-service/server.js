@@ -3360,8 +3360,13 @@ app.get('/prefs/:user', (request, response) => {
 		var dbo = db.db("bfe2");
 		dbo.collection('userPrefs').findOne({'user': user})
 			.then( (doc)=> {
-				let prefs = JSON.parse(doc.prefs)
-				response.status(200).json({'result': prefs});
+				try {
+					let prefs = JSON.parse(doc.prefs)
+					response.status(200).json({'result': prefs});
+				} catch(err) {
+					let msg = "Failed to load records: " + err
+					response.status(500).json({'result': msg});
+				}
 			}
 			)
 	});
