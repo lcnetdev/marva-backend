@@ -15,12 +15,8 @@ services:
       - ./dist/prod-quartz:/dist/prod-quartz
       - ./dist/stage-quartz:/dist/stage-quartz
       - ./tmp:/tmp
-    environment:
-      # 1 means to use nodmon and reload on change (dev)
-      # 2 means to use forever ever ever ever (prod)
-      - EDITORVERSION=0.5.0
     env_file:
-      - path: ".env"
+      - path: .env
         required: true
     # ports:
     #   - 5001:5001
