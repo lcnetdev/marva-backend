@@ -81,6 +81,42 @@
       <lang>thai</lang>
       <code>Thai</code>
     </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>mong</lang>
+      <code>Mong</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>ethi</lang>
+      <code>Ethi</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>geor</lang>
+      <code>Geor</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>mymr</lang>
+      <code>Mymr</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>telu</lang>
+      <code>Telu</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>taml</lang>
+      <code>Taml</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>gujr</lang>
+      <code>Gujr</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>deva</lang>
+      <code>Deva</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>armn</lang>
+      <code>Armn</code>
+    </script>
   </xsl:variable>
   <xsl:variable name="df045BCEtimePeriods">
     <timePeriod xmlns:bf2marc="http://www.loc.gov/bf2marc">
@@ -5663,7 +5699,7 @@
                     <xsl:value-of select="concat('245-03/',$v880Script)"/>
                   </xsl:when>
                   <xsl:otherwise>
-                    <xsl:text>245-01</xsl:text>
+                    <xsl:text>245-03</xsl:text>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>
