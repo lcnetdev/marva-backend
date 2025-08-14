@@ -3341,7 +3341,7 @@ app.post('/prefs/:user', async (request, response) => {
 					// need to update db
 					dbo.collection('userPrefs').updateOne(
 						{'_id': new mongo.ObjectID(doc['_id'])},
-						{ $set: {prefs: newPrefs}}
+						{ $set: {prefs: JSON.stringify(newPrefs)}}
 					)
 
 					response.status(200).json({'msg': 'updated'});
@@ -3360,7 +3360,8 @@ app.get('/prefs/:user', (request, response) => {
 		var dbo = db.db("bfe2");
 		dbo.collection('userPrefs').findOne({'user': user})
 			.then( (doc)=> {
-				response.status(200).json({'result': JSON.parse(doc.prefs)});
+				let prefs = JSON.parse(doc.prefs)
+				response.status(200).json({'result': prefs});
 			}
 			)
 	});
