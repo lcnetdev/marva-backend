@@ -3326,7 +3326,7 @@ app.post('/prefs/:user', async (request, response) => {
 				if (!doc){
 					// need to add it to the db
 					dbo.collection('userPrefs').insertOne(
-						{ user: user,prefs: newPrefs},
+						{ user: user, prefs: JSON.stringify(newPrefs)},
 						function(err, result){
 							if (err){
 								msg = "Error inserting preferences: " + err
@@ -3360,8 +3360,8 @@ app.get('/prefs/:user', (request, response) => {
 		var dbo = db.db("bfe2");
 		dbo.collection('userPrefs').findOne({'user': user})
 			.then( (doc)=> {
-					response.status(200).json({'result': doc.prefs});
-				}
+				response.status(200).json({'result': JSON.parse(doc.prefs)});
+			}
 			)
 	});
 })
