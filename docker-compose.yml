@@ -16,8 +16,7 @@ services:
       - ./dist/stage-quartz:/dist/stage-quartz
       - ./tmp:/tmp
     env_file:
-      - path: .env
-        required: true
+      - .env
     # ports:
     #   - 5001:5001
 
