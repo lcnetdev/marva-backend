@@ -102,6 +102,10 @@
       <code>Gujr</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>guru</lang>
+      <code>Guru</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>knda</lang>
       <code>Knda</code>
     </script>
@@ -128,6 +132,10 @@
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>telu</lang>
       <code>Telu</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>thaa</lang>
+      <code>Thaa</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>thai</lang>
