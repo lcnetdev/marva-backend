@@ -78,12 +78,16 @@
       <code>(B</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>thai</lang>
-      <code>Thai</code>
+      <lang>armn</lang>
+      <code>Armn</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>mong</lang>
-      <code>Mong</code>
+      <lang>beng</lang>
+      <code>Beng</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>deva</lang>
+      <code>Deva</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>ethi</lang>
@@ -94,28 +98,40 @@
       <code>Geor</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>gujr</lang>
+      <code>Gujr</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>knda</lang>
+      <code>Knda</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>mong</lang>
+      <code>Mong</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>mlym</lang>
+      <code>Mlym</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>mymr</lang>
       <code>Mymr</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>telu</lang>
-      <code>Telu</code>
+      <lang>sinh</lang>
+      <code>Sinh</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>taml</lang>
       <code>Taml</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>gujr</lang>
-      <code>Gujr</code>
+      <lang>telu</lang>
+      <code>Telu</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>deva</lang>
-      <code>Deva</code>
-    </script>
-    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <lang>armn</lang>
-      <code>Armn</code>
+      <lang>thai</lang>
+      <code>Thai</code>
     </script>
   </xsl:variable>
   <xsl:variable name="df045BCEtimePeriods">
