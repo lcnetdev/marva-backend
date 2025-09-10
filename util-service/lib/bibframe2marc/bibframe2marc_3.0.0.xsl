@@ -7419,7 +7419,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="bf:Work/bf:musicKey" mode="generate-384">
+      <xsl:apply-templates select="bf:Work/bf:musicKey|bf:Work/bf:keyMode/bf:KeyMode/rdfs:label" mode="generate-384">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -31095,7 +31095,7 @@
       </xsl:choose>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="bf:Work/bf:musicKey" mode="generate-384">
+  <xsl:template match="bf:Work/bf:musicKey|bf:Work/bf:keyMode/bf:KeyMode/rdfs:label" mode="generate-384">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="vXmlLang">
@@ -31114,6 +31114,13 @@
       <xsl:attribute name="ind2">
         <xsl:text> </xsl:text>
       </xsl:attribute>
+      <xsl:for-each select="parent::bf:KeyMode/bflc:appliesTo/bflc:AppliesTo/rdfs:label">
+        <marc:subfield code="3">
+          <xsl:call-template name="tChopPunct">
+            <xsl:with-param name="pString" select="."/>
+          </xsl:call-template>
+        </marc:subfield>
+      </xsl:for-each>
       <marc:subfield code="a">
         <xsl:call-template name="tChopPunct">
           <xsl:with-param name="pString" select="."/>
