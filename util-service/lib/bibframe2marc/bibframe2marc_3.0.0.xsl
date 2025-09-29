@@ -78,6 +78,14 @@
       <code>(B</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>adlm</lang>
+      <code>Adlm</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>aran</lang>
+      <code>Aran</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>armn</lang>
       <code>Armn</code>
     </script>
@@ -110,6 +118,10 @@
       <code>Knda</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>orya</lang>
+      <code>Orya</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>mong</lang>
       <code>Mong</code>
     </script>
@@ -140,6 +152,10 @@
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>thai</lang>
       <code>Thai</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>tibt</lang>
+      <code>Tibt</code>
     </script>
   </xsl:variable>
   <xsl:variable name="df045BCEtimePeriods">
