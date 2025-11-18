@@ -6,19 +6,24 @@ WORKDIR /jena
 RUN wget "http://archive.apache.org/dist/jena/binaries/$JENA_VERSION.zip"
 
 RUN unzip "$JENA_VERSION.zip"
-
 RUN mv -f $JENA_VERSION/* .
 RUN rmdir "$JENA_VERSION/"
 RUN rm "$JENA_VERSION.zip"
 
 ENV PATH $PATH:/jena/bin
 
-RUN riot  --version
+RUN riot --version
 
+# Install required packages including libstdc++ for Node.js
+RUN apk add --no-cache bash curl libstdc++
 
-RUN apk add --update nodejs-current npm
-
-RUN node --version
+# Install Node.js 20.x for Alpine (musl)
+ENV NODE_VERSION=20.11.1
+RUN curl -fsSL "https://unofficial-builds.nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64-musl.tar.xz" -o node.tar.xz \
+    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz \
+    && node --version \
+    && npm --version
 
 RUN npm install -g forever nodemon
 
@@ -26,5 +31,4 @@ WORKDIR /app
 
 COPY ./config/ldpjs_startup.sh /app/startup.sh
 
-#ENTRYPOINT ["forever", "server.js"]
 ENTRYPOINT ["/app/startup.sh"]
