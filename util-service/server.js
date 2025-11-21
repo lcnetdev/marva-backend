@@ -2070,6 +2070,7 @@ app.post("/validate/:loc", async (request, response) => {
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
 
+	console.log("validating against: ", url)
 	let loc = request.params.loc
 	if (loc == 'stage'){
 		url = url.replace("preprod", "preprod-8299")
@@ -3371,6 +3372,43 @@ app.get('/prefs/:user', (request, response) => {
 			)
 	});
 })
+
+
+app.get('/status', async (request, response) => {
+	// Get the status of different parts of the ID/BFDB
+	let baseURL = "https://preprod-8080.id.loc.gov/authorities/<DATASET>/activitystreams/feed/1.json"
+
+	// Get the last update for Names & Subjects
+	let subjectResults = await fetch(baseURL.replace("<DATASET>", "subjects"), {
+		"headers": {
+			"accept": "application/json",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
+	let nameResults = await fetch(baseURL.replace("<DATASET>", "names"), {
+		"headers": {
+			"accept": "application/json",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
+	let names = await nameResults.json()
+	let subjects = await subjectResults.json()
+
+	let subjectLastUpdateDate = subjects.orderedItems[0].object.updated
+	let nameLastUpdateDate = names.orderedItems[0].object.updated
+
+	let updates = {'lastUpdateNames': nameLastUpdateDate, 'lastUpdateSubject': subjectLastUpdateDate}
+	try {
+		response.status(200).json({'status': {"updates": updates}});
+	} catch(err) {
+		let msg = "Failed to get status: " + err
+		response.status(500).json({'result': msg});
+	}
+});
 
 
 
