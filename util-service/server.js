@@ -3412,7 +3412,7 @@ async function getStatus(){
 
 app.get('/status', (request, response) => {
 	// Send the status information
-	let updates = {'lastUpdateNames': lastUpdateNames, 'lastUpdateSubject': lastUpdateSubjects}
+	let updates = {'lastUpdateNames': lastUpdateNames, 'lastUpdateSubjects': lastUpdateSubjects}
 
 	try {
 		response.status(200).json({'status': {"updates": updates}});
