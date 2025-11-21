@@ -90,6 +90,9 @@ let ageLimitForAllRecords = 15 //days
 let NACO_START = 2025700001
 let nacoIdObj = null
 
+let lastUpdateNames = null
+let lastUpdateSubjects = null
+
 const uri = 'mongodb://mongo:27017/';
 MongoClient.connect(uri, function(err, client) {
 
@@ -3373,9 +3376,10 @@ app.get('/prefs/:user', (request, response) => {
 	});
 })
 
+async function getStatus(){
+	console.log("GET STATUS")
 
-app.get('/status', async (request, response) => {
-	// Get the status of different parts of the ID/BFDB
+	// Get status information from ID/BFDB
 	let baseURL = "https://preprod-8080.id.loc.gov/authorities/<DATASET>/activitystreams/feed/1.json"
 
 	// Get the last update for Names & Subjects
@@ -3398,10 +3402,18 @@ app.get('/status', async (request, response) => {
 	let names = await nameResults.json()
 	let subjects = await subjectResults.json()
 
-	let subjectLastUpdateDate = subjects.orderedItems[0].object.updated
-	let nameLastUpdateDate = names.orderedItems[0].object.updated
+	lastUpdateNames = names.orderedItems[0].object.updated
+	lastUpdateSubjects = subjects.orderedItems[0].object.updated
 
-	let updates = {'lastUpdateNames': nameLastUpdateDate, 'lastUpdateSubject': subjectLastUpdateDate}
+	// repeat 15 minutes this so the data is current.
+	setTimeout(getStatus, 15*60*1000)
+}
+
+
+app.get('/status', (request, response) => {
+	// Send the status information
+	let updates = {'lastUpdateNames': lastUpdateNames, 'lastUpdateSubject': lastUpdateSubjects}
+
 	try {
 		response.status(200).json({'status': {"updates": updates}});
 	} catch(err) {
@@ -3409,6 +3421,9 @@ app.get('/status', async (request, response) => {
 		response.status(500).json({'result': msg});
 	}
 });
+
+// Call getStatus
+getStatus()
 
 
 
