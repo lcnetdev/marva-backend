@@ -3400,13 +3400,39 @@ async function getStatus(){
 	})
 
 	let names = await nameResults.json()
+	let mostRecentName = names.orderedItems[0].object.id
+	let mostRecentNameURL = mostRecentName.replace("id.loc.gov", "preprod-8080.id.loc.gov") + ".marcxml.xml"
+
+	let recentName = await fetch(mostRecentNameURL, {
+		"headers": {
+			"accept": "application/xml",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
 	let subjects = await subjectResults.json()
+	let recentNameXML = await recentName.text()
 
-	lastUpdateNames = names.orderedItems[0].object.updated
-	lastUpdateSubjects = subjects.orderedItems[0].object.updated
+	// The Names can be updated more often than once a day, so we'll check the 005 for the most recent record to get the
+	const pattern = /tag="005">(?<date>.*)<\//
+	let match = recentNameXML.match(pattern)
 
-	// repeat 15 minutes this so the data is current.
-	setTimeout(getStatus, 15*60*1000)
+	let date = match.groups.date
+	if (date.endsWith(".0")){
+		date = date.slice(0, -2)
+	}
+
+	let recentDateTime = new Date(date.replace(
+		/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/,
+		'$4:$5:$6 $2/$3/$1'
+	));
+
+	lastUpdateNames = recentDateTime.toLocaleString()
+	lastUpdateSubjects = subjects.orderedItems[0].object.updated.replace("-", "/")
+
+	// repeat 5 minutes this so the data is current.
+	setTimeout(getStatus, 5*60*1000)
 }
 
 
