@@ -3427,9 +3427,13 @@ async function getStatus(){
 		/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/,
 		'$4:$5:$6 $2/$3/$1'
 	));
+	let subjectDate = new Date(subjects.orderedItems[0].object.updated.replace(
+        /^(\d{4})(\d\d)(\d\d)$/,
+        '$2/$3/$1'
+    ))
 
 	lastUpdateNames = recentDateTime.toLocaleString()
-	lastUpdateSubjects = subjects.orderedItems[0].object.updated.replace("-", "/")
+	lastUpdateSubjects = subjectDate.toLocaleDateString()
 
 	// repeat 5 minutes this so the data is current.
 	setTimeout(getStatus, 5*60*1000)
