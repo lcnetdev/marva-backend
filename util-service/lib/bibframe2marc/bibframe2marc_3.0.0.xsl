@@ -23,7 +23,7 @@
   <xsl:variable name="xslProcessor">
     <xsl:value-of select="system-property('xsl:vendor')"/>
   </xsl:variable>
-  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v3.0-dev</xsl:variable>
+  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v3.0.0</xsl:variable>
   <xsl:variable name="df880script">
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>arab</lang>
@@ -3036,6 +3036,15 @@
               <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed bf:changeDate. Invalid datatype for 005.</xsl:message>
             </xsl:otherwise>
           </xsl:choose>
+        </xsl:when>
+      </xsl:choose>
+      <xsl:choose>
+        <xsl:when test="$pConversionAgency = 'DLC' and                 /rdf:RDF/bf:Instance/bf:carrier//@rdf:*[1] = 'http://id.loc.gov/vocabulary/carriers/cr' and                  contains(/rdf:RDF/bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/descsource']/rdfs:label, 'Description based on print version record')       ">
+          <marc:controlfield>
+            <xsl:attribute name="xml:space">preserve</xsl:attribute>
+            <xsl:attribute name="tag">006</xsl:attribute>
+            <xsl:value-of select="'m    |o  d |      '"/>
+          </marc:controlfield>
         </xsl:when>
       </xsl:choose>
       <xsl:apply-templates select="/rdf:RDF/bf:Instance" mode="generate-007">
@@ -35122,6 +35131,7 @@
       </xsl:for-each>
       <xsl:for-each select="bf:hasInstance/bf:Instance/bf:identifiedBy/*">
         <xsl:choose>
+          <xsl:when test="local-name()='Upc' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Upc'"/>
           <xsl:when test="local-name()='ReportNumber' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/ReportNumber'">
             <xsl:for-each select="rdf:value">
               <marc:subfield code="r">
@@ -35139,6 +35149,16 @@
           <xsl:when test="local-name()='Lccn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Lccn'">
             <xsl:variable name="vvLinkTagFromWork2-w">
               <xsl:value-of select="concat('(DLC)',rdf:value)"/>
+            </xsl:variable>
+            <xsl:if test="$vvLinkTagFromWork2-w != ''">
+              <marc:subfield code="w">
+                <xsl:value-of select="$vvLinkTagFromWork2-w"/>
+              </marc:subfield>
+            </xsl:if>
+          </xsl:when>
+          <xsl:when test="local-name()='OclcNumber' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/OclcNumber'">
+            <xsl:variable name="vvLinkTagFromWork2-w">
+              <xsl:value-of select="concat('(OCoLC)',rdf:value)"/>
             </xsl:variable>
             <xsl:if test="$vvLinkTagFromWork2-w != ''">
               <marc:subfield code="w">
