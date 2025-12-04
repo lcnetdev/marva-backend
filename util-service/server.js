@@ -1750,8 +1750,7 @@ app.get('/lccnnaco', function(request, response){
 
 
 app.get('/marva001/set/:set', function(request, response){
-
-
+	// Set marva001 manually. Value should not include "in0"
 	if (request.params.set){
 		let setTo = parseInt(request.params.set)
 
