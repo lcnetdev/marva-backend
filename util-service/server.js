@@ -89,6 +89,9 @@ let now = parseInt(new Date() / 1000)
 let ageLimitForAllRecords = 15 //days
 let NACO_START = 2025700001
 let nacoIdObj = null
+let marva001Obj = null
+
+let marva001_START = 1250000000
 
 const uri = 'mongodb://mongo:27017/';
 MongoClient.connect(uri, function(err, client) {
@@ -112,6 +115,23 @@ MongoClient.connect(uri, function(err, client) {
     	}else{
     		nacoIdObj = doc
     	}
+    })
+
+	db.collection('marva001').findOne({}).then(function(doc) {
+    	if(!doc){
+    		// no doc here means there is no collection, so insert our first number
+    		db.collection("marva001").insertOne({ id: marva001_START },
+	        	function(err, result) {
+	        		console.log("Inserted the first ID")
+	        		db.collection('marva001').findOne({}).then(function(doc) {
+	        			marva001Obj = doc
+	        		})
+	        })
+    	}else{
+    		marva001Obj = doc
+    	}
+
+		console.log("doc: ", doc)
     })
 
 	// User Preferences
@@ -1724,6 +1744,38 @@ app.get('/lccnnaco', function(request, response){
 		db.collection('lccnNACO').updateOne(
 		    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
 		    { $set: {id:nacoIdObj.id } }
+		);
+	})
+});
+
+app.get('/marva001', function(request, response){
+	let currentNumber = marva001Obj.id
+	const fullYear = new Date().getFullYear();
+	const currentYear = fullYear.toString().slice(-2);
+	let recordYear = String(currentNumber).slice(1,3)
+
+	// if the `year` < the value of currentNumber[1:2], resete to ...0001
+	if (recordYear < 27){
+		console.log("UPDATE MARVA 001 for year change")
+		marva001Obj.id = currentNumber + 10000000 // update the year
+		marva001Obj.id = Number(String(marva001Obj.id).slice(0, 3) + "0000000") // reset the number
+	}
+
+	let number = 'in0' + marva001Obj.id
+	// ++ the marva 001 id
+	marva001Obj.id++
+
+	console.log("marva001Obj: ", marva001Obj)
+
+	// send it
+	response.json({'marva001': number});
+
+	// update the database
+	MongoClient.connect(uri, function(err, client) {
+	    const db = client.db('bfe2');
+		db.collection('marva001').updateOne(
+		    {'_id': new mongo.ObjectID(marva001Obj['_id'])},
+		    { $set: {id:marva001Obj.id } }
 		);
 	})
 });
