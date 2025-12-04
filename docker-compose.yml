@@ -17,6 +17,8 @@ services:
       - ./tmp:/tmp
     env_file:
       - .env
+    depends_on:
+      - 'database'      
     restart: always
     # ports:
     #   - 5001:5001

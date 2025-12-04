@@ -91,7 +91,7 @@ let NACO_START = 2025700001
 let nacoIdObj = null
 
 const uri = 'mongodb://mongo:27017/';
-MongoClient.connect(uri, function(err, client) {
+MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, client) {
 
 	console.log("err", err)
 	console.log("client", client)
@@ -178,12 +178,27 @@ MongoClient.connect(uri, function(err, client) {
 
     db.collection('resourcesStaging').watch().on('change', data =>
     {
+        // Handle delete operations - remove from in-memory cache
+        if (data.operationType === 'delete') {
+            const deletedId = data.documentKey['_id'].toString();
+            // Find and remove from caches by _id
+            for (let eid in recsStageByEid) {
+                if (recsStageByEid[eid]._id && recsStageByEid[eid]._id.toString() === deletedId) {
+                    const user = recsStageByEid[eid].user;
+                    delete recsStageByEid[eid];
+                    if (user && recsStageByUser[user]) {
+                        delete recsStageByUser[user][eid];
+                    }
+                    break;
+                }
+            }
+            return;
+        }
 
         // get the doc
 				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
 				.then(function(doc) {
-        if(!doc)
-            throw new Error('No record found.');
+        if(!doc) return; // Document may have been deleted, skip silently
 
 			      // add it to the list or update it whatever
 		 				if (doc.index.eid){
@@ -242,12 +257,27 @@ MongoClient.connect(uri, function(err, client) {
 
     db.collection('resourcesProduction').watch().on('change', data =>
     {
+        // Handle delete operations - remove from in-memory cache
+        if (data.operationType === 'delete') {
+            const deletedId = data.documentKey['_id'].toString();
+            // Find and remove from caches by _id
+            for (let eid in recsProdByEid) {
+                if (recsProdByEid[eid]._id && recsProdByEid[eid]._id.toString() === deletedId) {
+                    const user = recsProdByEid[eid].user;
+                    delete recsProdByEid[eid];
+                    if (user && recsProdByUser[user]) {
+                        delete recsProdByUser[user][eid];
+                    }
+                    break;
+                }
+            }
+            return;
+        }
 
         // get the doc
 				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
 				.then(function(doc) {
-        if(!doc)
-            throw new Error('No record found.');
+        if(!doc) return; // Document may have been deleted, skip silently
 
 			      // add it to the list or update it whatever
 		 				if (doc.index.eid){
@@ -1537,8 +1567,203 @@ app.get('/allrecords/production', function(request, response){
 });
 
 
+app.get('/allrecords/production/stats', function(request, response){
+	MongoClient.connect(uri, function(err, client) {
+		if (err) {
+			return response.status(500).json({ error: 'Database connection failed' });
+		}
+
+		const db = client.db('bfe2');
+		const collection = db.collection('resourcesProduction');
+
+		// Use aggregation to compute stats server-side (avoids loading all docs into memory)
+		collection.aggregate([
+			{
+				$facet: {
+					totalCount: [{ $count: 'count' }],
+					withIndex: [
+						{ $match: { index: { $exists: true } } },
+						{ $count: 'count' }
+					],
+					byUser: [
+						{ $match: { 'index.user': { $exists: true } } },
+						{ $group: { _id: '$index.user', count: { $sum: 1 } } },
+						{ $sort: { count: -1 } }
+					],
+					byStatus: [
+						{ $match: { 'index.status': { $exists: true } } },
+						{ $group: { _id: '$index.status', count: { $sum: 1 } } }
+					],
+					dateRange: [
+						{ $match: { 'index.timestamp': { $exists: true } } },
+						{
+							$group: {
+								_id: null,
+								earliest: { $min: '$index.timestamp' },
+								latest: { $max: '$index.timestamp' }
+							}
+						}
+					],
+					sampleDoc: [
+						{ $match: { index: { $exists: true } } },
+						{ $limit: 1 },
+						{ $project: { index: 1, _id: 0 } }
+					]
+				}
+			}
+		]).toArray(function(err, results) {
+			client.close();
+
+			if (err) {
+				return response.status(500).json({ error: 'Aggregation failed', details: err.message });
+			}
+
+			const data = results[0];
+			const dateRange = data.dateRange[0] || {};
+
+			const stats = {
+				totalRecords: (data.totalCount[0] && data.totalCount[0].count) || 0,
+				recordsWithIndex: (data.withIndex[0] && data.withIndex[0].count) || 0,
+				users: {},
+				statuses: {},
+				dateRange: {
+					earliest: dateRange.earliest || null,
+					latest: dateRange.latest || null,
+					earliestDate: dateRange.earliest ? new Date(dateRange.earliest * 1000).toISOString() : null,
+					latestDate: dateRange.latest ? new Date(dateRange.latest * 1000).toISOString() : null
+				},
+				indexFieldsSample: (data.sampleDoc[0] && data.sampleDoc[0].index) ? Object.keys(data.sampleDoc[0].index) : []
+			};
+
+			data.byUser.forEach(function(u) {
+				stats.users[u._id] = u.count;
+			});
+
+			data.byStatus.forEach(function(s) {
+				stats.statuses[s._id] = s.count;
+			});
+
+			response.json(stats);
+		});
+	});
+});
+
+
 app.get('/logs/posts', function(request, response){
 	response.json(postLog);
+});
+
+
+// Cleanup job state (for async tracking)
+var cleanupJobStatus = {
+	running: false,
+	lastRun: null,
+	lastResult: null
+};
+
+app.get('/cleanup/old-records', function(request, response){
+	// Require confirmation param to prevent accidental triggering
+	if (request.query.confirm !== 'yes-delete-old-records') {
+		return response.status(400).json({
+			error: 'Missing or invalid confirmation parameter',
+			usage: 'GET /cleanup/old-records?confirm=yes-delete-old-records',
+			description: 'Deletes records older than 6 months from resourcesProduction and resourcesStaging, then compacts the database'
+		});
+	}
+
+	// Check if already running
+	if (cleanupJobStatus.running) {
+		return response.status(409).json({
+			error: 'Cleanup job already in progress',
+			startedAt: cleanupJobStatus.lastRun
+		});
+	}
+
+	// Mark as running and respond immediately
+	cleanupJobStatus.running = true;
+	cleanupJobStatus.lastRun = new Date().toISOString();
+	cleanupJobStatus.lastResult = null;
+
+	response.json({
+		message: 'Cleanup job started',
+		startedAt: cleanupJobStatus.lastRun,
+		checkStatus: 'GET /cleanup/old-records/status'
+	});
+
+	// Run cleanup asynchronously
+	const threeMonthsAgo = Math.floor(Date.now() / 1000) - (3 * 30 * 24 * 60 * 60);
+
+	MongoClient.connect(uri, function(err, client) {
+		if (err) {
+			cleanupJobStatus.running = false;
+			cleanupJobStatus.lastResult = { error: 'Database connection failed', details: err.message };
+			return;
+		}
+
+		const db = client.db('bfe2');
+		const result = {
+			production: { deleted: 0 },
+			staging: { deleted: 0 },
+			compacted: false,
+			completedAt: null,
+			error: null
+		};
+
+		// Delete old records from production
+		db.collection('resourcesProduction').deleteMany(
+			{ 'index.timestamp': { $lt: threeMonthsAgo } },
+			function(err, prodResult) {
+				if (err) {
+					result.production.error = err.message;
+				} else {
+					result.production.deleted = prodResult.deletedCount;
+				}
+
+				// Delete old records from staging
+				db.collection('resourcesStaging').deleteMany(
+					{ 'index.timestamp': { $lt: threeMonthsAgo } },
+					function(err, stageResult) {
+						if (err) {
+							result.staging.error = err.message;
+						} else {
+							result.staging.deleted = stageResult.deletedCount;
+						}
+
+						// Compact the database to reclaim disk space (force:true required for replica sets)
+						db.command({ compact: 'resourcesProduction', force: true }, function(err) {
+							if (err) {
+								result.production.compactError = err.message;
+							} else {
+								result.production.compacted = true;
+							}
+
+							db.command({ compact: 'resourcesStaging', force: true }, function(err) {
+								if (err) {
+									result.staging.compactError = err.message;
+								} else {
+									result.staging.compacted = true;
+									result.compacted = true;
+								}
+
+								result.completedAt = new Date().toISOString();
+								cleanupJobStatus.lastResult = result;
+								cleanupJobStatus.running = false;
+								client.close();
+							});
+						});
+					}
+				);
+			}
+		);
+	});
+});
+
+app.get('/cleanup/old-records/status', function(request, response){
+	response.json({
+		running: cleanupJobStatus.running,
+		lastRun: cleanupJobStatus.lastRun,
+		lastResult: cleanupJobStatus.lastResult
+	});
 });
 
 
