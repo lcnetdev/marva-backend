@@ -90,6 +90,9 @@ let ageLimitForAllRecords = 15 //days
 let NACO_START = 2025700001
 let nacoIdObj = null
 
+let lastUpdateNames = null
+let lastUpdateSubjects = null
+
 const uri = 'mongodb://mongo:27017/';
 MongoClient.connect(uri, function(err, client) {
 
@@ -2070,6 +2073,7 @@ app.post("/validate/:loc", async (request, response) => {
 	let endpoint = "/controllers/xqapi-validate-resource.xqy"
 	var url = "https://" + VALIDATIONURL.trim() + endpoint;
 
+	console.log("validating against: ", url)
 	let loc = request.params.loc
 	if (loc == 'stage'){
 		url = url.replace("preprod", "preprod-8299")
@@ -3371,6 +3375,85 @@ app.get('/prefs/:user', (request, response) => {
 			)
 	});
 })
+
+async function getStatus(){
+	console.log("GET STATUS")
+
+	// Get status information from ID/BFDB
+	let baseURL = "https://preprod-8080.id.loc.gov/authorities/<DATASET>/activitystreams/feed/1.json"
+
+	// Get the last update for Names & Subjects
+	let subjectResults = await fetch(baseURL.replace("<DATASET>", "subjects"), {
+		"headers": {
+			"accept": "application/json",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
+	let nameResults = await fetch(baseURL.replace("<DATASET>", "names"), {
+		"headers": {
+			"accept": "application/json",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
+	let names = await nameResults.json()
+	let mostRecentName = names.orderedItems[0].object.id
+	let mostRecentNameURL = mostRecentName.replace("id.loc.gov", "preprod-8080.id.loc.gov") + ".marcxml.xml"
+
+	let recentName = await fetch(mostRecentNameURL, {
+		"headers": {
+			"accept": "application/xml",
+			"cache-control": "no-cache",
+		},
+		"method": "GET"
+	})
+
+	let subjects = await subjectResults.json()
+	let recentNameXML = await recentName.text()
+
+	// The Names can be updated more often than once a day, so we'll check the 005 for the most recent record to get the
+	const pattern = /tag="005">(?<date>.*)<\//
+	let match = recentNameXML.match(pattern)
+
+	let date = match.groups.date
+	if (date.endsWith(".0")){
+		date = date.slice(0, -2)
+	}
+
+	let recentDateTime = new Date(date.replace(
+		/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/,
+		'$4:$5:$6 $2/$3/$1'
+	));
+	let subjectDate = new Date(subjects.orderedItems[0].object.updated.replace(
+        /^(\d{4})(\d\d)(\d\d)$/,
+        '$2/$3/$1'
+    ))
+
+	lastUpdateNames = recentDateTime.toLocaleString()
+	lastUpdateSubjects = subjectDate.toLocaleDateString()
+
+	// repeat 5 minutes this so the data is current.
+	setTimeout(getStatus, 5*60*1000)
+}
+
+
+app.get('/status', (request, response) => {
+	// Send the status information
+	let updates = {'lastUpdateNames': lastUpdateNames, 'lastUpdateSubjects': lastUpdateSubjects}
+
+	try {
+		response.status(200).json({'status': {"updates": updates}});
+	} catch(err) {
+		let msg = "Failed to get status: " + err
+		response.status(500).json({'result': msg});
+	}
+});
+
+// Call getStatus
+getStatus()
 
 
 
