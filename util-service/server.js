@@ -1748,14 +1748,49 @@ app.get('/lccnnaco', function(request, response){
 	})
 });
 
+
+app.get('/marva001/set/:set', function(request, response){
+
+
+	if (request.params.set){
+		let setTo = parseInt(request.params.set)
+
+
+		let correctlogin = 'INCORRECTLOGINVALUE'
+		if (request.headers.authorization){
+			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+		}
+		if (  request.headers.authorization !== `Basic ${correctlogin}`){
+			return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+		}
+		// Access granted...
+		// set marva001Obj because it is in memory and used to ++ and return before interacting with the db
+		marva001Obj.id = setTo
+
+		// update the database
+		MongoClient.connect(uri, function(err, client) {
+		    const db = client.db('bfe2');
+			let result = db.collection('marva001').updateOne(
+			    {'_id': new mongo.ObjectID(marva001Obj['_id'])},
+			    { $set: {id:marva001Obj.id } }
+			);
+		})
+		response.status(200).send('Set "marva001" to:' + setTo)
+	}else{
+		response.status(500).send('Missing param :set.')
+
+	}
+
+});
+
 app.get('/marva001', function(request, response){
 	let currentNumber = marva001Obj.id
 	const fullYear = new Date().getFullYear();
 	const currentYear = fullYear.toString().slice(-2);
 	let recordYear = String(currentNumber).slice(1,3)
 
-	// if the `year` < the value of currentNumber[1:2], resete to ...0001
-	if (recordYear < 27){
+	// if the `recordYear` < currentYear, update year and reset to ...0001
+	if (recordYear < currentYear){
 		console.log("UPDATE MARVA 001 for year change")
 		marva001Obj.id = currentNumber + 10000000 // update the year
 		marva001Obj.id = Number(String(marva001Obj.id).slice(0, 3) + "0000000") // reset the number
