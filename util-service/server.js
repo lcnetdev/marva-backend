@@ -1108,7 +1108,7 @@ app.post('/publish/staging', async (request, response) => {
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
-	console.log('posting to',url)
+	console.log('posting to', url)
 
 
 	let postLogEntry = {
@@ -1806,10 +1806,10 @@ app.get('/marva001', function(request, response){
 
 	// update the database
 	MongoClient.connect(uri, function(err, client) {
-	    const db = client.db('bfe2');
+	const db = client.db('bfe2');
 		db.collection('marva001').updateOne(
-		    {'_id': new mongo.ObjectID(marva001Obj['_id'])},
-		    { $set: {id:marva001Obj.id } }
+			{'_id': new mongo.ObjectID(marva001Obj['_id'])},
+			{ $set: {id:marva001Obj.id } }
 		);
 	})
 });
@@ -2904,7 +2904,7 @@ async function worldCatAuthToken(){
 		  tokenPath: '/token',
 		}
 	  };
-	console.log("credentials", credentials)
+	// console.log("credentials", credentials)
 	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
 	const oauth2 = new ClientCredentials(credentials);
