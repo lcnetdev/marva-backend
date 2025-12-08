@@ -1784,12 +1784,13 @@ app.get('/marva001/set/:set', function(request, response){
 
 app.get('/marva001', function(request, response){
 	let currentNumber = marva001Obj.id
+	const month = new Date().getMonth()
 	const fullYear = new Date().getFullYear();
 	const currentYear = fullYear.toString().slice(-2);
 	let recordYear = String(currentNumber).slice(1,3)
 
 	// if the `recordYear` < currentYear, update year and reset to ...0001
-	if (recordYear < currentYear){
+	if (month == 1 && recordYear < currentYear){
 		console.log("UPDATE MARVA 001 for year change")
 		marva001Obj.id = currentNumber + 10000000 // update the year
 		marva001Obj.id = Number(String(marva001Obj.id).slice(0, 3) + "0000000") // reset the number
