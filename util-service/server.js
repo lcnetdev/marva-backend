@@ -3452,6 +3452,28 @@ app.get('/status', (request, response) => {
 	}
 });
 
+app.get('/history/:bibid', async (request, response) => {
+	// Send the status information
+	let tmp = "preprod-ide.id.loc.gov" // PRODUCTIONccURL.trim()
+	let url = "https://" + tmp + '/metastory/api/history/bib?bibid=' + request.params.bibid
+
+	const resp = await fetch(url, {
+		headers: {
+			"Content-type": "application/xml",
+			'user-agent': 'marva-backend'
+		}
+	});
+
+	let history = await resp.text()
+
+	try {
+		response.status(200).json({'history': history});
+	} catch(err) {
+		let msg = "Failed to get status: " + err
+		response.status(500).json({'result': msg});
+	}
+});
+
 // Call getStatus
 getStatus()
 
