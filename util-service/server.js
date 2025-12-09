@@ -3475,7 +3475,7 @@ app.get('/history/:bibid', async (request, response) => {
 });
 
 // Call getStatus
-getStatus()
+// getStatus()
 
 
 
