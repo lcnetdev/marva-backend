@@ -27,7 +27,8 @@ var config = {
 
         var jsonObj = parser.parse(version.content);
         
-        console.log(jsonObj)
+        // console.log(jsonObj)
+        // console.log("jsonObj['rdf:RDF']['void:DatasetDescription']['lclocal:eid']",jsonObj['rdf:RDF']['void:DatasetDescription']['lclocal:eid'])
 
 
         if (jsonObj['rdf:RDF']){
