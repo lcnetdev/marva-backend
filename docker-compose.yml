@@ -102,6 +102,17 @@ services:
 
 
 
+  dctap-dancer:
+    build:
+      context: ./dctap-dancer
+      dockerfile: Dockerfile
+    container_name: 'dctap-dancer'
+    volumes:
+      - ./dctap-dancer/data:/app/data
+    restart: always
+    # ports:
+    #   - 3000:3000
+
   reverse:
     container_name: reverse
     hostname: reverse
