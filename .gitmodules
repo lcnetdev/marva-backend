@@ -4,3 +4,6 @@
 [submodule "scriptshifter"]
 	path = scriptshifter
 	url = https://github.com/lcnetdev/scriptshifter.git
+[submodule "dctap-dancer"]
+	path = dctap-dancer
+	url = https://github.com/thisismattmiller/dctap-dancer.git
