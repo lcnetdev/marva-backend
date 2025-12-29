@@ -3454,9 +3454,8 @@ app.get('/status', (request, response) => {
 });
 
 app.get('/history/:bibid', async (request, response) => {
+	console.log("-------------------\n-------------------\n-------------------\nGETTING HISTORY\n-------------------\n-------------------\n-------------------")
 	// Send the status information
-	console.log("HISTORY: ", RECORD_HISTORY)
-	console.log("env: ", process.env)
 	let base = RECORD_HISTORY.trim()
 	let url = "https://" + base + '/metastory/api/history/bib?bibid=' + request.params.bibid + '&serialization=jsonld'
 
@@ -3466,6 +3465,11 @@ app.get('/history/:bibid', async (request, response) => {
 			'user-agent': 'marva-backend'
 		}
 	});
+
+	if (resp.status == 500){
+		response.status(500).json({'error': 'Failed to fetch history'});
+		return
+	}
 
 	let history = await resp.text()
 
