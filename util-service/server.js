@@ -51,6 +51,7 @@ const PRODUCTIONNACOSTUB = process.env.PRODUCTIONNACOSTUB;
 const WC_CLIENTID = process.env.WC_CLIENTID;
 const WC_SECRET = process.env.WC_SECRET;
 const LCAP_SYNC = process.env.LCAP_SYNC;
+const RECORD_HISTORY = process.env.RECORD_HISTORY;
 
 
 // disable some features when running in bibframe.org mode
@@ -3454,8 +3455,10 @@ app.get('/status', (request, response) => {
 
 app.get('/history/:bibid', async (request, response) => {
 	// Send the status information
-	let tmp = "preprod-ide.id.loc.gov" // PRODUCTIONccURL.trim()
-	let url = "https://" + tmp + '/metastory/api/history/bib?bibid=' + request.params.bibid
+	console.log("HISTORY: ", RECORD_HISTORY)
+	console.log("env: ", process.env)
+	let base = RECORD_HISTORY.trim()
+	let url = "https://" + base + '/metastory/api/history/bib?bibid=' + request.params.bibid + '&serialization=jsonld'
 
 	const resp = await fetch(url, {
 		headers: {
