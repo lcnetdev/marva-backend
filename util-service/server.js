@@ -90,6 +90,9 @@ let now = parseInt(new Date() / 1000)
 let ageLimitForAllRecords = 15 //days
 let NACO_START = 2025700001
 let nacoIdObj = null
+let marva001Obj = null
+
+let marva001_START = 1250000000
 
 let lastUpdateNames = null
 let lastUpdateSubjects = null
@@ -116,6 +119,23 @@ MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, client) {
     	}else{
     		nacoIdObj = doc
     	}
+    })
+
+	db.collection('marva001').findOne({}).then(function(doc) {
+    	if(!doc){
+    		// no doc here means there is no collection, so insert our first number
+    		db.collection("marva001").insertOne({ id: marva001_START },
+	        	function(err, result) {
+	        		console.log("Inserted the first ID")
+	        		db.collection('marva001').findOne({}).then(function(doc) {
+	        			marva001Obj = doc
+	        		})
+	        })
+    	}else{
+    		marva001Obj = doc
+    	}
+
+		console.log("doc: ", doc)
     })
 
 	// User Preferences
@@ -1122,7 +1142,7 @@ app.post('/publish/staging', async (request, response) => {
 	console.log('------')
 	console.log(request.body.rdfxml)
 	console.log('------')
-	console.log('posting to',url)
+	console.log('posting to', url)
 
 
 	let postLogEntry = {
@@ -1953,6 +1973,73 @@ app.get('/lccnnaco', function(request, response){
 		db.collection('lccnNACO').updateOne(
 		    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
 		    { $set: {id:nacoIdObj.id } }
+		);
+	})
+});
+
+
+app.get('/marva001/set/:set', function(request, response){
+	// Set marva001 manually. Value should not include "in0"
+	if (request.params.set){
+		let setTo = parseInt(request.params.set)
+
+
+		let correctlogin = 'INCORRECTLOGINVALUE'
+		if (request.headers.authorization){
+			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+		}
+		if (  request.headers.authorization !== `Basic ${correctlogin}`){
+			return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+		}
+		// Access granted...
+		// set marva001Obj because it is in memory and used to ++ and return before interacting with the db
+		marva001Obj.id = setTo
+
+		// update the database
+		MongoClient.connect(uri, function(err, client) {
+		    const db = client.db('bfe2');
+			let result = db.collection('marva001').updateOne(
+			    {'_id': new mongo.ObjectID(marva001Obj['_id'])},
+			    { $set: {id:marva001Obj.id } }
+			);
+		})
+		response.status(200).send('Set "marva001" to:' + setTo)
+	}else{
+		response.status(500).send('Missing param :set.')
+
+	}
+
+});
+
+app.get('/marva001', function(request, response){
+	let currentNumber = marva001Obj.id
+	const month = new Date().getMonth()
+	const fullYear = new Date().getFullYear();
+	const currentYear = fullYear.toString().slice(-2);
+	let recordYear = String(currentNumber).slice(1,3)
+
+	// if the `recordYear` < currentYear, update year and reset to ...0001
+	if (month == 1 && recordYear < currentYear){
+		console.log("UPDATE MARVA 001 for year change")
+		marva001Obj.id = currentNumber + 10000000 // update the year
+		marva001Obj.id = Number(String(marva001Obj.id).slice(0, 3) + "0000000") // reset the number
+	}
+
+	let number = 'in0' + marva001Obj.id
+	// ++ the marva 001 id
+	marva001Obj.id++
+
+	console.log("marva001Obj: ", marva001Obj)
+
+	// send it
+	response.json({'marva001': number});
+
+	// update the database
+	MongoClient.connect(uri, function(err, client) {
+	const db = client.db('bfe2');
+		db.collection('marva001').updateOne(
+			{'_id': new mongo.ObjectID(marva001Obj['_id'])},
+			{ $set: {id:marva001Obj.id } }
 		);
 	})
 });
@@ -3048,7 +3135,7 @@ async function worldCatAuthToken(){
 		  tokenPath: '/token',
 		}
 	  };
-	console.log("credentials", credentials)
+	// console.log("credentials", credentials)
 	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
 	const oauth2 = new ClientCredentials(credentials);
