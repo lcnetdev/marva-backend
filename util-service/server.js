@@ -3454,7 +3454,6 @@ app.get('/status', (request, response) => {
 });
 
 app.get('/history/:bibid', async (request, response) => {
-	console.log("-------------------\n-------------------\n-------------------\nGETTING HISTORY\n-------------------\n-------------------\n-------------------")
 	// Send the status information
 	let base = RECORD_HISTORY.trim()
 	let url = "https://" + base + '/metastory/api/history/bib?bibid=' + request.params.bibid + '&serialization=jsonld'
