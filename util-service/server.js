@@ -26,7 +26,7 @@ var got
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
 
-const NodeCache = require( "node-cache" );
+const NodeCache = require("node-cache");
 const wcMarcCache = new NodeCache();
 const cacheTTL = 43200  //12 hours
 
@@ -59,20 +59,20 @@ const BFORGMODE = process.env.BFORGMODE;
 
 let postLog = []
 
-let editorVersion = {'major':0,'minor':0,'patch':0}
+let editorVersion = { 'major': 0, 'minor': 0, 'patch': 0 }
 
-try{
+try {
 	editorVersion = JSON.parse(fs.readFileSync('ver_prod.json', 'utf8'));
-}catch{
+} catch {
 	console.error("Missing ver_prod.json")
 }
 
 
-let editorVersionStage = {'major':0,'minor':0,'patch':0}
+let editorVersionStage = { 'major': 0, 'minor': 0, 'patch': 0 }
 
-try{
+try {
 	editorVersionStage = JSON.parse(fs.readFileSync('ver_stage.json', 'utf8'));
-}catch{
+} catch {
 	console.error("Missing ver_stage.json")
 }
 
@@ -97,233 +97,254 @@ let marva001_START = 1260000000
 let lastUpdateNames = null
 let lastUpdateSubjects = null
 
+function getEid(doc){
+	let targetID = false
+	if (doc.index.eid){
+		targetID = doc.index.eid
+	} else {
+		try {
+			targetID = doc.uri.replce("info:lc/", "") //fallback: get EID from URI if index.eid is abscent
+		} catch(err) {
+			console.log("Error getting eid: ", err)
+			targetID = false
+		}
+	}
+
+	return targetID
+}
+
 const uri = 'mongodb://mongo:27017/';
-MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, client) {
+MongoClient.connect(uri, { useUnifiedTopology: true }, function (err, client) {
 
 	console.log("err", err)
 	console.log("client", client)
 
-    const db = client.db('bfe2');
+	const db = client.db('bfe2');
 
 
-    db.collection('lccnNACO').findOne({}).then(function(doc) {
-    	if(!doc){
-    		// no doc here means there is no collection, so insert our first number
-    		db.collection("lccnNACO").insertOne({ id: NACO_START },
-	        	function(err, result) {
-	        		console.log("Inserted the first ID")
-	        		db.collection('lccnNACO').findOne({}).then(function(doc) {
-	        			nacoIdObj = doc
-	        		})
-	        })
-    	}else{
-    		nacoIdObj = doc
-    	}
-    })
+	db.collection('lccnNACO').findOne({}).then(function (doc) {
+		if (!doc) {
+			// no doc here means there is no collection, so insert our first number
+			db.collection("lccnNACO").insertOne({ id: NACO_START },
+				function (err, result) {
+					console.log("Inserted the first ID")
+					db.collection('lccnNACO').findOne({}).then(function (doc) {
+						nacoIdObj = doc
+					})
+				})
+		} else {
+			nacoIdObj = doc
+		}
+	})
 
-	db.collection('marva001').findOne({}).then(function(doc) {
-    	if(!doc){
-    		// no doc here means there is no collection, so insert our first number
-    		db.collection("marva001").insertOne({ id: marva001_START },
-	        	function(err, result) {
-	        		console.log("Inserted the first ID")
-	        		db.collection('marva001').findOne({}).then(function(doc) {
-	        			marva001Obj = doc
-	        		})
-	        })
-    	}else{
-    		marva001Obj = doc
-    	}
+	db.collection('marva001').findOne({}).then(function (doc) {
+		if (!doc) {
+			// no doc here means there is no collection, so insert our first number
+			db.collection("marva001").insertOne({ id: marva001_START },
+				function (err, result) {
+					console.log("Inserted the first ID")
+					db.collection('marva001').findOne({}).then(function (doc) {
+						marva001Obj = doc
+					})
+				})
+		} else {
+			marva001Obj = doc
+		}
 
 		console.log("doc: ", doc)
-    })
+	})
 
 	// User Preferences
-	db.collection('userPrefs').findOne({}).then(function(doc) {
-    	if(!doc){
-    		// no doc here means there is no collection, so insert our first number
-    		db.collection("userPrefs").insertOne({ user: 'test0123456789', prefs: ":)" },
-	        	function(err, result) {
-	        		console.log("Inserted the first ID")
-	        		db.collection('userPrefs').findOne({}).then(function(doc) {
-	        			userPref = doc
-	        		})
-	        })
-    	}
-    })
+	db.collection('userPrefs').findOne({}).then(function (doc) {
+		if (!doc) {
+			// no doc here means there is no collection, so insert our first number
+			db.collection("userPrefs").insertOne({ user: 'test0123456789', prefs: ":)" },
+				function (err, result) {
+					console.log("Inserted the first ID")
+					db.collection('userPrefs').findOne({}).then(function (doc) {
+						userPref = doc
+					})
+				})
+		}
+	})
 
-    // build an intial index
-    // db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
-    //     if(err){
-    //         throw err;
-    //     }
-    //     console.log(col);
-    //     docs.forEach(console.log);
-    // });
-
-
-
-    var cursor = db.collection('resourcesStaging').find({});
-
- 		cursor.forEach((doc)=>{
-
- 			if (doc.index){
-
- 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-		 			// console.log("-------doc")
-
-		 			// console.log(doc)
-		 			// console.log('doc.index.eid',doc.index.eid)
-		 			// console.log('doc.index.user',doc.index.user)
-
-
-	 				if (doc.index.eid){
-	 					recsStageByEid[doc.index.eid] = doc.index
-	 					recsStageByEid[doc.index.eid]._id = doc._id
-	 				}
-	 				if (doc.index.user && doc.index.eid){
-						let userName
-						try{
-							userName = doc.index.user.replace(/  /g, ' ');
-						}catch{
-							userName = doc.index.user
-						}
-	 					if (!recsStageByUser[userName]){
-	 						recsStageByUser[userName] = {}
-	 					}
-	 					recsStageByUser[userName][doc.index.eid] = doc.index
-	 					recsStageByUser[userName][doc.index.eid]._id = doc._id
-	 				}
-	 			}
- 			}
- 		})
-
-
-    db.collection('resourcesStaging').watch().on('change', data =>
-    {
-        // Handle delete operations - remove from in-memory cache
-        if (data.operationType === 'delete') {
-            const deletedId = data.documentKey['_id'].toString();
-            // Find and remove from caches by _id
-            for (let eid in recsStageByEid) {
-                if (recsStageByEid[eid]._id && recsStageByEid[eid]._id.toString() === deletedId) {
-                    const user = recsStageByEid[eid].user;
-                    delete recsStageByEid[eid];
-                    if (user && recsStageByUser[user]) {
-                        delete recsStageByUser[user][eid];
-                    }
-                    break;
-                }
-            }
-            return;
-        }
-
-        // get the doc
-				db.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-				.then(function(doc) {
-        if(!doc) return; // Document may have been deleted, skip silently
-
-			      // add it to the list or update it whatever
-		 				if (doc.index.eid){
-		 					recsStageByEid[doc.index.eid] = doc.index
-		 					recsStageByEid[doc.index.eid]._id = doc._id
-		 				}
-
-			      if (doc.index.user && doc.index.eid){
-		 					if (!recsStageByUser[doc.index.user]){
-		 						recsStageByUser[doc.index.user] = {}
-		 					}
-		 					recsStageByUser[doc.index.user][doc.index.eid] = doc.index
-		 					recsStageByUser[doc.index.user][doc.index.eid]._id = doc._id
-			      }
+	// build an intial index
+	// db.collection('resourcesStaging').find({}, {}, 0, 1, function (err, docs) {
+	//     if(err){
+	//         throw err;
+	//     }
+	//     console.log(col);
+	//     docs.forEach(console.log);
+	// });
 
 
 
+	var cursor = db.collection('resourcesStaging').find({});
 
-			  });
+	cursor.forEach((doc) => {
+
+		if (doc.index) {
+
+			if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords) {
+
+				// console.log("-------doc")
+
+				// console.log(doc)
+				// console.log('doc.index.eid',doc.index.eid)
+				// console.log('doc.index.user',doc.index.user)
+
+				let targetID = getEid(doc)
+
+				if (targetID) {
+					recsStageByEid[targetID] = doc.index
+					recsStageByEid[targetID]._id = doc._id
+				}
+				if (doc.index.user && targetID) {
+					let userName
+					try {
+						userName = doc.index.user.replace(/  /g, ' ');
+					} catch {
+						userName = doc.index.user
+					}
+					if (!recsStageByUser[userName]) {
+						recsStageByUser[userName] = {}
+					}
+					recsStageByUser[userName][targetID] = doc.index
+					recsStageByUser[userName][targetID]._id = doc._id
+				}
+			}
+		}
+	})
 
 
-    });
+	db.collection('resourcesStaging').watch().on('change', data => {
+		// Handle delete operations - remove from in-memory cache
+		if (data.operationType === 'delete') {
+			const deletedId = data.documentKey['_id'].toString();
+			// Find and remove from caches by _id
+			for (let eid in recsStageByEid) {
+				if (recsStageByEid[eid]._id && recsStageByEid[eid]._id.toString() === deletedId) {
+					const user = recsStageByEid[eid].user;
+					delete recsStageByEid[eid];
+					if (user && recsStageByUser[user]) {
+						delete recsStageByUser[user][eid];
+					}
+					break;
+				}
+			}
+			return;
+		}
+
+		// get the doc
+		db.collection('resourcesStaging').findOne({ '_id': new mongo.ObjectID(data.documentKey['_id']) })
+			.then(function (doc) {
+				if (!doc) return; // Document may have been deleted, skip silently
+
+				let targetID = getEid(doc)
+
+				// add it to the list or update it whatever
+				if (targetID) {
+					recsStageByEid[targetID] = doc.index
+					recsStageByEid[targetID]._id = doc._id
+				}
+
+				if (doc.index.user && targetID) {
+					if (!recsStageByUser[doc.index.user]) {
+						recsStageByUser[doc.index.user] = {}
+					}
+					recsStageByUser[doc.index.user][targetID] = doc.index
+					recsStageByUser[doc.index.user][targetID]._id = doc._id
+				}
 
 
 
 
-    var cursor = db.collection('resourcesProduction').find({});
-
- 		cursor.forEach((doc)=>{
-
- 			if (doc.index){
-
- 				if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords){
-
-	 				if (doc.index.eid){
-	 					recsProdByEid[doc.index.eid] = doc.index
-	 					recsProdByEid[doc.index.eid]._id = doc._id
-	 				}
-	 				if (doc.index.user && doc.index.eid){
-						let userName
-						try{
-							userName = doc.index.user.replace(/  /g, ' ');
-						}catch{
-							userName = doc.index.user
-						}
-	 					if (!recsProdByUser[userName]){
-	 						recsProdByUser[userName] = {}
-	 					}
-	 					recsProdByUser[userName][doc.index.eid] = doc.index
-	 					recsProdByUser[userName][doc.index.eid]._id = doc._id
-	 				}
-	 			}
- 			}
- 		})
+			});
 
 
-    db.collection('resourcesProduction').watch().on('change', data =>
-    {
-        // Handle delete operations - remove from in-memory cache
-        if (data.operationType === 'delete') {
-            const deletedId = data.documentKey['_id'].toString();
-            // Find and remove from caches by _id
-            for (let eid in recsProdByEid) {
-                if (recsProdByEid[eid]._id && recsProdByEid[eid]._id.toString() === deletedId) {
-                    const user = recsProdByEid[eid].user;
-                    delete recsProdByEid[eid];
-                    if (user && recsProdByUser[user]) {
-                        delete recsProdByUser[user][eid];
-                    }
-                    break;
-                }
-            }
-            return;
-        }
-
-        // get the doc
-				db.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(data.documentKey['_id'])})
-				.then(function(doc) {
-        if(!doc) return; // Document may have been deleted, skip silently
-
-			      // add it to the list or update it whatever
-		 				if (doc.index.eid){
-		 					recsProdByEid[doc.index.eid] = doc.index
-		 					recsProdByEid[doc.index.eid]._id = doc._id
-		 				}
-
-			      if (doc.index.user && doc.index.eid){
-		 					if (!recsProdByUser[doc.index.user]){
-		 						recsProdByUser[doc.index.user] = {}
-		 					}
-		 					recsProdByUser[doc.index.user][doc.index.eid] = doc.index
-		 					recsProdByUser[doc.index.user][doc.index.eid]._id = doc._id
-			      }
+	});
 
 
 
 
-			  });
+	var cursor = db.collection('resourcesProduction').find({});
+
+	cursor.forEach((doc) => {
+
+		if (doc.index) {
+
+			if ((now - doc.index.timestamp) / 60 / 60 / 24 <= ageLimitForAllRecords) {
+
+				let targetID = getEid(doc)
+
+				if (targetID) {
+					recsProdByEid[targetID] = doc.index
+					recsProdByEid[targetID]._id = doc._id
+				}
+				if (doc.index.user && targetID) {
+					let userName
+					try {
+						userName = doc.index.user.replace(/  /g, ' ');
+					} catch {
+						userName = doc.index.user
+					}
+					if (!recsProdByUser[userName]) {
+						recsProdByUser[userName] = {}
+					}
+					recsProdByUser[userName][targetID] = doc.index
+					recsProdByUser[userName][targetID]._id = doc._id
+				}
+			}
+		}
+	})
 
 
-    });
+	db.collection('resourcesProduction').watch().on('change', data => {
+		// Handle delete operations - remove from in-memory cache
+		if (data.operationType === 'delete') {
+			const deletedId = data.documentKey['_id'].toString();
+			// Find and remove from caches by _id
+			for (let eid in recsProdByEid) {
+				if (recsProdByEid[eid]._id && recsProdByEid[eid]._id.toString() === deletedId) {
+					const user = recsProdByEid[eid].user;
+					delete recsProdByEid[eid];
+					if (user && recsProdByUser[user]) {
+						delete recsProdByUser[user][eid];
+					}
+					break;
+				}
+			}
+			return;
+		}
+
+		// get the doc
+		db.collection('resourcesProduction').findOne({ '_id': new mongo.ObjectID(data.documentKey['_id']) })
+			.then(function (doc) {
+				if (!doc) return; // Document may have been deleted, skip silently
+
+				let targetID = getEid(doc)
+
+				// add it to the list or update it whatever
+				if (targetID) {
+					recsProdByEid[targetID] = doc.index
+					recsProdByEid[targetID]._id = doc._id
+				}
+
+				if (doc.index.user && targetID) {
+					if (!recsProdByUser[doc.index.user]) {
+						recsProdByUser[doc.index.user] = {}
+					}
+					recsProdByUser[doc.index.user][targetID] = doc.index
+					recsProdByUser[doc.index.user][targetID]._id = doc._id
+				}
+
+
+
+
+			});
+
+
+	});
 
 
 
@@ -340,9 +361,9 @@ var app = express();
 
 app.set('view engine', 'ejs');
 
-app.use(express.json({limit: '15mb'}));
+app.use(express.json({ limit: '15mb' }));
 
-app.use(cors({origin:true}))
+app.use(cors({ origin: true }))
 
 app.options('*', cors())
 
@@ -352,15 +373,15 @@ app.options('*', cors())
 //    response.send(request.body);    // echo the result back
 // });
 
-app.get('/', function(request, response) {
+app.get('/', function (request, response) {
 
 
 	let correctlogin
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 
@@ -369,39 +390,39 @@ app.get('/', function(request, response) {
 
 
 	// Access granted...
-	response.render('index', { editorVersionStage: editorVersionStage, editorVersion:editorVersion, config: config });
+	response.render('index', { editorVersionStage: editorVersionStage, editorVersion: editorVersion, config: config });
 
 });
 
 
 
-app.get('/version/editor', function(request, response){
-  response.json(editorVersion);
+app.get('/version/editor', function (request, response) {
+	response.json(editorVersion);
 });
 
-app.get('/version/editor/stage', function(request, response){
-  response.json(editorVersionStage);
+app.get('/version/editor/stage', function (request, response) {
+	response.json(editorVersionStage);
 });
 
-app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
+app.get('/version/set/:env/:major/:minor/:patch', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
 
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 
-	let ver = {"major":parseInt(request.params.major),"minor":parseInt(request.params.minor),"patch":parseInt(request.params.patch)}
+	let ver = { "major": parseInt(request.params.major), "minor": parseInt(request.params.minor), "patch": parseInt(request.params.patch) }
 
-	if (request.params.env == 'staging'){
-		fs.writeFileSync( 'ver_stage.json' , JSON.stringify(ver))
+	if (request.params.env == 'staging') {
+		fs.writeFileSync('ver_stage.json', JSON.stringify(ver))
 		editorVersionStage = ver
-	}else{
-		fs.writeFileSync( 'ver_prod.json' , JSON.stringify(ver))
+	} else {
+		fs.writeFileSync('ver_prod.json', JSON.stringify(ver))
 		editorVersion = ver
 	}
 
@@ -413,56 +434,58 @@ app.get('/version/set/:env/:major/:minor/:patch', function(request, response){
 
 
 
-app.get('/reports/stats/:year/:quarter', function(request, response){
+app.get('/reports/stats/:year/:quarter', function (request, response) {
 
 
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.STATSPW.replace(/"/g,'')}:${process.env.STATSPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.STATSPW.replace(/"/g, '')}:${process.env.STATSPW.replace(/"/g, '')}`).toString('base64')
 	}
-	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
-	}
-
-	var chunk = function(arr, chunkSize) {
-	  if (chunkSize <= 0) throw "Invalid chunk size";
-	  var R = [];
-	  for (var i=0,len=arr.length; i<len; i+=chunkSize)
-	    R.push(arr.slice(i,i+chunkSize));
-	  return R;
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
-	var isNumeric = function(num){
-	  return !isNaN(num)
+	var chunk = function (arr, chunkSize) {
+		if (chunkSize <= 0) throw "Invalid chunk size";
+		var R = [];
+		for (var i = 0, len = arr.length; i < len; i += chunkSize)
+			R.push(arr.slice(i, i + chunkSize));
+		return R;
 	}
 
-	var getDaysArray = function(start, end) {
-	    for(var arr=[],dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
-	        arr.push(new Date(dt));
-	    }
-	    return arr;
+	var isNumeric = function (num) {
+		return !isNaN(num)
+	}
+
+	var getDaysArray = function (start, end) {
+		for (var arr = [], dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+			arr.push(new Date(dt));
+		}
+		return arr;
 	};
 
 
-	if (request.params.quarter){
+	if (request.params.quarter) {
 		request.params.quarter = request.params.quarter.toUpperCase()
 	}
 
 
-	let qlookup = {'Q1': ['-10-01','-12-31'],
-	'Q2': ['-01-01','-03-31'],
-	'Q3': ['-04-01','-06-30'],
-	'Q4': ['-07-01','-09-30']}
+	let qlookup = {
+		'Q1': ['-10-01', '-12-31'],
+		'Q2': ['-01-01', '-03-31'],
+		'Q3': ['-04-01', '-06-30'],
+		'Q4': ['-07-01', '-09-30']
+	}
 
 
 
-	if (!isNumeric(request.params.year) || request.params.year.length < 4){
+	if (!isNumeric(request.params.year) || request.params.year.length < 4) {
 		response.send('Year does not look like  a year')
 		return false
 	}
 
-	if (!qlookup[request.params.quarter]){
+	if (!qlookup[request.params.quarter]) {
 		response.send('Year does not look like  a valid quarter')
 		return false
 	}
@@ -476,54 +499,54 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 	let end_time = new Date(end_date).getTime() / 1000
 
 
-  	let day_list = getDaysArray(new Date(start_date),new Date(end_date))
+	let day_list = getDaysArray(new Date(start_date), new Date(end_date))
 
 
-  	day_chunks = chunk(day_list,7)
+	day_chunks = chunk(day_list, 7)
 
-  	let report = {}
+	let report = {}
 
-  	for (let day_chunk of day_chunks){
-
-
-  		report[day_chunk[0].toISOString().split('T')[0]] = {
-  			// label: day_chunk[0].toISOString().split('T')[0],
-  			label: (day_chunk[0].getMonth() + 1) + '/' + day_chunk[0].getDate() + '/' + day_chunk[0].getFullYear(),
-  			days: day_chunk.map((d)=>{return d.toISOString().split('T')[0]}),
-  			users: {}
-  		}
-
-  	}
+	for (let day_chunk of day_chunks) {
 
 
-	MongoClient.connect(uri, function(err, client) {
+		report[day_chunk[0].toISOString().split('T')[0]] = {
+			// label: day_chunk[0].toISOString().split('T')[0],
+			label: (day_chunk[0].getMonth() + 1) + '/' + day_chunk[0].getDate() + '/' + day_chunk[0].getFullYear(),
+			days: day_chunk.map((d) => { return d.toISOString().split('T')[0] }),
+			users: {}
+		}
+
+	}
+
+
+	MongoClient.connect(uri, function (err, client) {
 
 		const db = client.db('bfe2');
 
 		var cursor = db.collection('resourcesProduction').find({});
 		let all_users = {}
-		cursor.forEach((doc)=>{
+		cursor.forEach((doc) => {
 
 
 			// only work on records built between our ranges
-			if (doc.index && doc.index.timestamp && doc.index.timestamp>=  start_time && doc.index.timestamp <= end_time){
+			if (doc.index && doc.index.timestamp && doc.index.timestamp >= start_time && doc.index.timestamp <= end_time) {
 
 
-				if (!all_users[doc.index.user]){
+				if (!all_users[doc.index.user]) {
 					all_users[doc.index.user] = 0
 				}
 
 
 
-				for (let key in report){
+				for (let key in report) {
 
-					for (let day of report[key].days){
-						if (doc.index.time.includes(day)){
+					for (let day of report[key].days) {
+						if (doc.index.time.includes(day)) {
 
 							// it contains one of the days, it belongs in this bucket
 
-							if (!report[key].users[doc.index.user]){
-								report[key].users[doc.index.user]=0
+							if (!report[key].users[doc.index.user]) {
+								report[key].users[doc.index.user] = 0
 							}
 
 							report[key].users[doc.index.user]++
@@ -546,7 +569,7 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 
 
-		}, function(err){
+		}, function (err) {
 
 			let all_users_alpha = Object.keys(all_users).sort()
 
@@ -555,25 +578,25 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 
 			let csvResults = `${request.params.year}${request.params.quarter} Editor Stats, By Cataloger\n`
 
-			csvResults = csvResults +'Cataloger,' + Object.keys(report).map((k)=>{ return report[k].label }).join(',') + ',Created Totals\n'
+			csvResults = csvResults + 'Cataloger,' + Object.keys(report).map((k) => { return report[k].label }).join(',') + ',Created Totals\n'
 
 
 
 
 
-			for (let u of all_users_alpha){
+			for (let u of all_users_alpha) {
 
 				let row = [u]
 
-				for (let key in report){
+				for (let key in report) {
 
 					// did they have activity for this week
-					if (report[key].users[u]){
+					if (report[key].users[u]) {
 						row.push(report[key].users[u])
 
 						// add to the tottal
-						all_users[u] = all_users[u] +  report[key].users[u]
-					}else{
+						all_users[u] = all_users[u] + report[key].users[u]
+					} else {
 						row.push(0)
 					}
 
@@ -585,17 +608,17 @@ app.get('/reports/stats/:year/:quarter', function(request, response){
 				row.push(all_users[u])
 
 
-				csvResults = csvResults + row.join(',') +'\n'
+				csvResults = csvResults + row.join(',') + '\n'
 
 			}
 
 			let totals = ['Created Total']
 			let all_total = 0
-			for (let key in report){
+			for (let key in report) {
 
 				let t = 0
-				for (let u in report[key].users){
-					t = t +  report[key].users[u]
+				for (let u in report[key].users) {
+					t = t + report[key].users[u]
 					all_total = all_total + report[key].users[u]
 				}
 
@@ -630,94 +653,94 @@ app.post('/delete/:stage/:user/:eid', (request, response) => {
 
 	let result = false
 
-	if (request.params.stage == 'staging'){
-		if (recsStageByUser[request.params.user]){
-			if (recsStageByUser[request.params.user][request.params.eid]){
+	if (request.params.stage == 'staging') {
+		if (recsStageByUser[request.params.user]) {
+			if (recsStageByUser[request.params.user][request.params.eid]) {
 				recsStageByUser[request.params.user][request.params.eid].status = 'deleted'
 				result = true
 			}
 		}
-		if (recsStageByEid[request.params.eid]){
+		if (recsStageByEid[request.params.eid]) {
 			recsStageByEid[request.params.eid].status = 'deleted'
 			result = true
 		}
 
-	    MongoClient.connect(uri, function(err, db) {
-	        if (err) throw err;
-	        var dbo = db.db("bfe2");
-	        if (err) throw err;
-			dbo.collection('resourcesStaging').findOne({'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)})
-			.then(function(doc) {
-				if(!doc) throw new Error('No record found.');
-				doc.index.status='deleted'
-				dbo.collection('resourcesStaging').updateOne(
-				    {'_id':new mongo.ObjectID(recsStageByEid[request.params.eid]._id)},
-				    { $set: doc }
+		MongoClient.connect(uri, function (err, db) {
+			if (err) throw err;
+			var dbo = db.db("bfe2");
+			if (err) throw err;
+			dbo.collection('resourcesStaging').findOne({ '_id': new mongo.ObjectID(recsStageByEid[request.params.eid]._id) })
+				.then(function (doc) {
+					if (!doc) throw new Error('No record found.');
+					doc.index.status = 'deleted'
+					dbo.collection('resourcesStaging').updateOne(
+						{ '_id': new mongo.ObjectID(recsStageByEid[request.params.eid]._id) },
+						{ $set: doc }
 
-				);
-			});
-	    });
-
-
+					);
+				});
+		});
 
 
 
-	}else{
-		if (recsProdByUser[request.params.user]){
-			if (recsProdByUser[request.params.user][request.params.eid]){
+
+
+	} else {
+		if (recsProdByUser[request.params.user]) {
+			if (recsProdByUser[request.params.user][request.params.eid]) {
 				recsProdByUser[request.params.user][request.params.eid].status = 'deleted'
 				result = true
 			}
 		}
-		if (recsProdByEid[request.params.eid]){
+		if (recsProdByEid[request.params.eid]) {
 			recsProdByEid[request.params.eid].status = 'deleted'
 			result = true
 		}
 
 		// POTENTAIL ERROR HERE, IF THE RECORD IS NOT iN THE recsProdByEid object becase it is > 2weeks
-	    MongoClient.connect(uri, function(err, db) {
-	        if (err) throw err;
-	        var dbo = db.db("bfe2");
-	        if (err) throw err;
-			dbo.collection('resourcesProduction').findOne({'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)})
-			.then(function(doc) {
-				if(!doc) throw new Error('No record found.');
-				doc.index.status='deleted'
-				dbo.collection('resourcesProduction').updateOne(
-				    {'_id':new mongo.ObjectID(recsProdByEid[request.params.eid]._id)},
-				    { $set: doc }
+		MongoClient.connect(uri, function (err, db) {
+			if (err) throw err;
+			var dbo = db.db("bfe2");
+			if (err) throw err;
+			dbo.collection('resourcesProduction').findOne({ '_id': new mongo.ObjectID(recsProdByEid[request.params.eid]._id) })
+				.then(function (doc) {
+					if (!doc) throw new Error('No record found.');
+					doc.index.status = 'deleted'
+					dbo.collection('resourcesProduction').updateOne(
+						{ '_id': new mongo.ObjectID(recsProdByEid[request.params.eid]._id) },
+						{ $set: doc }
 
-				);
-			});
-	    });
+					);
+				});
+		});
 
 
 
 	}
 
 
-	response.json({'result':result});
+	response.json({ 'result': result });
 
 
 })
 
 app.post('/error/report', (request, response) => {
 
-    MongoClient.connect(uri, function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
-        // turn it back into a string for storage because mongo is fusssy about key IDs
-        request.body.activeProfile = JSON.stringify(request.body.activeProfile)
-        dbo.collection("errorReports").insertOne(request.body,
-        function(err, result) {
-            if (err) {
-            	response.json({'result':false,'error':err});
-            }
-            response.json({'result':true,'error':err});
-            db.close();
-        });
-    });
+		// turn it back into a string for storage because mongo is fusssy about key IDs
+		request.body.activeProfile = JSON.stringify(request.body.activeProfile)
+		dbo.collection("errorReports").insertOne(request.body,
+			function (err, result) {
+				if (err) {
+					response.json({ 'result': false, 'error': err });
+				}
+				response.json({ 'result': true, 'error': err });
+				db.close();
+			});
+	});
 });
 
 
@@ -725,21 +748,21 @@ app.get('/errordoc/:hash', (request, response) => {
 
 	let found = false
 	fs.readdirSync('/tmp/marva_error_reports/').forEach(file => {
-		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")){
+		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")) {
 
 
-			let txt = fs.readFileSync('/tmp/marva_error_reports/'+file,{encoding:'utf8', flag:'r'})
-			if (fs.existsSync('/tmp/marva_error_reports/'+file.replace('.txt','.json'))){
-				txt = txt + '-------------------------------------\n'+fs.readFileSync('/tmp/marva_error_reports/'+file.replace('.txt','.json'),{encoding:'utf8', flag:'r'})
+			let txt = fs.readFileSync('/tmp/marva_error_reports/' + file, { encoding: 'utf8', flag: 'r' })
+			if (fs.existsSync('/tmp/marva_error_reports/' + file.replace('.txt', '.json'))) {
+				txt = txt + '-------------------------------------\n' + fs.readFileSync('/tmp/marva_error_reports/' + file.replace('.txt', '.json'), { encoding: 'utf8', flag: 'r' })
 			}
 
 
 			response.type('text/plain').status(200).send(txt);
-			found=true
+			found = true
 		}
 	})
 
-	if (!found){
+	if (!found) {
 		response.status(404).send('not found')
 	}
 });
@@ -749,14 +772,14 @@ app.get('/errorlog', (request, response) => {
 	let files = {}
 
 	fs.readdirSync('/tmp/marva_error_reports/').forEach(file => {
-	  let s = file.split('_')
-	  files[s[0]] = file
+		let s = file.split('_')
+		files[s[0]] = file
 	})
 
 	let keys = Object.keys(files).sort().reverse().slice(0, 50);
 
 	let names = {}
-	for (let k of keys){
+	for (let k of keys) {
 
 		names[crypto.createHash('md5').update(`${files[k]}`).digest("hex")] = files[k]
 
@@ -771,14 +794,14 @@ app.get('/errorlog', (request, response) => {
 app.post('/errorlog', (request, response) => {
 
 
-	if (!fs.existsSync('/tmp/marva_error_reports/')){
+	if (!fs.existsSync('/tmp/marva_error_reports/')) {
 		fs.mkdirSync('/tmp/marva_error_reports/');
 	}
 
-	let filename = request.body.filename.replace(/\//g,'')
+	let filename = request.body.filename.replace(/\//g, '')
 
 	fs.writeFileSync(`/tmp/marva_error_reports/${filename}`, request.body.log);
-	fs.writeFileSync(`/tmp/marva_error_reports/${filename.replace('.txt','.json')}`, request.body.profile);
+	fs.writeFileSync(`/tmp/marva_error_reports/${filename.replace('.txt', '.json')}`, request.body.profile);
 
 	response.status(200).send('ok');
 
@@ -789,14 +812,14 @@ app.get('/sourcelog/:hash', (request, response) => {
 
 	let found = false
 	fs.readdirSync('/tmp/marva_source_log/').forEach(file => {
-		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")){
+		if (request.params.hash == crypto.createHash('md5').update(file).digest("hex")) {
 
-			response.type('text/plain').status(200).send(fs.readFileSync('/tmp/marva_source_log/'+file,{encoding:'utf8', flag:'r'}));
-			found=true
+			response.type('text/plain').status(200).send(fs.readFileSync('/tmp/marva_source_log/' + file, { encoding: 'utf8', flag: 'r' }));
+			found = true
 		}
 	})
 
-	if (!found){
+	if (!found) {
 		response.status(404).send('not found')
 	}
 });
@@ -806,14 +829,14 @@ app.get('/sourcelog', (request, response) => {
 	let files = {}
 
 	fs.readdirSync('/tmp/marva_source_log/').forEach(file => {
-	  let s = file.split('_')
-	  files[s[0]] = file
+		let s = file.split('_')
+		files[s[0]] = file
 	})
 
 	let keys = Object.keys(files).sort().reverse().slice(0, 100);
 
 	let names = {}
-	for (let k of keys){
+	for (let k of keys) {
 
 		names[crypto.createHash('md5').update(`${files[k]}`).digest("hex")] = files[k]
 
@@ -828,7 +851,7 @@ app.get('/sourcelog', (request, response) => {
 app.post('/sourcelog', (request, response) => {
 
 
-	if (!fs.existsSync('/tmp/marva_source_log/')){
+	if (!fs.existsSync('/tmp/marva_source_log/')) {
 		fs.mkdirSync('/tmp/marva_source_log/');
 	}
 
@@ -858,64 +881,64 @@ app.post('/sourcelog', (request, response) => {
 
 app.get('/error/report', (request, response) => {
 
-    MongoClient.connect(uri, function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
-		    var cursor = dbo.collection('errorReports').find({});
-		    let results = []
-		 		cursor.forEach((doc)=>{
-		 			results.push({id:doc._id,eId:doc.eId,desc:doc.desc,contact:doc.contact})
-		 		}, function(err) {
-			 		response.json(results.reverse())
-				})
+	MongoClient.connect(uri, function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
+		var cursor = dbo.collection('errorReports').find({});
+		let results = []
+		cursor.forEach((doc) => {
+			results.push({ id: doc._id, eId: doc.eId, desc: doc.desc, contact: doc.contact })
+		}, function (err) {
+			response.json(results.reverse())
+		})
 
 
-    });
+	});
 });
 
 app.get('/error/:errorId', (request, response) => {
 
-		try{
-			new mongo.ObjectID(request.params.errorId)
-		}catch{
-			response.json(false);
-			return false
-		}
+	try {
+		new mongo.ObjectID(request.params.errorId)
+	} catch {
+		response.json(false);
+		return false
+	}
 
 
 
-    MongoClient.connect(uri, function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
-				dbo.collection('errorReports').findOne({'_id':new mongo.ObjectID(request.params.errorId)})
-				.then(function(doc) {
+		dbo.collection('errorReports').findOne({ '_id': new mongo.ObjectID(request.params.errorId) })
+			.then(function (doc) {
 
-					response.type("application/json");
-
-
-					if(!doc){
-						response.json(false);
-					}else{
+				response.type("application/json");
 
 
-						if (request.query.download){
-							response.attachment(`${doc.eId}.json`);
-							doc = JSON.parse(doc.activeProfile)
-							response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
-
-						}else{
-							doc = JSON.parse(doc.activeProfile)
-
-							response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
-
-						}
+				if (!doc) {
+					response.json(false);
+				} else {
 
 
+					if (request.query.download) {
+						response.attachment(`${doc.eId}.json`);
+						doc = JSON.parse(doc.activeProfile)
+						response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
+
+					} else {
+						doc = JSON.parse(doc.activeProfile)
+
+						response.type('json').send(JSON.stringify(doc, null, 2) + '\n');
 
 					}
-				});
-    });
+
+
+
+				}
+			});
+	});
 });
 
 
@@ -934,7 +957,7 @@ app.post('/publish/production', async (request, response) => {
 
 	let endpoint = "/controllers/ingest/bf-bib.xqy"
 
-	if (request.body.hub === true){
+	if (request.body.hub === true) {
 		endpoint = "/controllers/ingest/bf-hub.xqy"
 	}
 
@@ -954,12 +977,12 @@ app.post('/publish/production', async (request, response) => {
 	}
 
 
-	try{
+	try {
 
 		const postResponse = await got.post(url, {
 			body: rdfxml,
-			username:MLUSER,
-			password:MLPASS,
+			username: MLUSER,
+			password: MLPASS,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -972,17 +995,17 @@ app.post('/publish/production', async (request, response) => {
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let postStatus = {"status":"published"}
+		let postStatus = { "status": "published" }
 
-		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
+			postStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 		let postLocation = null
-		if (postResponse.headers && postResponse.headers.location){
-			postLocation=postResponse.headers.location
+		if (postResponse.headers && postResponse.headers.location) {
+			postLocation = postResponse.headers.location
 		}
 
 
@@ -992,7 +1015,7 @@ app.post('/publish/production', async (request, response) => {
 			//"objid": data.objid,
 			// "lccn": lccn,
 			publish: postStatus,
-			postLocation:postLocation
+			postLocation: postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -1001,34 +1024,34 @@ app.post('/publish/production', async (request, response) => {
 
 
 
-	}catch(err){
+	} catch (err) {
 
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.response.statusCode
+		postLogEntry['postingStatusCode'] = err.response.statusCode
 		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 
 		errString = JSON.stringify(err.response.body)
 		let replace = `${MLUSER}|${MLPASS}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		errString = JSON.parse(errString)
 
 
 
 		resp_data = {
-				"name": request.body.name,
-				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": errString }
-			}
+			"name": request.body.name,
+			"objid": "objid",
+			"publish": { "status": "error", "server": url, "message": errString }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 
@@ -1072,12 +1095,12 @@ app.post('/publish/production', async (request, response) => {
 	//         }
 
 	// 		let resp_data = {
-    //             name: request.body.name,
-    //             // "url": resources + name,
-    //             //"objid": data.objid,
-    //             // "lccn": lccn,
-    //             publish: postStatus
-    //         }
+	//             name: request.body.name,
+	//             // "url": resources + name,
+	//             //"objid": data.objid,
+	//             // "lccn": lccn,
+	//             publish: postStatus
+	//         }
 
 
 	//         response.set('Content-Type', 'application/json');
@@ -1133,7 +1156,7 @@ app.post('/publish/staging', async (request, response) => {
 
 	let endpoint = "/controllers/ingest/bf-bib.xqy"
 
-	if (request.body.hub === true){
+	if (request.body.hub === true) {
 		endpoint = "/controllers/ingest/bf-hub.xqy"
 		console.log('using Hub END POInT')
 	}
@@ -1153,12 +1176,12 @@ app.post('/publish/staging', async (request, response) => {
 
 	}
 
-	try{
+	try {
 
 		const postResponse = await got.post(url, {
 			body: rdfxml,
-			username:MLUSERSTAGE,
-			password:MLPASSSTAGE,
+			username: MLUSERSTAGE,
+			password: MLPASSSTAGE,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -1171,17 +1194,17 @@ app.post('/publish/staging', async (request, response) => {
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let postStatus = {"status":"published"}
+		let postStatus = { "status": "published" }
 
-		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
+			postStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 		let postLocation = null
-		if (postResponse.headers && postResponse.headers.location){
-			postLocation=postResponse.headers.location
+		if (postResponse.headers && postResponse.headers.location) {
+			postLocation = postResponse.headers.location
 		}
 
 		let resp_data = {
@@ -1190,7 +1213,7 @@ app.post('/publish/staging', async (request, response) => {
 			//"objid": data.objid,
 			// "lccn": lccn,
 			publish: postStatus,
-			postLocation:postLocation
+			postLocation: postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -1199,14 +1222,14 @@ app.post('/publish/staging', async (request, response) => {
 
 
 
-	}catch(err){
+	} catch (err) {
 		console.error(err)
 
 
 
 		errString = JSON.stringify(err)
 		let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		err = JSON.parse(errString)
 
@@ -1216,21 +1239,21 @@ app.post('/publish/staging', async (request, response) => {
 		console.log("ERror code", err.StatusCodeError)
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.StatusCodeError
+		postLogEntry['postingStatusCode'] = err.StatusCodeError
 		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 
 		resp_data = {
-				"name": request.body.name,
-				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": err.response.body }
-			}
+			"name": request.body.name,
+			"objid": "objid",
+			"publish": { "status": "error", "server": url, "message": err.response.body }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 
@@ -1276,12 +1299,12 @@ app.post('/publish/staging', async (request, response) => {
 	//         }
 
 	// 		let resp_data = {
-    //             name: request.body.name,
-    //             // "url": resources + name,
-    //             //"objid": data.objid,
-    //             // "lccn": lccn,
-    //             publish: postStatus
-    //         }
+	//             name: request.body.name,
+	//             // "url": resources + name,
+	//             //"objid": data.objid,
+	//             // "lccn": lccn,
+	//             publish: postStatus
+	//         }
 
 
 	//         response.set('Content-Type', 'application/json');
@@ -1338,7 +1361,7 @@ app.post('/nacostub/staging', async (request, response) => {
 	console.log('------')
 	console.log(request.body.marcxml)
 	console.log('------')
-	console.log('posting to',url)
+	console.log('posting to', url)
 
 
 	let postLogEntry = {
@@ -1349,12 +1372,12 @@ app.post('/nacostub/staging', async (request, response) => {
 
 	}
 
-	try{
+	try {
 
 		const postResponse = await got.post(url, {
 			body: marcxml,
-			username:MLUSERSTAGE,
-			password:MLPASSSTAGE,
+			username: MLUSERSTAGE,
+			password: MLPASSSTAGE,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -1367,17 +1390,17 @@ app.post('/nacostub/staging', async (request, response) => {
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		// postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let postStatus = {"status":"published"}
+		let postStatus = { "status": "published" }
 
-		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
+			postStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 		let postLocation = null
-		if (postResponse.headers && postResponse.headers.location){
-			postLocation=postResponse.headers.location
+		if (postResponse.headers && postResponse.headers.location) {
+			postLocation = postResponse.headers.location
 		}
 
 		let resp_data = {
@@ -1386,7 +1409,7 @@ app.post('/nacostub/staging', async (request, response) => {
 			//"objid": data.objid,
 			// "lccn": lccn,
 			publish: postStatus,
-			postLocation:postLocation
+			postLocation: postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -1395,25 +1418,25 @@ app.post('/nacostub/staging', async (request, response) => {
 
 
 
-	}catch(err){
+	} catch (err) {
 		console.error(err)
 
 		let errorMessage = "No Message"
 
-		if (err && err.response){
+		if (err && err.response) {
 			console.log("err response:")
 			console.log(err.response)
-			if (err.response.body){
-				errorMessage=err.response.body
+			if (err.response.body) {
+				errorMessage = err.response.body
 			}
-		}else{
+		} else {
 			console.log("No Error response!")
 		}
 
 
 		errString = JSON.stringify(err)
 		let replace = `${MLUSERSTAGE}|${MLPASSSTAGE}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		err = JSON.parse(errString)
 
@@ -1425,21 +1448,21 @@ app.post('/nacostub/staging', async (request, response) => {
 
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
+		postLogEntry['postingStatusCode'] = (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
 		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body"
 		// postLogEntry['postingBodyName'] = request.body.name
 		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 
 		resp_data = {
-				"name": request.body.name,
-				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
-			}
+			"name": request.body.name,
+			"objid": "objid",
+			"publish": { "status": "error", "server": url, "message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 
@@ -1464,7 +1487,7 @@ app.post('/nacostub/production', async (request, response) => {
 	console.log('------')
 	console.log(request.body.marcxml)
 	console.log('------')
-	console.log('posting to',url)
+	console.log('posting to', url)
 
 
 	let postLogEntry = {
@@ -1475,12 +1498,12 @@ app.post('/nacostub/production', async (request, response) => {
 
 	}
 
-	try{
+	try {
 
 		const postResponse = await got.post(url, {
 			body: marcxml,
-			username:MLUSER,
-			password:MLPASS,
+			username: MLUSER,
+			password: MLPASS,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -1493,17 +1516,17 @@ app.post('/nacostub/production', async (request, response) => {
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		// postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let postStatus = {"status":"published"}
+		let postStatus = { "status": "published" }
 
-		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
+			postStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 		let postLocation = null
-		if (postResponse.headers && postResponse.headers.location){
-			postLocation=postResponse.headers.location
+		if (postResponse.headers && postResponse.headers.location) {
+			postLocation = postResponse.headers.location
 		}
 
 		let resp_data = {
@@ -1512,7 +1535,7 @@ app.post('/nacostub/production', async (request, response) => {
 			//"objid": data.objid,
 			// "lccn": lccn,
 			publish: postStatus,
-			postLocation:postLocation
+			postLocation: postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -1521,25 +1544,25 @@ app.post('/nacostub/production', async (request, response) => {
 
 
 
-	}catch(err){
+	} catch (err) {
 		console.error(err)
 
 		let errorMessage = "No Message"
 
-		if (err && err.response){
+		if (err && err.response) {
 			console.log("err response:")
 			console.log(err.response)
-			if (err.response.body){
-				errorMessage=err.response.body
+			if (err.response.body) {
+				errorMessage = err.response.body
 			}
-		}else{
+		} else {
 			console.log("No Error response!")
 		}
 
 
 		errString = JSON.stringify(err)
 		let replace = `${MLUSER}|${MLPASS}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		err = JSON.parse(errString)
 
@@ -1551,21 +1574,21 @@ app.post('/nacostub/production', async (request, response) => {
 
 
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
+		postLogEntry['postingStatusCode'] = (err && err.StatusCodeError) ? err.StatusCodeError : "No err.StatusCodeError"
 		postLogEntry['postingBodyResponse'] = (err && err.response && err.response.body) ? err.response.body : "no err.response.body"
 		// postLogEntry['postingBodyName'] = request.body.name
 		// postLogEntry['postingEid'] = request.body.eid
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 
 		resp_data = {
-				"name": request.body.name,
-				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
-			}
+			"name": request.body.name,
+			"objid": "objid",
+			"publish": { "status": "error", "server": url, "message": (err && err.response && err.response.body) ? err.response.body : "No body text?", "errorMessage": errorMessage }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 
@@ -1577,22 +1600,22 @@ app.post('/nacostub/production', async (request, response) => {
 
 });
 
-app.get('/myrecords/production/:user', function(request, response){
+app.get('/myrecords/production/:user', function (request, response) {
 	// console.log('recsProdByUser',recsProdByUser)
-	if (request.params.user){
+	if (request.params.user) {
 		response.json(recsProdByUser[request.params.user]);
-	}else{
+	} else {
 		response.json({});
 	}
 });
 
-app.get('/allrecords/production', function(request, response){
+app.get('/allrecords/production', function (request, response) {
 	response.json(recsProdByEid);
 });
 
 
-app.get('/allrecords/production/stats', function(request, response){
-	MongoClient.connect(uri, function(err, client) {
+app.get('/allrecords/production/stats', function (request, response) {
+	MongoClient.connect(uri, function (err, client) {
 		if (err) {
 			return response.status(500).json({ error: 'Database connection failed' });
 		}
@@ -1635,7 +1658,7 @@ app.get('/allrecords/production/stats', function(request, response){
 					]
 				}
 			}
-		]).toArray(function(err, results) {
+		]).toArray(function (err, results) {
 			client.close();
 
 			if (err) {
@@ -1659,11 +1682,11 @@ app.get('/allrecords/production/stats', function(request, response){
 				indexFieldsSample: (data.sampleDoc[0] && data.sampleDoc[0].index) ? Object.keys(data.sampleDoc[0].index) : []
 			};
 
-			data.byUser.forEach(function(u) {
+			data.byUser.forEach(function (u) {
 				stats.users[u._id] = u.count;
 			});
 
-			data.byStatus.forEach(function(s) {
+			data.byStatus.forEach(function (s) {
 				stats.statuses[s._id] = s.count;
 			});
 
@@ -1673,7 +1696,7 @@ app.get('/allrecords/production/stats', function(request, response){
 });
 
 
-app.get('/logs/posts', function(request, response){
+app.get('/logs/posts', function (request, response) {
 	response.json(postLog);
 });
 
@@ -1685,7 +1708,7 @@ var cleanupJobStatus = {
 	lastResult: null
 };
 
-app.get('/cleanup/old-records', function(request, response){
+app.get('/cleanup/old-records', function (request, response) {
 	// Require confirmation param to prevent accidental triggering
 	if (request.query.confirm !== 'yes-delete-old-records') {
 		return response.status(400).json({
@@ -1717,7 +1740,7 @@ app.get('/cleanup/old-records', function(request, response){
 	// Run cleanup asynchronously
 	const threeMonthsAgo = Math.floor(Date.now() / 1000) - (3 * 30 * 24 * 60 * 60);
 
-	MongoClient.connect(uri, function(err, client) {
+	MongoClient.connect(uri, function (err, client) {
 		if (err) {
 			cleanupJobStatus.running = false;
 			cleanupJobStatus.lastResult = { error: 'Database connection failed', details: err.message };
@@ -1736,7 +1759,7 @@ app.get('/cleanup/old-records', function(request, response){
 		// Delete old records from production
 		db.collection('resourcesProduction').deleteMany(
 			{ 'index.timestamp': { $lt: threeMonthsAgo } },
-			function(err, prodResult) {
+			function (err, prodResult) {
 				if (err) {
 					result.production.error = err.message;
 				} else {
@@ -1746,7 +1769,7 @@ app.get('/cleanup/old-records', function(request, response){
 				// Delete old records from staging
 				db.collection('resourcesStaging').deleteMany(
 					{ 'index.timestamp': { $lt: threeMonthsAgo } },
-					function(err, stageResult) {
+					function (err, stageResult) {
 						if (err) {
 							result.staging.error = err.message;
 						} else {
@@ -1754,14 +1777,14 @@ app.get('/cleanup/old-records', function(request, response){
 						}
 
 						// Compact the database to reclaim disk space (force:true required for replica sets)
-						db.command({ compact: 'resourcesProduction', force: true }, function(err) {
+						db.command({ compact: 'resourcesProduction', force: true }, function (err) {
 							if (err) {
 								result.production.compactError = err.message;
 							} else {
 								result.production.compacted = true;
 							}
 
-							db.command({ compact: 'resourcesStaging', force: true }, function(err) {
+							db.command({ compact: 'resourcesStaging', force: true }, function (err) {
 								if (err) {
 									result.staging.compactError = err.message;
 								} else {
@@ -1782,7 +1805,7 @@ app.get('/cleanup/old-records', function(request, response){
 	});
 });
 
-app.get('/cleanup/old-records/status', function(request, response){
+app.get('/cleanup/old-records/status', function (request, response) {
 	response.json({
 		running: cleanupJobStatus.running,
 		lastRun: cleanupJobStatus.lastRun,
@@ -1791,76 +1814,76 @@ app.get('/cleanup/old-records/status', function(request, response){
 });
 
 
-app.get('/myrecords/staging/:user', function(request, response){
-	if (request.params.user){
+app.get('/myrecords/staging/:user', function (request, response) {
+	if (request.params.user) {
 		response.json(recsStageByUser[request.params.user]);
-	}else{
+	} else {
 		response.json({});
 	}
 });
 
 
-app.get('/allrecords/staging', function(request, response){
+app.get('/allrecords/staging', function (request, response) {
 
 	response.json(recsStageByEid);
 });
 
 
 
-app.get('/allrecords/:env/:searchval/:user', function(request, response){
+app.get('/allrecords/:env/:searchval/:user', function (request, response) {
 
 
 
 	let env = 'resourcesProduction'
-	if (request.params.env === 'staging'){
+	if (request.params.env === 'staging') {
 		env = 'resourcesStaging'
 	}
 
 	let results = {}
 	let search = request.params.searchval.toLowerCase()
 
-	MongoClient.connect(uri, function(err, client) {
+	MongoClient.connect(uri, function (err, client) {
 
-	    const db = client.db('bfe2');
+		const db = client.db('bfe2');
 
 		var searchCursor = db.collection(env).find({});
 
-		searchCursor.forEach((doc)=>{
+		searchCursor.forEach((doc) => {
 
-			if (doc.index){
+			if (doc.index) {
 
 
 
-					if (doc.index.eid){
+				if (doc.index.eid) {
 
-						if (request.params.user && request.params.user != 'all'){
-							if (doc.index.user != request.params.user){
-								return
-							}
+					if (request.params.user && request.params.user != 'all') {
+						if (doc.index.user != request.params.user) {
+							return
 						}
-
-
-						if (doc.index.title && doc.index.title.toString().toLowerCase().includes(search)){
-							results[doc.index.eid] = doc.index
-						}else if (doc.index.eid.toLowerCase().includes(search)){
-							results[doc.index.eid] = doc.index
-						}else if (doc.index.lccn && doc.index.lccn.toString().includes(search)){
-							results[doc.index.eid] = doc.index
-						}else if (doc.index.user && doc.index.user.toString().toLowerCase().includes(search)){
-							results[doc.index.eid] = doc.index
-						}else if (doc.index.contributor && doc.index.contributor.toString().toLowerCase().includes(search)){
-
-							results[doc.index.eid] = doc.index
-						}
-
-						//
-
-
-
 					}
+
+
+					if (doc.index.title && doc.index.title.toString().toLowerCase().includes(search)) {
+						results[doc.index.eid] = doc.index
+					} else if (doc.index.eid.toLowerCase().includes(search)) {
+						results[doc.index.eid] = doc.index
+					} else if (doc.index.lccn && doc.index.lccn.toString().includes(search)) {
+						results[doc.index.eid] = doc.index
+					} else if (doc.index.user && doc.index.user.toString().toLowerCase().includes(search)) {
+						results[doc.index.eid] = doc.index
+					} else if (doc.index.contributor && doc.index.contributor.toString().toLowerCase().includes(search)) {
+
+						results[doc.index.eid] = doc.index
+					}
+
+					//
+
+
+
+				}
 			}
 
-		}).then(function() {
+		}).then(function () {
 
 			// console.log(request.params.user, request.params.searchval)
 			response.json(results);
@@ -1925,34 +1948,34 @@ app.get('/allrecords/:env/:searchval/:user', function(request, response){
 
 
 
-app.get('/lccnnaco/set/:set', function(request, response){
+app.get('/lccnnaco/set/:set', function (request, response) {
 
 
-	if (request.params.set){
+	if (request.params.set) {
 		let setTo = parseInt(request.params.set)
 
 
 		let correctlogin = 'INCORRECTLOGINVALUE'
-		if (request.headers.authorization){
-			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+		if (request.headers.authorization) {
+			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 		}
-		if (  request.headers.authorization !== `Basic ${correctlogin}`){
-			return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+		if (request.headers.authorization !== `Basic ${correctlogin}`) {
+			return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 		}
 		// Access granted...
 		// set nacoIdObj because it is in memory and used to ++ and return before interacting with the db
 		nacoIdObj.id = setTo
 
 		// update the database
-		MongoClient.connect(uri, function(err, client) {
-		    const db = client.db('bfe2');
+		MongoClient.connect(uri, function (err, client) {
+			const db = client.db('bfe2');
 			let result = db.collection('lccnNACO').updateOne(
-			    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
-			    { $set: {id:nacoIdObj.id } }
+				{ '_id': new mongo.ObjectID(nacoIdObj['_id']) },
+				{ $set: { id: nacoIdObj.id } }
 			);
 		})
 		response.status(200).send('Set to:' + setTo)
-	}else{
+	} else {
 		response.status(500).send('Missing param :set.')
 
 	}
@@ -1962,64 +1985,64 @@ app.get('/lccnnaco/set/:set', function(request, response){
 
 
 
-app.get('/lccnnaco', function(request, response){
+app.get('/lccnnaco', function (request, response) {
 	// ++ the naco id
 	nacoIdObj.id++
 	response.json(nacoIdObj);
 
 	// update the database
-	MongoClient.connect(uri, function(err, client) {
-	    const db = client.db('bfe2');
+	MongoClient.connect(uri, function (err, client) {
+		const db = client.db('bfe2');
 		db.collection('lccnNACO').updateOne(
-		    {'_id': new mongo.ObjectID(nacoIdObj['_id'])},
-		    { $set: {id:nacoIdObj.id } }
+			{ '_id': new mongo.ObjectID(nacoIdObj['_id']) },
+			{ $set: { id: nacoIdObj.id } }
 		);
 	})
 });
 
 
-app.get('/marva001/set/:set', function(request, response){
+app.get('/marva001/set/:set', function (request, response) {
 	// Set marva001 manually. Value should not include "in0"
-	if (request.params.set){
+	if (request.params.set) {
 		let setTo = parseInt(request.params.set)
 
 
 		let correctlogin = 'INCORRECTLOGINVALUE'
-		if (request.headers.authorization){
-			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+		if (request.headers.authorization) {
+			correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 		}
-		if (  request.headers.authorization !== `Basic ${correctlogin}`){
-			return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+		if (request.headers.authorization !== `Basic ${correctlogin}`) {
+			return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 		}
 		// Access granted...
 		// set marva001Obj because it is in memory and used to ++ and return before interacting with the db
 		marva001Obj.id = setTo
 
 		// update the database
-		MongoClient.connect(uri, function(err, client) {
-		    const db = client.db('bfe2');
+		MongoClient.connect(uri, function (err, client) {
+			const db = client.db('bfe2');
 			let result = db.collection('marva001').updateOne(
-			    {'_id': new mongo.ObjectID(marva001Obj['_id'])},
-			    { $set: {id:marva001Obj.id } }
+				{ '_id': new mongo.ObjectID(marva001Obj['_id']) },
+				{ $set: { id: marva001Obj.id } }
 			);
 		})
 		response.status(200).send('Set "marva001" to:' + setTo)
-	}else{
+	} else {
 		response.status(500).send('Missing param :set.')
 
 	}
 
 });
 
-app.get('/marva001', function(request, response){
+app.get('/marva001', function (request, response) {
 	let currentNumber = marva001Obj.id
 	const month = new Date().getMonth()
 	const fullYear = new Date().getFullYear();
 	const currentYear = fullYear.toString().slice(-2);
-	let recordYear = String(currentNumber).slice(1,3)
+	let recordYear = String(currentNumber).slice(1, 3)
 
 	// if the `recordYear` < currentYear, update year and reset to ...0001
-	if (month == 1 && recordYear < currentYear){
+	if (month == 1 && recordYear < currentYear) {
 		console.log("UPDATE MARVA 001 for year change")
 		marva001Obj.id = currentNumber + 10000000 // update the year
 		marva001Obj.id = Number(String(marva001Obj.id).slice(0, 3) + "0000000") // reset the number
@@ -2032,129 +2055,129 @@ app.get('/marva001', function(request, response){
 	console.log("marva001Obj: ", marva001Obj)
 
 	// send it
-	response.json({'marva001': number});
+	response.json({ 'marva001': number });
 
 	// update the database
-	MongoClient.connect(uri, function(err, client) {
-	const db = client.db('bfe2');
+	MongoClient.connect(uri, function (err, client) {
+		const db = client.db('bfe2');
 		db.collection('marva001').updateOne(
-			{'_id': new mongo.ObjectID(marva001Obj['_id'])},
-			{ $set: {id:marva001Obj.id } }
+			{ '_id': new mongo.ObjectID(marva001Obj['_id']) },
+			{ $set: { id: marva001Obj.id } }
 		);
 	})
 });
 
 
-app.get('/deploy-production', function(request, response){
+app.get('/deploy-production', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-  if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
-  }
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
+	}
 
-  // Access granted...
+	// Access granted...
 	let r = shell.exec('./deploy-production.sh')
- 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
 	// console.log(r_html)
 
-  return response.status(200).send(r_html)
+	return response.status(200).send(r_html)
 
 });
 
-app.get('/deploy-production-quartz', function(request, response){
+app.get('/deploy-production-quartz', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-  if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
-  }
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
+	}
 
-  // Access granted...
+	// Access granted...
 	let r = shell.exec('./deploy-production-quartz.sh')
- 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
 	// console.log(r_html)
 
-  return response.status(200).send(r_html)
+	return response.status(200).send(r_html)
 
 });
 
 
-app.get('/deploy-staging', function(request, response){
+app.get('/deploy-staging', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-  if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
-  }
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
+	}
 
-  // Access granted...
+	// Access granted...
 	let r = shell.exec('./deploy-staging.sh')
- 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
 	// console.log(r_html)
 
-  return response.status(200).send(r_html)
+	return response.status(200).send(r_html)
 
 });
-app.get('/deploy-staging-quartz', function(request, response){
+app.get('/deploy-staging-quartz', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-  if (  request.headers.authorization !== `Basic ${correctlogin}`){
-    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
-  }
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
+	}
 
-  // Access granted...
+	// Access granted...
 	let r = shell.exec('./deploy-staging-quartz.sh')
- 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
 	// console.log(r_html)
 
-  return response.status(200).send(r_html)
+	return response.status(200).send(r_html)
 
 });
 
-app.get('/deploy-profile-editor', function(request, response){
+app.get('/deploy-profile-editor', function (request, response) {
 
 	// let correctlogin = 'INCORRECTLOGINVALUE'
 	// if (request.headers.authorization){
 	// 	correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
 	// }
- //  if (  request.headers.authorization !== `Basic ${correctlogin}`){
- //    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
- //  }
+	//  if (  request.headers.authorization !== `Basic ${correctlogin}`){
+	//    return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+	//  }
 
-  // Access granted...
+	// Access granted...
 	let r = shell.exec('./deploy-profile-editor.sh')
- 	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
+	let r_html = `<h1>stdout</h1><pre><code>${r.stdout.toString()}</pre></code><hr><h1>stderr</h1><pre><code>${r.stderr.toString()}</pre></code>`
 
 	// console.log(r_html)
 
-  return response.status(200).send(r_html)
+	return response.status(200).send(r_html)
 
 });
 
 
 
-app.get('/dump/xml/prod', function(request, response){
+app.get('/dump/xml/prod', function (request, response) {
 
 	let correctlogin = 'INCORRECTLOGINVALUE'
-	if (request.headers.authorization){
-		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g,'')}:${process.env.DEPLOYPW.replace(/"/g,'')}`).toString('base64')
+	if (request.headers.authorization) {
+		correctlogin = Buffer.from(`${process.env.DEPLOYPW.replace(/"/g, '')}:${process.env.DEPLOYPW.replace(/"/g, '')}`).toString('base64')
 	}
-	if (  request.headers.authorization !== `Basic ${correctlogin}`){
-		return response.set('WWW-Authenticate','Basic').status(401).send('Authentication required.') // Access denied.
+	if (request.headers.authorization !== `Basic ${correctlogin}`) {
+		return response.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.') // Access denied.
 	}
 
 	fs.rmdirSync('/tmp/dumps/', { recursive: true });
@@ -2162,16 +2185,16 @@ app.get('/dump/xml/prod', function(request, response){
 
 
 
-	MongoClient.connect(uri, function(err, client) {
+	MongoClient.connect(uri, function (err, client) {
 
 		const db = client.db('bfe2');
 
 		var cursor = db.collection('resourcesProduction').find({});
 		let all_users = {}
-		cursor.forEach((doc)=>{
+		cursor.forEach((doc) => {
 
 
-			let lastone = doc.versions.length-1
+			let lastone = doc.versions.length - 1
 
 
 
@@ -2183,25 +2206,25 @@ app.get('/dump/xml/prod', function(request, response){
 
 
 			// if the sub dir doesnt exist make it
-			if (!fs.existsSync('/tmp/dumps/'+doc.index.status)){
-			    fs.mkdirSync('/tmp/dumps/'+doc.index.status);
+			if (!fs.existsSync('/tmp/dumps/' + doc.index.status)) {
+				fs.mkdirSync('/tmp/dumps/' + doc.index.status);
 			}
 
 
-			if (typeof doc.versions[lastone].content === 'string'){
-				fs.writeFileSync( '/tmp/dumps/'+doc.index.status + '/' + doc.index.eid + '.xml' , doc.versions[lastone].content)
+			if (typeof doc.versions[lastone].content === 'string') {
+				fs.writeFileSync('/tmp/dumps/' + doc.index.status + '/' + doc.index.eid + '.xml', doc.versions[lastone].content)
 			}
 
 
 
-		}, function(err){
+		}, function (err) {
 
 
-			if (err){
+			if (err) {
 				response.status(500).send(err);
-			}else{
+			} else {
 
-				(async() => {
+				(async () => {
 
 					await zip.zip('/tmp/dumps/', '/tmp/dumps.zip');
 
@@ -2263,66 +2286,66 @@ app.get('/dump/xml/prod', function(request, response){
 // profile editor endpoints
 app.post('/templates', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
-        // find the key to update
-		let doc = await dbo.collection('templates').findOne({id: request.body.id})
-		if (doc){
+		// find the key to update
+		let doc = await dbo.collection('templates').findOne({ id: request.body.id })
+		if (doc) {
 
 			dbo.collection('templates').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])},
-			    { $set: request.body }
+				{ '_id': new mongo.ObjectID(doc['_id']) },
+				{ $set: request.body }
 			);
 
-		}else{
+		} else {
 			console.log("creating")
 
 
-	        dbo.collection("templates").insertOne(request.body,
-	        function(err, result) {
-	            if (err) {
-	            	console.log(err)
-	            }
-	        });
+			dbo.collection("templates").insertOne(request.body,
+				function (err, result) {
+					if (err) {
+						console.log(err)
+					}
+				});
 		}
 
 		db.close();
 
 		// dbo.collection('profiles').collectionName.remove( { } )
-    });
+	});
 
-    return response.status(200).send("yeah :)")
+	return response.status(200).send("yeah :)")
 });
 
 
 app.get('/templates/:user', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
-        dbo.collection('templates').find({"user":request.params.user}).toArray(function(err, result) {
+		dbo.collection('templates').find({ "user": request.params.user }).toArray(function (err, result) {
 
-            return response.status(200).json(result)
-            db.close();
-        });
+			return response.status(200).json(result)
+			db.close();
+		});
 		db.close();
-    });
+	});
 });
 
 
 app.get('/copytemplate/:user/:id', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
 
-        var dbo = db.db("bfe2");
+		var dbo = db.db("bfe2");
 
 		let id = request.params.id
-		let doc = await dbo.collection('templates').findOne({id: id})
-		if (doc){
+		let doc = await dbo.collection('templates').findOne({ id: id })
+		if (doc) {
 
 
 
@@ -2333,13 +2356,13 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 			doc.timestamp = new Date().getTime() / 1000
 
 			dbo.collection("templates").insertOne(doc,
-			function(err, result) {
-			    if (err) {
-			    	console.log(err)
-			    	response.status(500).send("Could save copy of template")
-			    }
-			    return response.status(200).send("Template copied")
-			});
+				function (err, result) {
+					if (err) {
+						console.log(err)
+						response.status(500).send("Could save copy of template")
+					}
+					return response.status(200).send("Template copied")
+				});
 
 
 
@@ -2347,7 +2370,7 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 
 
 
-		}else{
+		} else {
 			response.status(500).send("Could not find that ID to copy")
 		}
 
@@ -2359,18 +2382,18 @@ app.get('/copytemplate/:user/:id', async (request, response) => {
 
 app.delete('/templates/:doc', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
 
-        var dbo = db.db("bfe2");
+		var dbo = db.db("bfe2");
 
 		let docName = request.params.doc
-		let doc = await dbo.collection('templates').findOne({id: docName})
-		if (doc){
+		let doc = await dbo.collection('templates').findOne({ id: docName })
+		if (doc) {
 
 			// remove the piece of the profile
-			dbo.collection('templates').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
-		}else{
+			dbo.collection('templates').deleteOne({ _id: new mongo.ObjectID(doc['_id']) });
+		} else {
 			response.status(500).send("Could not find that ID to remove")
 		}
 	});
@@ -2388,7 +2411,7 @@ app.post("/validate/:loc", async (request, response) => {
 
 	console.log("validating against: ", url)
 	let loc = request.params.loc
-	if (loc == 'stage'){
+	if (loc == 'stage') {
 		url = url.replace("preprod", "preprod-8299")
 	}
 
@@ -2402,8 +2425,8 @@ app.post("/validate/:loc", async (request, response) => {
 	try {
 		const postResponse = await got.post(url, {
 			body: rdfxml,
-			username:MLUSER,
-			password:MLPASS,
+			username: MLUSER,
+			password: MLPASS,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -2415,13 +2438,13 @@ app.post("/validate/:loc", async (request, response) => {
 		postLogEntry['postingBodyResponse'] = postResponse.body
 		postLogEntry['postingName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let postStatus = {"status":"validated"}
+		let postStatus = { "status": "validated" }
 
-		if (postResponse.statusCode != 200){
-			postStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 200) {
+			postStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 
 		let data = postResponse.body.replace(/(\r\n|\n|\r)/gm, "");
@@ -2430,11 +2453,11 @@ app.post("/validate/:loc", async (request, response) => {
 		let validationMSG = null
 		try {
 			validationMSG = JSON.parse(msg)
-		} catch(error) { //If there's no matches, there are no errors
-			if (error instanceof SyntaxError){
-				validationMSG = [{"level": "SUCCESS", "message": "No issues found."}]
+		} catch (error) { //If there's no matches, there are no errors
+			if (error instanceof SyntaxError) {
+				validationMSG = [{ "level": "SUCCESS", "message": "No issues found." }]
 			} else {
-				validationMSG = [{"level": "ERROR", "message": "Something when wrong: " + error.message}]
+				validationMSG = [{ "level": "ERROR", "message": "Something when wrong: " + error.message }]
 			}
 		}
 
@@ -2446,30 +2469,30 @@ app.post("/validate/:loc", async (request, response) => {
 		response.set('Content-Type', 'application/json');
 		response.status(200).send(resp_data);
 
-	} catch(err) {
+	} catch (err) {
 		console.log("----------------------")
 		console.log("Error: ", err)
 		console.log("::::::::::::::::::::::")
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.code
+		postLogEntry['postingStatusCode'] = err.code
 		postLogEntry['postingBodyResponse'] = err.message
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 		errString = JSON.stringify(err.message)
 		let replace = `${MLUSER}|${MLPASS}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		errString = JSON.parse(errString)
 
 		resp_data = {
-				"validated": {"status": "error","server": url,"message": errString }
-			}
+			"validated": { "status": "error", "server": url, "message": errString }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 	}
@@ -2490,7 +2513,7 @@ app.post("/validate/:loc", async (request, response) => {
 
 
 
-const updateGit = async function(docName,env,jsonPayload){
+const updateGit = async function (docName, env, jsonPayload) {
 
 
 
@@ -2502,88 +2525,88 @@ const updateGit = async function(docName,env,jsonPayload){
 	// ]
 
 
-  	// load the local deploy options
+	// load the local deploy options
 	let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
 
-	if (config.profileEditPushGit){
+	if (config.profileEditPushGit) {
 
 
-	    fs.rmSync('/tmp/profiles/', { recursive: true, force: true });
+		fs.rmSync('/tmp/profiles/', { recursive: true, force: true });
 
-	    await fs.promises.mkdir( '/tmp/profiles/' );
-	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}` );
-	    await fs.promises.mkdir( '/tmp/profiles/' + `${docName}-${env}/src` );
+		await fs.promises.mkdir('/tmp/profiles/');
+		await fs.promises.mkdir('/tmp/profiles/' + `${docName}-${env}`);
+		await fs.promises.mkdir('/tmp/profiles/' + `${docName}-${env}/src`);
 
-	    let gitConfig = JSON.parse(fs.readFileSync('gitconfig.json', 'utf8'));
+		let gitConfig = JSON.parse(fs.readFileSync('gitconfig.json', 'utf8'));
 
-	    let userName = gitConfig.userName
-	    let password = gitConfig.password
-	    let org = gitConfig.org
-	    let repo = gitConfig.repo
+		let userName = gitConfig.userName
+		let password = gitConfig.password
+		let org = gitConfig.org
+		let repo = gitConfig.repo
 
-	    const gitHubUrl = `https://${userName}:${password}@github.com/${org}/${repo}`;
+		const gitHubUrl = `https://${userName}:${password}@github.com/${org}/${repo}`;
 
 		await simpleGit.cwd({ path: '/tmp/profiles/', root: true });
 
 		await simpleGit.init()
 
-		await simpleGit.addRemote('origin',gitHubUrl);
+		await simpleGit.addRemote('origin', gitHubUrl);
 
 
-		await simpleGit.addConfig('user.email','ndmso@loc.gov');
-		await simpleGit.addConfig('user.name','NDMSO');
-		await simpleGit.pull('origin','main')
+		await simpleGit.addConfig('user.email', 'ndmso@loc.gov');
+		await simpleGit.addConfig('user.name', 'NDMSO');
+		await simpleGit.pull('origin', 'main')
 		await simpleGit.checkout('main')
 
 
-	    // write out the file
+		// write out the file
 
-		fs.writeFileSync( `/tmp/profiles/${docName}-${env}/data.json` , JSON.stringify(jsonPayload,null,2))
+		fs.writeFileSync(`/tmp/profiles/${docName}-${env}/data.json`, JSON.stringify(jsonPayload, null, 2))
 
-	    if (docName == 'profile' && jsonPayload){
+		if (docName == 'profile' && jsonPayload) {
 
-	    	for (let p of jsonPayload){
-	    		if (p.json && p.json.Profile){
-	    			fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${p.json.Profile.id}.json` , JSON.stringify(p.json.Profile,null,2))
-	    		}
+			for (let p of jsonPayload) {
+				if (p.json && p.json.Profile) {
+					fs.writeFileSync(`/tmp/profiles/${docName}-${env}/src/${p.json.Profile.id}.json`, JSON.stringify(p.json.Profile, null, 2))
+				}
 
 
-	    		if (p.json && p.json.Profile && p.json.Profile.resourceTemplates){
+				if (p.json && p.json.Profile && p.json.Profile.resourceTemplates) {
 
-	    			for (let rt of p.json.Profile.resourceTemplates ){
-	    				// console.log('wrotomg ',rt.id)
-						fs.writeFileSync( `/tmp/profiles/${docName}-${env}/src/${rt.id}.json` , JSON.stringify(rt,null,2))
-	    			}
-	    		}
-	    	}
-	    }
+					for (let rt of p.json.Profile.resourceTemplates) {
+						// console.log('wrotomg ',rt.id)
+						fs.writeFileSync(`/tmp/profiles/${docName}-${env}/src/${rt.id}.json`, JSON.stringify(rt, null, 2))
+					}
+				}
+			}
+		}
 
 
 		simpleGit.add('.')
-		.then(
-			(addSuccess) => {
-				// console.log(addSuccess);
-				simpleGit.commit(`${docName}-${env} change`)
-					.then(
-						(successCommit) => {
-							// console.log(successCommit);
+			.then(
+				(addSuccess) => {
+					// console.log(addSuccess);
+					simpleGit.commit(`${docName}-${env} change`)
+						.then(
+							(successCommit) => {
+								// console.log(successCommit);
 
-							simpleGit.push('origin','main')
-								.then((success) => {
-								   console.log('repo successfully pushed');
-								},(failed)=> {
-							       console.log(failed);
-								   console.log('repo push faileds');
+								simpleGit.push('origin', 'main')
+									.then((success) => {
+										console.log('repo successfully pushed');
+									}, (failed) => {
+										console.log(failed);
+										console.log('repo push faileds');
+									});
+
+							}, (failed) => {
+								console.log(failed);
+								console.log('failed commmit');
 							});
-
-					}, (failed) => {
-						console.log(failed);
-						console.log('failed commmit');
+				}, (failedAdd) => {
+					console.log(failedAdd)
+					console.log('adding files failed');
 				});
-			}, (failedAdd) => {
-			  console.log(failedAdd)
-			  console.log('adding files failed');
-		});
 	}
 
 
@@ -2596,52 +2619,52 @@ const updateGit = async function(docName,env,jsonPayload){
 
 app.get('/profiles/bootstrap', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
 
 		let config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
 
-		if (config.bootstrapLinks){
+		if (config.bootstrapLinks) {
 
 			let bootstrapResults = []
-			for(let id in config.bootstrapLinks){
+			for (let id in config.bootstrapLinks) {
 
 				var options = {
 					headers: {
-					    "user-agent": "MARVA EDITOR"
-					 }
+						"user-agent": "MARVA EDITOR"
+					}
 				};
 
-		        // let r = await rp.get(options)
-		        // r = JSON.parse(r)
+				// let r = await rp.get(options)
+				// r = JSON.parse(r)
 
 				r = await got(config.bootstrapLinks[id], options).json();
 
 
 
-				let doc = await dbo.collection('profiles').findOne({type: id})
-				if (doc){
+				let doc = await dbo.collection('profiles').findOne({ type: id })
+				if (doc) {
 					dbo.collection('profiles').updateOne(
-					    {'_id': new mongo.ObjectID(doc['_id'])},
-					    { $set: {type:id, data:r} }
+						{ '_id': new mongo.ObjectID(doc['_id']) },
+						{ $set: { type: id, data: r } }
 					);
 
-				}else{
-			        dbo.collection("profiles").insertOne({type:id, data:r},
-			        function(err, result) {
-			            if (err) {
-			            	console.log(err)
-			            }
-			        });
+				} else {
+					dbo.collection("profiles").insertOne({ type: id, data: r },
+						function (err, result) {
+							if (err) {
+								console.log(err)
+							}
+						});
 				}
 
 			}
 
 			response.status(200).send("Updated from bootstrap source.");
 
-		}else{
+		} else {
 
 			response.status(500).send("The bootstrap links were not found");
 
@@ -2655,32 +2678,32 @@ app.get('/profiles/bootstrap', async (request, response) => {
 
 app.get('/profiles/:doc', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
-        let env='prod'
+		let env = 'prod'
 
-    	if (request.headers.referer && request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
-    		env='stage'
-    	}
+		if (request.headers.referer && request.headers.referer.toLowerCase().indexOf('profile-editor-stage') > -1) {
+			env = 'stage'
+		}
 
-        let docName = request.params.doc
+		let docName = request.params.doc
 
-        if (docName == 'index.resourceType:profile'){
-        	docName = 'profile'
-        }
+		if (docName == 'index.resourceType:profile') {
+			docName = 'profile'
+		}
 
 
 		let id = `${docName}-${env}`
 
 
 
-		let doc = await dbo.collection('profiles').findOne({type: id})
-		if (doc){
+		let doc = await dbo.collection('profiles').findOne({ type: id })
+		if (doc) {
 			response.json(doc.data);
 			db.close();
-		}else{
+		} else {
 			response.status(404).json(null);
 		}
 	});
@@ -2689,38 +2712,38 @@ app.get('/profiles/:doc', async (request, response) => {
 app.put('/profiles/:doc', async (request, response) => {
 
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
 
-        var dbo = db.db("bfe2");
+		var dbo = db.db("bfe2");
 
 		let docName = request.params.doc
 
-		let env='prod'
-		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
-			env='stage'
+		let env = 'prod'
+		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage') > -1) {
+			env = 'stage'
 		}
 
 		let id = `${docName}-${env}`
-		let doc = await dbo.collection('profiles').findOne({type: id})
-		if (doc){
+		let doc = await dbo.collection('profiles').findOne({ type: id })
+		if (doc) {
 			// response.json(doc.data);
 			// db.close();
 			// post the update to the document
 			dbo.collection('profiles').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])},
-			    { $set: {type:id, data:request.body} }
+				{ '_id': new mongo.ObjectID(doc['_id']) },
+				{ $set: { type: id, data: request.body } }
 			);
 
 			// and then find the main profile and update the part of it with the update part
 			let profileId = `profile-${env}`
-			let docMain = await dbo.collection('profiles').findOne({type: profileId})
-			if (docMain){
+			let docMain = await dbo.collection('profiles').findOne({ type: profileId })
+			if (docMain) {
 
 				// find the id
-				for (let x in docMain.data){
+				for (let x in docMain.data) {
 
-					if (docMain.data[x].id == docName){
+					if (docMain.data[x].id == docName) {
 						// console.log("updating")
 						docMain.data[x] = request.body
 						// console.log(docMain.data[x])
@@ -2730,33 +2753,33 @@ app.put('/profiles/:doc', async (request, response) => {
 				// console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])},
-				    { $set: {type:profileId, data:docMain.data} }
+					{ '_id': new mongo.ObjectID(docMain['_id']) },
+					{ $set: { type: profileId, data: docMain.data } }
 				);
 
-				await updateGit('profile',env,docMain.data)
+				await updateGit('profile', env, docMain.data)
 
 				response.status(200).send("Updated :)")
 
 
-			}else{
+			} else {
 				response.status(500).send("Could not the main profile to update")
 			}
 
 
 
-		}else{
+		} else {
 
 			// if it could not find the doc then they are creating a new one
 			// insert the doc as new
 
-			const doc = { type:id, data:request.body };
+			const doc = { type: id, data: request.body };
 			const result = await dbo.collection('profiles').insertOne(doc);
 
 			// and then find the main profile and update the part of it with the update part
 			let profileId = `profile-${env}`
-			let docMain = await dbo.collection('profiles').findOne({type: profileId})
-			if (docMain){
+			let docMain = await dbo.collection('profiles').findOne({ type: profileId })
+			if (docMain) {
 
 				// add it to the data
 				docMain.data.push(request.body)
@@ -2765,11 +2788,11 @@ app.put('/profiles/:doc', async (request, response) => {
 				// console.log(docMain.data)
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])},
-				    { $set: {type:profileId, data:docMain.data} }
+					{ '_id': new mongo.ObjectID(docMain['_id']) },
+					{ $set: { type: profileId, data: docMain.data } }
 				);
 
-				await updateGit('profile',env,docMain.data)
+				await updateGit('profile', env, docMain.data)
 
 				response.status(200).send("Updated :)")
 
@@ -2787,57 +2810,57 @@ app.put('/profiles/:doc', async (request, response) => {
 
 app.delete('/profiles/:doc', async (request, response) => {
 
-	if (BFORGMODE){
+	if (BFORGMODE) {
 		response.status(403).send();
 		return false
 	}
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
 
-        var dbo = db.db("bfe2");
+		var dbo = db.db("bfe2");
 
 		let docName = request.params.doc
 
-		let env='prod'
-		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage')>-1){
-			env='stage'
+		let env = 'prod'
+		if (request.headers.referer.toLowerCase().indexOf('profile-editor-stage') > -1) {
+			env = 'stage'
 		}
 
 		let id = `${docName}-${env}`
-		let doc = await dbo.collection('profiles').findOne({type: id})
-		if (doc){
+		let doc = await dbo.collection('profiles').findOne({ type: id })
+		if (doc) {
 
 			// remove the piece of the profile
-			dbo.collection('profiles').deleteOne({_id: new mongo.ObjectID(doc['_id']) });
+			dbo.collection('profiles').deleteOne({ _id: new mongo.ObjectID(doc['_id']) });
 
 
 			// and then find in the main profile and remove it
 			let profileId = `profile-${env}`
-			let docMain = await dbo.collection('profiles').findOne({type: profileId})
-			if (docMain){
+			let docMain = await dbo.collection('profiles').findOne({ type: profileId })
+			if (docMain) {
 
 				// filter out the part we want removed
-				docMain.data = docMain.data.filter((x)=>{ return (x.id != docName) })
+				docMain.data = docMain.data.filter((x) => { return (x.id != docName) })
 
 				dbo.collection('profiles').updateOne(
-				    {'_id': new mongo.ObjectID(docMain['_id'])},
-				    { $set: {type:profileId, data:docMain.data} }
+					{ '_id': new mongo.ObjectID(docMain['_id']) },
+					{ $set: { type: profileId, data: docMain.data } }
 				);
 
 				// do the git stuff
-				await updateGit('profile',env,docMain.data)
+				await updateGit('profile', env, docMain.data)
 
 
 
 
-			}else{
+			} else {
 				response.status(500).send("Could not the main profile to update")
 			}
 
 
 
-		}else{
+		} else {
 			response.status(500).send("Could not find that ID to update")
 		}
 
@@ -2852,18 +2875,18 @@ app.delete('/profiles/:doc', async (request, response) => {
 // this is for the /util/ interface
 app.get('/profiles/:doc/:env', async (request, response) => {
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
 
 		let id = `${request.params.doc}-${request.params.env}`
 		// console.log("id = ",id)
-		let doc = await dbo.collection('profiles').findOne({type: id})
-		if (doc){
+		let doc = await dbo.collection('profiles').findOne({ type: id })
+		if (doc) {
 			response.json(doc.data);
 			db.close();
-		}else{
+		} else {
 			response.json(null);
 		}
 	});
@@ -2879,57 +2902,57 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 	let env = 'stage'
 	let docName = 'profile'
 
-	if (request.params.env && request.params.env == 'prod'){
+	if (request.params.env && request.params.env == 'prod') {
 		env = 'prod'
 	}
-	if (request.params.env && request.params.env != 'profile'){
+	if (request.params.env && request.params.env != 'profile') {
 		docName = request.params.doc
 	}
 
 	let id = `${docName}-${env}`
 
-    MongoClient.connect(uri, async function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("bfe2");
+	MongoClient.connect(uri, async function (err, db) {
+		if (err) throw err;
+		var dbo = db.db("bfe2");
 
 
-        // find the key to update
-		let doc = await dbo.collection('profiles').findOne({type: id})
-		if (doc){
+		// find the key to update
+		let doc = await dbo.collection('profiles').findOne({ type: id })
+		if (doc) {
 			dbo.collection('profiles').updateOne(
-			    {'_id': new mongo.ObjectID(doc['_id'])},
-			    { $set: {type:id, data:request.body} }
+				{ '_id': new mongo.ObjectID(doc['_id']) },
+				{ $set: { type: id, data: request.body } }
 			);
 
-		}else{
-	        dbo.collection("profiles").insertOne({type:id, data:request.body},
-	        function(err, result) {
-	            if (err) {
-	            	console.log(err)
-	            }
+		} else {
+			dbo.collection("profiles").insertOne({ type: id, data: request.body },
+				function (err, result) {
+					if (err) {
+						console.log(err)
+					}
 
-	        });
+				});
 		}
 
 
 		// we also populate the individual profiles from the main blob on inital load so do that
-		if (docName === 'profile'){
+		if (docName === 'profile') {
 
-			for (let p of request.body){
+			for (let p of request.body) {
 				let id_sub = `${p.id}-${env}`
-				let doc = await dbo.collection('profiles').findOne({type: id_sub})
-				if (doc){
+				let doc = await dbo.collection('profiles').findOne({ type: id_sub })
+				if (doc) {
 					dbo.collection('profiles').updateOne(
-					    {'_id': new mongo.ObjectID(doc['_id'])},
-					    { $set: {type:id_sub, data:p} }
+						{ '_id': new mongo.ObjectID(doc['_id']) },
+						{ $set: { type: id_sub, data: p } }
 					);
-				}else{
-			        dbo.collection("profiles").insertOne({type:id_sub, data:p},
-			        function(err, result) {
-			            if (err) {
-			            	console.log(err)
-			            }
-			        });
+				} else {
+					dbo.collection("profiles").insertOne({ type: id_sub, data: p },
+						function (err, result) {
+							if (err) {
+								console.log(err)
+							}
+						});
 				}
 
 			}
@@ -2943,14 +2966,14 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 		db.close();
 
 		// dbo.collection('profiles').collectionName.remove( { } )
-    });
+	});
 
-    // do the git stuff
-	await updateGit(docName,env,request.body)
+	// do the git stuff
+	await updateGit(docName, env, request.body)
 
 
 
-    return response.status(200).send("yeah :)")
+	return response.status(200).send("yeah :)")
 });
 
 
@@ -2958,7 +2981,7 @@ app.post('/profiles/save/:doc/:env', async (request, response) => {
 // this is for the /util/ interface
 app.get('/whichrt', async (request, response) => {
 
-	if (BFORGMODE){
+	if (BFORGMODE) {
 		response.status(403).send();
 		return false
 	}
@@ -2966,21 +2989,21 @@ app.get('/whichrt', async (request, response) => {
 	let uri = request.query.uri
 
 
-	if ( uri.indexOf('bibframe.example.org') > 0 ) {
-	    response.status(404).send();
+	if (uri.indexOf('bibframe.example.org') > 0) {
+		response.status(404).send();
 	} else {
 
 		var options = {
 			headers: {
 				"user-agent": "MARVA EDITOR"
-			 }
+			}
 		};
 
-		try{
+		try {
 			let r = await got(uri, options)
 			response.status(200).send(r.body);
 
-		}catch{
+		} catch {
 			response.status(500).send('Error fetching resource via whichrt.');
 		}
 	}
@@ -2994,68 +3017,68 @@ app.post('/marcpreview/:type', async (request, response) => {
 	// write out the contents to a file
 	let tmpfilename = crypto.createHash('md5').update(new Date().getTime().toString()).digest("hex")
 	tmpfilename = `/tmp/${tmpfilename}.xml`
-	fs.writeFileSync( tmpfilename , request.body.rdfxml)
+	fs.writeFileSync(tmpfilename, request.body.rdfxml)
 
-	const xslts = fs.readdirSync('/app/lib/bibframe2marc/', {withFileTypes: true})
-	.filter(item => !item.isDirectory())
-	.map((item) => {
+	const xslts = fs.readdirSync('/app/lib/bibframe2marc/', { withFileTypes: true })
+		.filter(item => !item.isDirectory())
+		.map((item) => {
 
-		return {
-			fullPath: `/app/lib/bibframe2marc/${item.name}`,
-			version: item.name.split('_')[1].split('.xsl')[0]
-		}
-	})
+			return {
+				fullPath: `/app/lib/bibframe2marc/${item.name}`,
+				version: item.name.split('_')[1].split('.xsl')[0]
+			}
+		})
 
 	let results = []
 	let rawMarc
-	for (let xslt of xslts){
+	for (let xslt of xslts) {
 
-		if (xslt.fullPath.toLowerCase().indexOf('.xsl') == -1){
+		if (xslt.fullPath.toLowerCase().indexOf('.xsl') == -1) {
 			continue
 		}
 		let marcxml
-		try{
+		try {
 			marcxml = await exec(`xsltproc ${xslt.fullPath} ${tmpfilename}`)
-		}catch(err){
+		} catch (err) {
 			marcxml = err.toString()
 		}
-		results.push({'version':xslt.version, results: marcxml})
+		results.push({ 'version': xslt.version, results: marcxml })
 	}
 
 
-	for (let r of results){
+	for (let r of results) {
 		let marcRecord
-		try{
+		try {
 			let x
-			if (r.results){
+			if (r.results) {
 				x = r.results
 			}
-			if (r.results.stdout){
+			if (r.results.stdout) {
 				x = r.results.stdout
 			}
 
 			x = x.trim()
-			x = x.replace('<?xml version="1.0" encoding="UTF-8"?>','')
+			x = x.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
 
-			x = x.replace(/\s+xml:space="preserve">/g,'>')
-			x = x.replace(/\s+xml:space="preserve"\s+/g,' ')
+			x = x.replace(/\s+xml:space="preserve">/g, '>')
+			x = x.replace(/\s+xml:space="preserve"\s+/g, ' ')
 			// x = x.replace(/\s+xml:lang="en"\s+/g,' ')
-			x = x.replace(/\s+xml:lang="[a-zA-Z-]*"[\s+>]/g,' ')     //match and remove all `xml:lang="..."` instances
+			x = x.replace(/\s+xml:lang="[a-zA-Z-]*"[\s+>]/g, ' ')     //match and remove all `xml:lang="..."` instances
 
 
-			x = x.replace(/<marc:/g,'<')
-			x = x.replace(/<\/marc:/g,'</')
+			x = x.replace(/<marc:/g, '<')
+			x = x.replace(/<\/marc:/g, '</')
 			// console.log(x)
 
 			const record = Marc.parse(x, 'marcxml');
 			rawMarc = record
 			marcRecord = Marc.format(record, 'Text')
 
-		}catch(err){
+		} catch (err) {
 			marcRecord = err.toString()
 		}
 
-		if (type == "html"){
+		if (type == "html") {
 			let formatted = marcRecordHtmlify(rawMarc)
 			r.marcRecord = formatted
 		} else {
@@ -3071,40 +3094,40 @@ app.post('/marcpreview/:type', async (request, response) => {
 /**
  * Puts everything into HTML tags with classes to help style the output
  */
-function marcRecordHtmlify(data){
+function marcRecordHtmlify(data) {
 	let formatedMarcRecord = ["<div class='marc record'>"]
-	let leader = "<div class='marc leader'>" + data["leader"].replace( / /g, "&nbsp;" ) + "</div>"
+	let leader = "<div class='marc leader'>" + data["leader"].replace(/ /g, "&nbsp;") + "</div>"
 	formatedMarcRecord.push(leader)
 	let fields = data["fields"]
-	for (let field of fields){
+	for (let field of fields) {
 		let tag
 		let value = null
 		let indicators = null
 		let subfields = []
-		for (let el in field){
-			if (el == 0){
+		for (let el in field) {
+			if (el == 0) {
 				tag = field[el]
-			} else if (field.length == 2){
+			} else if (field.length == 2) {
 				value = field[el]
-			} else if(el == 1 && field.length > 2) {
+			} else if (el == 1 && field.length > 2) {
 				indicators = [field[el][0], field[el][1]]
 			} else {
 				if ((el % 2) == 0 && field.length > 2) {
-					subfields.push([field[el], field[Number(el)+1]])
+					subfields.push([field[el], field[Number(el) + 1]])
 				}
 			}
 		}
-		if (value){
+		if (value) {
 			//Fields that are no "tag: value"
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
 			value = " <span class='marc value'>" + value + "</span>"
-			formatedMarcRecord.push("<div class='marc field'>"+ tag + value + "</div>")
+			formatedMarcRecord.push("<div class='marc field'>" + tag + value + "</div>")
 		} else {
 			//fields with subfields
-			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$"+subfield[0] +"</span> <span class='marc subfield subfield-value'>" + subfield[1] +"</span></span>")
+			subfields = subfields.map((subfield) => "<span class='marc subfield subfield-" + subfield[0] + "'><span class='marc subfield subfield-label'>$" + subfield[0] + "</span> <span class='marc subfield subfield-value'>" + subfield[1] + "</span></span>")
 			indicators = "<span class='marc indicators'><span class='marc indicators indicator-1'>" + indicators[0] + "</span><span class='marc indicators indicator-2'>" + indicators[1] + "</span></span>"
 			tag = "<span class='marc tag tag-" + tag + "'>" + tag + "</span>"
-			formatedMarcRecord.push("<div class='marc field'>"+ tag + " " + indicators + " " + subfields.join(" ") + "</div>")
+			formatedMarcRecord.push("<div class='marc field'>" + tag + " " + indicators + " " + subfields.join(" ") + "</div>")
 		}
 	}
 	formatedMarcRecord.push("</div>") //close the first tag
@@ -3121,20 +3144,20 @@ function marcRecordHtmlify(data){
  *
  * @returns {string} token from worldcat
  */
-async function worldCatAuthToken(){
+async function worldCatAuthToken() {
 	//https://www.oclc.org/developer/api/keys/oauth.en.html
 	//https://www.oclc.org/developer/develop/authentication/access-tokens/explicit-authorization-code.en.html
 	//https://github.com/OCLC-Developer-Network/gists/blob/master/authentication/node/authCodeAuthExample.js
 	const credentials = {
 		client: {
-		  id: WC_CLIENTID,
-		  secret: WC_SECRET
+			id: WC_CLIENTID,
+			secret: WC_SECRET
 		},
 		auth: {
-		  tokenHost: 'https://oauth.oclc.org',
-		  tokenPath: '/token',
+			tokenHost: 'https://oauth.oclc.org',
+			tokenPath: '/token',
 		}
-	  };
+	};
 	// console.log("credentials", credentials)
 	const scopes = "WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib"; // refresh_token";
 	const { ClientCredentials, ResourceOwnerPassword, AuthorizationCode } = require('simple-oauth2');
@@ -3143,24 +3166,24 @@ async function worldCatAuthToken(){
 		scope: scopes
 	};
 
-	async function getToken(){
+	async function getToken() {
 		//Get the access token object for the client
-		   try {
-			   let httpOptions = {'Accept': 'application/json'};
-			   let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
-			   console.log("Access Token: ", accessToken);
-			   return accessToken
-		   } catch (error) {
-			   console.error("Error getting token: ", error);
-			   return error;
-		   }
-   }
+		try {
+			let httpOptions = { 'Accept': 'application/json' };
+			let accessToken = await oauth2.getToken(tokenConfig, httpOptions);
+			console.log("Access Token: ", accessToken);
+			return accessToken
+		} catch (error) {
+			console.error("Error getting token: ", error);
+			return error;
+		}
+	}
 
 	// Before doing this, check if there is a token value and if it is still good
 	let token
 	const now = new Date()
 
-	if (process.env.WC_EXPIRES && (Date.parse(process.env.WC_EXPIRES) - now > 1000)){
+	if (process.env.WC_EXPIRES && (Date.parse(process.env.WC_EXPIRES) - now > 1000)) {
 		// use the existing token
 	} else {
 		token = await getToken();
@@ -3181,18 +3204,18 @@ async function worldCatAuthToken(){
  * @param {string} limit How many results to return
  * @returns
  */
-async function worldCatSearchApi(token, query, itemType, offset, limit){
+async function worldCatSearchApi(token, query, itemType, offset, limit) {
 	const URL = 'https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs'
 
 	let queryParams = {}
-	if (itemType == 'book'){
+	if (itemType == 'book') {
 		queryParams = {
 			q: query,
 			itemSubType: 'book-printbook',
 			offset: offset,
 			limit: limit
 		}
-	} else if (itemType == 'ebook'){
+	} else if (itemType == 'ebook') {
 		queryParams = {
 			q: query,
 			itemSubType: 'book-digital',
@@ -3208,7 +3231,7 @@ async function worldCatSearchApi(token, query, itemType, offset, limit){
 		}
 	}
 
-	try{
+	try {
 		const resp = await got(URL, {
 			searchParams: queryParams,
 			headers: {
@@ -3220,30 +3243,30 @@ async function worldCatSearchApi(token, query, itemType, offset, limit){
 
 		const data = JSON.parse(resp.body)
 		let resp_data = {
-			status: {"status":"success"},
+			status: { "status": "success" },
 			results: data
 		}
 
 		return resp_data
-	} catch(error){
+	} catch (error) {
 		// console.error("Error: ", error)
 		// console.error("Error: ", error.response.statusCode)
 		// console.error("Error: ", error.response)
 
 		let resp_data = {
-			status: {"status":"error"},
+			status: { "status": "error" },
 			error: error
 		}
 		return resp_data
 	}
 };
 
-async function worldCatMetadataApi(token, ocn){
+async function worldCatMetadataApi(token, ocn) {
 
 	let cachedValue = wcMarcCache.get(ocn)
-	if (typeof cachedValue != 'undefined'){
+	if (typeof cachedValue != 'undefined') {
 		let resp_data = {
-			status: {"status":"success"},
+			status: { "status": "success" },
 			results: cachedValue.marc
 		}
 		return resp_data
@@ -3251,7 +3274,7 @@ async function worldCatMetadataApi(token, ocn){
 
 	const URL = 'https://metadata.api.oclc.org/worldcat/manage/bibs/' + ocn
 
-	try{
+	try {
 		const resp = await got(URL, {
 			headers: {
 				'Authorization': 'Bearer ' + token,
@@ -3262,18 +3285,18 @@ async function worldCatMetadataApi(token, ocn){
 
 		const data = resp.body
 		let resp_data = {
-			status: {"status":"success"},
+			status: { "status": "success" },
 			results: data
 		}
-		cache = wcMarcCache.set( ocn, {marc: data}, cacheTTL );
+		cache = wcMarcCache.set(ocn, { marc: data }, cacheTTL);
 		return resp_data
-	} catch(error){
+	} catch (error) {
 		// console.error("Error: ", error)
 		// console.error("Error: ", error.response.statusCode)
 		// console.error("Error: ", error.response)
 
 		let resp_data = {
-			status: {"status":"error"},
+			status: { "status": "error" },
 			error: error
 		}
 		return resp_data
@@ -3315,10 +3338,10 @@ app.post('/worldcat/search/', async (request, response) => {
 	const token = await worldCatAuthToken()
 
 	let resp_data
-	if (!marc){
+	if (!marc) {
 		resp_data = await worldCatSearchApi(token, wcIndex + ": " + wcQuery, wcType, wcOffset, wcLimit)
-		if (resp_data.results && resp_data.results.numberOfRecords> 0 ){
-			for (let record of resp_data.results.briefRecords){
+		if (resp_data.results && resp_data.results.numberOfRecords > 0) {
+			for (let record of resp_data.results.briefRecords) {
 				marc_data = await worldCatMetadataApi(token, record.oclcNumber)
 
 				const marc = Marc.parse(marc_data.results, 'marcxml');
@@ -3351,7 +3374,7 @@ app.post('/copycat/upload/:location', async (request, response) => {
 	let location = request.params.location
 	let endpoint = "/controllers/ingest/marc-bib.xqy"
 	var url = ''
-	if (location == 'prod'){
+	if (location == 'prod') {
 		url = "https://" + PRODUCTIONccURL.trim() + endpoint;
 	} else {
 		url = "https://" + STAGGINGccURL.trim() + endpoint;
@@ -3369,11 +3392,11 @@ app.post('/copycat/upload/:location', async (request, response) => {
 	}
 
 
-	try{
+	try {
 		const postResponse = await got.post(url, {
 			body: marcxml,
-			username:MLUSER,
-			password:MLPASS,
+			username: MLUSER,
+			password: MLPASS,
 			headers: {
 				"Content-type": "application/xml",
 				'user-agent': 'marva-backend'
@@ -3386,17 +3409,17 @@ app.post('/copycat/upload/:location', async (request, response) => {
 		postLogEntry['copyCatBodyResponse'] = postResponse.body
 		postLogEntry['copyCatName'] = request.body.name
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
-		let copyCatStatus = {"status":"published"}
+		let copyCatStatus = { "status": "published" }
 
-		if (postResponse.statusCode != 201 && postResponse.statusCode != 204 ){
-			copyCatStatus = {"status": "error","server": url, "message": postResponse.statusCode }
+		if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
+			copyCatStatus = { "status": "error", "server": url, "message": postResponse.statusCode }
 		}
 		let postLocation = null
-		if (postResponse.headers && postResponse.headers.location){
-			postLocation=postResponse.headers.location
+		if (postResponse.headers && postResponse.headers.location) {
+			postLocation = postResponse.headers.location
 		}
 
 
@@ -3406,7 +3429,7 @@ app.post('/copycat/upload/:location', async (request, response) => {
 			//"objid": data.objid,
 			// "lccn": lccn,
 			copyCatStat: copyCatStatus,
-			postLocation:postLocation
+			postLocation: postLocation
 		}
 
 		response.set('Content-Type', 'application/json');
@@ -3415,33 +3438,33 @@ app.post('/copycat/upload/:location', async (request, response) => {
 
 
 
-	}catch(err){
+	} catch (err) {
 		console.log("err: ", err)
 		postLogEntry['postingStatus'] = 'error'
-		postLogEntry['postingStatusCode'] =  err.response.statusCode
+		postLogEntry['postingStatusCode'] = err.response.statusCode
 		postLogEntry['postingBodyResponse'] = err.response.body
 		postLogEntry['postingBodyName'] = request.body.name
 		postLogEntry['postingEid'] = request.body.eid
 
 		postLog.push(postLogEntry)
-		if (postLogEntry.length>50){
+		if (postLogEntry.length > 50) {
 			postLogEntry.shift()
 		}
 
 
 		errString = JSON.stringify(err.response.body)
 		let replace = `${MLUSER}|${MLPASS}`;
-		let re = new RegExp(replace,"g");
+		let re = new RegExp(replace, "g");
 		errString = errString.replace(re, ",'****')");
 		errString = JSON.parse(errString)
 
 
 
 		resp_data = {
-				"name": request.body.name,
-				"objid":  "objid",
-				"publish": {"status": "error","server": url,"message": errString }
-			}
+			"name": request.body.name,
+			"objid": "objid",
+			"publish": { "status": "error", "server": url, "message": errString }
+		}
 		response.set('Content-Type', 'application/json');
 		response.status(500).send(resp_data);
 
@@ -3454,9 +3477,9 @@ app.post('/copycat/upload/:location', async (request, response) => {
 
 app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 
-	if (!WC_CLIENTID || !WC_SECRET){
+	if (!WC_CLIENTID || !WC_SECRET) {
 		let resp_data = {
-			status: {"status":"error"},
+			status: { "status": "error" },
 			error: "WorldCat client ID and secret not set in environment variables.",
 			results: {
 				isbns: [],
@@ -3482,7 +3505,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 	}
 
 
-	try{
+	try {
 		const resp = await got(URL, {
 			searchParams: queryParams,
 			headers: {
@@ -3494,20 +3517,20 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 
 		const data = JSON.parse(resp.body)
 		let resp_data = {
-			status: {"status":"success"},
+			status: { "status": "success" },
 			results: {
 				isbns: [],
 				records: []
 			}
 		}
 		// console.log("data: ", data)
-		if (data && data.numberOfRecords> 0 ){
+		if (data && data.numberOfRecords > 0) {
 			let isbns = []
-			for (let record of data.briefRecords){
+			for (let record of data.briefRecords) {
 				// console.log("record: ", record)
-				if (record.isbns && record.isbns.length > 0){
-					for (let isbn of record.isbns){
-						if (isbns.indexOf(isbn) == -1){
+				if (record.isbns && record.isbns.length > 0) {
+					for (let isbn of record.isbns) {
+						if (isbns.indexOf(isbn) == -1) {
 							isbns.push(isbn)
 						}
 					}
@@ -3538,7 +3561,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 		response.status(200).send(resp_data);
 
 		// return resp_data
-	} catch(error){
+	} catch (error) {
 		// console.error("Error: ", error)
 		// console.error("Error: ", error.response.statusCode)
 		// console.error("Error: ", error.response)
@@ -3546,7 +3569,7 @@ app.get('/worldcat/relatedmeta/:isbn', async (request, response) => {
 		console.error('Error Response Body:', error.response.body);
 
 		let resp_data = {
-			status: {"status":"error"},
+			status: { "status": "error" },
 			error: error
 		}
 		response.set('Content-Type', 'application/json');
@@ -3570,19 +3593,19 @@ app.post('/related/works/contributor/', async (request, response) => {
 	console.log("uris: ", uris)
 	let results = {}
 
-	if (uris){
+	if (uris) {
 
-		for (let uri of uris){
+		for (let uri of uris) {
 			let uriResult = fetch(`https://id.loc.gov/resources/works/relationships/contributorto/?label=${uri}&page=0`, {
-			"headers": {
-				"accept": "*/*",
-				"accept-language": "en-US,en;q=0.9,ru;q=0.8",
-				"cache-control": "no-cache",
-				"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-				"Referrer-Policy": "strict-origin-when-cross-origin"
-			},
-			"body": null,
-			"method": "GET"
+				"headers": {
+					"accept": "*/*",
+					"accept-language": "en-US,en;q=0.9,ru;q=0.8",
+					"cache-control": "no-cache",
+					"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+					"Referrer-Policy": "strict-origin-when-cross-origin"
+				},
+				"body": null,
+				"method": "GET"
 			});
 
 			let uriResultJson;
@@ -3633,35 +3656,35 @@ app.get('/lcap/sync/lccn/:lccn', async (request, response) => {
 app.post('/prefs/:user', async (request, response) => {
 	let user = request.params.user
 	let newPrefs = request.body
-	let msg ="???"
+	let msg = "???"
 
-	MongoClient.connect(uri, function(err, db) {
+	MongoClient.connect(uri, function (err, db) {
 		if (err) throw err;
 		var dbo = db.db("bfe2");
-		dbo.collection('userPrefs').findOne({'user': user})
-			.then( (doc)=> {
-				if (!doc){
+		dbo.collection('userPrefs').findOne({ 'user': user })
+			.then((doc) => {
+				if (!doc) {
 					// need to add it to the db
 					dbo.collection('userPrefs').insertOne(
-						{ user: user, prefs: JSON.stringify(newPrefs)},
-						function(err, result){
-							if (err){
+						{ user: user, prefs: JSON.stringify(newPrefs) },
+						function (err, result) {
+							if (err) {
 								msg = "Error inserting preferences: " + err
-								response.status(500).json({'msg': msg});
+								response.status(500).json({ 'msg': msg });
 							} else {
 								msg = "Success!" + result
-								response.status(200).json({'msg': msg});
+								response.status(200).json({ 'msg': msg });
 							}
 						}
 					)
 				} else {
 					// need to update db
 					dbo.collection('userPrefs').updateOne(
-						{'_id': new mongo.ObjectID(doc['_id'])},
-						{ $set: {prefs: JSON.stringify(newPrefs)}}
+						{ '_id': new mongo.ObjectID(doc['_id']) },
+						{ $set: { prefs: JSON.stringify(newPrefs) } }
 					)
 
-					response.status(200).json({'msg': 'updated'});
+					response.status(200).json({ 'msg': 'updated' });
 				}
 			})
 	});
@@ -3672,24 +3695,24 @@ app.post('/prefs/:user', async (request, response) => {
 app.get('/prefs/:user', (request, response) => {
 	let user = request.params.user
 
-	MongoClient.connect(uri, function(err, db) {
+	MongoClient.connect(uri, function (err, db) {
 		if (err) throw err;
 		var dbo = db.db("bfe2");
-		dbo.collection('userPrefs').findOne({'user': user})
-			.then( (doc)=> {
+		dbo.collection('userPrefs').findOne({ 'user': user })
+			.then((doc) => {
 				try {
 					let prefs = JSON.parse(doc.prefs)
-					response.status(200).json({'result': prefs});
-				} catch(err) {
+					response.status(200).json({ 'result': prefs });
+				} catch (err) {
 					let msg = "Failed to load records: " + err
-					response.status(500).json({'result': msg});
+					response.status(500).json({ 'result': msg });
 				}
 			}
 			)
 	});
 })
 
-async function getStatus(){
+async function getStatus() {
 	console.log("GET STATUS")
 
 	// Get status information from ID/BFDB
@@ -3732,7 +3755,7 @@ async function getStatus(){
 	let match = recentNameXML.match(pattern)
 
 	let date = match.groups.date
-	if (date.endsWith(".0")){
+	if (date.endsWith(".0")) {
 		date = date.slice(0, -2)
 	}
 
@@ -3741,27 +3764,27 @@ async function getStatus(){
 		'$4:$5:$6 $2/$3/$1'
 	));
 	let subjectDate = new Date(subjects.orderedItems[0].object.updated.replace(
-        /^(\d{4})(\d\d)(\d\d)$/,
-        '$2/$3/$1'
-    ))
+		/^(\d{4})(\d\d)(\d\d)$/,
+		'$2/$3/$1'
+	))
 
 	lastUpdateNames = recentDateTime.toLocaleString()
 	lastUpdateSubjects = subjectDate.toLocaleDateString()
 
 	// repeat 5 minutes this so the data is current.
-	setTimeout(getStatus, 5*60*1000)
+	setTimeout(getStatus, 5 * 60 * 1000)
 }
 
 
 app.get('/status', (request, response) => {
 	// Send the status information
-	let updates = {'lastUpdateNames': lastUpdateNames, 'lastUpdateSubjects': lastUpdateSubjects}
+	let updates = { 'lastUpdateNames': lastUpdateNames, 'lastUpdateSubjects': lastUpdateSubjects }
 
 	try {
-		response.status(200).json({'status': {"updates": updates}});
-	} catch(err) {
+		response.status(200).json({ 'status': { "updates": updates } });
+	} catch (err) {
 		let msg = "Failed to get status: " + err
-		response.status(500).json({'result': msg});
+		response.status(500).json({ 'result': msg });
 	}
 });
 
@@ -3777,18 +3800,18 @@ app.get('/history/:bibid', async (request, response) => {
 		}
 	});
 
-	if (resp.status == 500){
-		response.status(500).json({'error': 'Failed to fetch history'});
+	if (resp.status == 500) {
+		response.status(500).json({ 'error': 'Failed to fetch history' });
 		return
 	}
 
 	let history = await resp.text()
 
 	try {
-		response.status(200).json({'history': history});
-	} catch(err) {
+		response.status(200).json({ 'history': history });
+	} catch (err) {
 		let msg = "Failed to get status: " + err
-		response.status(500).json({'result': msg});
+		response.status(500).json({ 'result': msg });
 	}
 });
 
