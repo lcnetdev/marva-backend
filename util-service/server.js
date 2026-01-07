@@ -111,7 +111,6 @@ function getEid(doc){
 		}
 	}
 
-	console.info("eid: ", targetID)
 	return targetID
 }
 
