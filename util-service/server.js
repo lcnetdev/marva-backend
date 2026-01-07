@@ -103,13 +103,15 @@ function getEid(doc){
 		targetID = doc.index.eid
 	} else {
 		try {
-			targetID = doc.uri.replce("info:lc/", "") //fallback: get EID from URI if index.eid is abscent
+			targetID = doc.uri.replace("info:lc/", "") //fallback: get EID from URI if index.eid is abscent
+			doc.index.eid = targetID // add the missing value
 		} catch(err) {
 			console.log("Error getting eid: ", err)
 			targetID = false
 		}
 	}
 
+	console.info("eid: ", targetID)
 	return targetID
 }
 
