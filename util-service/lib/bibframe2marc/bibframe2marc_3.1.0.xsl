@@ -35818,6 +35818,9 @@
       <xsl:attribute name="ind2">
         <xsl:variable name="vInd">
           <xsl:choose>
+            <xsl:when test="not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])">
+              <xsl:text>0</xsl:text>
+            </xsl:when>
             <xsl:when test="local-name()='SupplementaryContent'">
               <xsl:text>2</xsl:text>
             </xsl:when>
@@ -35833,7 +35836,7 @@
         </xsl:choose>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="not(contains(bf:title/bf:Title/bf:mainTitle, 'resource]'))">
+        <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'] and                      not(contains(bf:title/bf:Title/bf:mainTitle, 'resource]'))">
           <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
             <marc:subfield code="3">
               <xsl:value-of select="."/>
@@ -35849,13 +35852,17 @@
           <xsl:value-of select="$v856-u"/>
         </marc:subfield>
       </xsl:if>
-      <xsl:for-each select="bf:note/bf:Note/rdfs:label">
-        <marc:subfield code="z">
-          <xsl:call-template name="tChopPunct">
-            <xsl:with-param name="pString" select="."/>
-          </xsl:call-template>
-        </marc:subfield>
-      </xsl:for-each>
+      <xsl:choose>
+        <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance']">
+          <xsl:for-each select="bf:note/bf:Note/rdfs:label">
+            <marc:subfield code="z">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:for-each>
+        </xsl:when>
+      </xsl:choose>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bf:tableOfContents/bf:TableOfContents[not(rdfs:label) and rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']] |                     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']] |                     //bf:Item/bf:electronicLocator/*[rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']]" mode="generate-856">
