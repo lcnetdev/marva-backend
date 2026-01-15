@@ -18,7 +18,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - 'database'      
+      database:
+        condition: service_healthy
     restart: always
     # ports:
     #   - 5001:5001
@@ -44,8 +45,8 @@ services:
 
 
   database:
-    image: 'mongo:4.4.4'
-    container_name: 'mongo' # give your contatner a name
+    image: 'mongo:8'
+    container_name: 'mongo' # give your container a name
     environment:
       - MONGO_INITDB_DATABASE=bfe2 # database name you want to make
       # We don't need to define root stuff because we are not using auth in the db
@@ -55,6 +56,12 @@ services:
     volumes:
       - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./database_files:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "try { var s = rs.status(); s.myState === 1 } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}); false }"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 40s
     restart: always
 
     # we don't need to expose the mongo server, it only talks internally to the other containers
@@ -64,43 +71,7 @@ services:
 
 
 
-  ldpjs-staging:
-    build:
-      context: ./
-      dockerfile: config/ldpjs.docker
-    container_name: 'ldpjs-staging'
-    platform: linux/amd64
-    depends_on:
-      - 'database'
-    volumes:
-      - ./ldpjs:/app # make the app directory from the git submodule
-      - ./config/ldpjs_config_staging.js:/app/config/index.js # copy over our own
-      - ./config/ldpjs_server_staging.js:/app/server.js # copy over our own
-      - ./tmp:/app/tmp
-      - ./config/ldpjs_startup.sh:/app/startup.sh
-    restart: always
-    # ports:
-    #   - 9501:3000
-
-  ldpjs-production:
-    build:
-      context: ./
-      dockerfile: config/ldpjs.docker
-    container_name: 'ldpjs-production'
-    platform: linux/amd64
-    depends_on:
-      - 'database'
-    volumes:
-      - ./ldpjs:/app # make the app directory from the git submodule
-      - ./config/ldpjs_config_production.js:/app/config/index.js # copy over our own
-      - ./config/ldpjs_server_production.js:/app/server.js # copy over our own
-      - ./tmp:/app/tmp
-      - ./config/ldpjs_startup.sh:/app/startup.sh
-    restart: always
-    # ports:
-    #   - 9501:3000
-
-
+  # ldpjs services removed - LDP functionality migrated to util-service
 
   dctap-dancer:
     build:
@@ -117,7 +88,6 @@ services:
     container_name: reverse
     hostname: reverse
     depends_on:
-      - 'ldpjs-staging'
       - 'util'
     image: nginx:stable-alpine
     volumes:
