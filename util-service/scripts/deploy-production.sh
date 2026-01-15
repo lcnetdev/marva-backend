@@ -10,7 +10,7 @@ then
 	git pull
 	git checkout src/assets/main.css
 	git checkout vue.config.js
-	node /app/deploy-helper.js --action="deploy_marva_prod"	
+	node /app/scripts/deploy-helper.js --action="deploy_marva_prod"	
 	npm install
 	npm run build
 else
@@ -19,7 +19,7 @@ else
 	cd production-deploy	
 	git clone https://github.com/thisismattmiller/bfe2test.git
 	cd bfe2test
-	node /app/deploy-helper.js --action="deploy_marva_prod"
+	node /app/scripts/deploy-helper.js --action="deploy_marva_prod"
 	npm install
 	npm run build    
 

@@ -54,7 +54,7 @@ if test -f "$FILE"; then
 
 
     # fix the API paths to work with our settings
-    node /app/deploy-helper.js --action="deploy_profile_editor"
+    node /app/scripts/deploy-helper.js --action="deploy_profile_editor"
 
 	echo "deploy-helper finished"
 

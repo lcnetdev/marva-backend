@@ -11,7 +11,7 @@ then
 	rm vue.config.js
 	git checkout vue.config.js
 	git checkout src/assets/main.css
-	node /app/deploy-helper.js --action="deploy_marva_stage"
+	node /app/scripts/deploy-helper.js --action="deploy_marva_stage"
 	npm install
 	npm run build
 else
@@ -20,7 +20,7 @@ else
 	cd staging-deploy	
 	git clone https://github.com/thisismattmiller/bfe2test.git
 	cd bfe2test
-	node /app/deploy-helper.js --action="deploy_marva_stage"
+	node /app/scripts/deploy-helper.js --action="deploy_marva_stage"
 	npm install
 	npm run build    
 
