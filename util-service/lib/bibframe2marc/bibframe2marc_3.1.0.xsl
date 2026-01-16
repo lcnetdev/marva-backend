@@ -14962,6 +14962,9 @@
                       </xsl:when>
                       <xsl:when test="$vSourceUri != ''">
                         <xsl:choose>
+                          <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                            <xsl:value-of select="'lcgft'"/>
+                          </xsl:when>
                           <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                             <xsl:call-template name="tUriCode">
                               <xsl:with-param name="pUri" select="$vSourceUri"/>
@@ -15420,6 +15423,9 @@
                       </xsl:when>
                       <xsl:when test="$vSourceUri != ''">
                         <xsl:choose>
+                          <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                            <xsl:value-of select="'lcgft'"/>
+                          </xsl:when>
                           <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                             <xsl:call-template name="tUriCode">
                               <xsl:with-param name="pUri" select="$vSourceUri"/>
@@ -17326,6 +17332,12 @@
                 <xsl:variable name="vInd">
                   <xsl:choose>
                     <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/vocabulary/relationship/part']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/vocabulary/relationship/containerof']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/entities/relationships/containerof']">
                       <xsl:text>2</xsl:text>
                     </xsl:when>
                     <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/ontologies/bibframe/hasPart']">
@@ -32442,6 +32454,9 @@
               </xsl:when>
               <xsl:when test="$vSourceUri != ''">
                 <xsl:choose>
+                  <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                    <xsl:value-of select="'lcgft'"/>
+                  </xsl:when>
                   <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                     <xsl:call-template name="tUriCode">
                       <xsl:with-param name="pUri" select="$vSourceUri"/>
