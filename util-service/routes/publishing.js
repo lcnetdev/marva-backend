@@ -11,7 +11,7 @@
  */
 
 const express = require('express');
-const got = require('got');
+const got = require('got').got;
 const { config, getMarkLogicConfig } = require('../config');
 const { validateBibframe } = require('../services/bfValidationService');
 

@@ -13,7 +13,7 @@
 
 const express = require('express');
 const fs = require('fs');
-const got = require('got');
+const got = require('got').got;
 const simpleGit = require('simple-git').simpleGit();
 const { config } = require('../config');
 const { COLLECTIONS } = require('../db/collections');

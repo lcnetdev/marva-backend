@@ -11,9 +11,10 @@
  */
 
 const express = require('express');
-const got = require('got');
+const got = require('got').got;
 const NodeCache = require('node-cache');
-const Marc = require('marcjs');
+const marcjs = require('marcjs');
+const Marc = marcjs.Marc;
 const { ClientCredentials } = require('simple-oauth2');
 const { config } = require('../config');
 
@@ -252,7 +253,6 @@ function createExternalRoutes() {
       if (resp_data.results && resp_data.results.numberOfRecords > 0) {
         for (let record of resp_data.results.briefRecords) {
           const marc_data = await worldCatMetadataApi(token, record.oclcNumber);
-
           const marcRecord = Marc.parse(marc_data.results, 'marcxml');
           const marcText = Marc.format(marcRecord, 'Text');
 
