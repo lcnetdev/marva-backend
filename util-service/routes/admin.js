@@ -40,6 +40,27 @@ function createAdminRoutes(options) {
   } = options;
 
   // ============================================
+  // ROOT / DEPLOY DASHBOARD
+  // ============================================
+
+  /**
+   * GET / - Deploy dashboard (index.ejs)
+   * Requires deploy authentication
+   */
+  router.get('/', (req, res) => {
+    if (!hasDeployAuth(req)) {
+      return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
+    }
+
+    const config = JSON.parse(fs.readFileSync('util_config.json', 'utf8'));
+    res.render('index', {
+      editorVersionStage: getEditorVersionStage(),
+      editorVersion: getEditorVersion(),
+      config: config
+    });
+  });
+
+  // ============================================
   // VERSION ENDPOINTS
   // ============================================
 
