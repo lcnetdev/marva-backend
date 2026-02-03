@@ -78,6 +78,8 @@ services:
       context: ./dctap-dancer
       dockerfile: Dockerfile
     container_name: 'dctap-dancer'
+    args:
+      VITE_BASE_PATH: /dancer/    
     volumes:
       - ./dctap-dancer/data:/app/data
     restart: always
