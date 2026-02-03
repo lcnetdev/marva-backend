@@ -9,7 +9,7 @@ then
 	cd marva-quartz
 	git pull
 	if [ "$BFORGMODE" = "1" ]; then
-		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/'|" vite.config.js
 	fi
 	npm install
 	npm run build
@@ -19,7 +19,7 @@ else
 	git clone https://github.com/lcnetdev/marva-quartz.git
 	cd marva-quartz
 	if [ "$BFORGMODE" = "1" ]; then
-		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/'|" vite.config.js
 	fi
 	npm install
 	npm run build

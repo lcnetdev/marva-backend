@@ -12,7 +12,7 @@ then
 	# git checkout vue.config.js
 	# node /app/deploy-helper.js --action="deploy_marva_prod"
 	if [ "$BFORGMODE" = "1" ]; then
-		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/'|" vite.config.js
 	fi
 	npm install
 	npm run build
@@ -24,7 +24,7 @@ else
 	cd marva-quartz
 	# node /app/deploy-helper.js --action="deploy_marva_prod"
 	if [ "$BFORGMODE" = "1" ]; then
-		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/'|" vite.config.js
 	fi
 	npm install
 	npm run build    
