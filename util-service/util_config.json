@@ -1,7 +1,9 @@
 {
 
+	"comment:" : "these paths are only for old classic marva, not for quartz marva",
 	"prodDeployPath" : "/bfe2/editor/",
 	"stageDeployPath" : "/bfe2/editor/",
+	
 	
 	"profileEditorBasePath": "/bfe2/",
 

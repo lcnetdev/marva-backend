@@ -10,7 +10,10 @@ then
 	git pull
 	# git checkout src/assets/main.css
 	# git checkout vue.config.js
-	# node /app/deploy-helper.js --action="deploy_marva_prod"	
+	# node /app/deploy-helper.js --action="deploy_marva_prod"
+	if [ "$BFORGMODE" = "1" ]; then
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+	fi
 	npm install
 	npm run build
 else
@@ -20,6 +23,9 @@ else
 	git clone https://github.com/lcnetdev/marva-quartz.git
 	cd marva-quartz
 	# node /app/deploy-helper.js --action="deploy_marva_prod"
+	if [ "$BFORGMODE" = "1" ]; then
+		sed -i "s|base: '/bfe2/quartz/'|base: '/marva/quartz/'|" vite.config.js
+	fi
 	npm install
 	npm run build    
 
