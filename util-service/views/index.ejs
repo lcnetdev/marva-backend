@@ -105,14 +105,125 @@
 
 
 		<h2>Deploy</h2>
-		<a href="deploy-staging-quartz" class="deploy" target="_blank">Deploy Marva Quartz Staging</a>
-		<a href="deploy-production-quartz" class="deploy"target="_blank">Deploy Marva Quartz Production</a>
 
-		<a href="deploy-staging" class="deploy" target="_blank">Deploy Marva Staging</a>
-		<a href="deploy-production" class="deploy"target="_blank">Deploy Marva Production</a>
+		<div style="margin-bottom: 1em; display: flex; gap: 1em; flex-wrap: wrap;">
+			<div style="display:inline-block; vertical-align:top; padding: 1em; background-color: #fff3cd; border: solid 1px #ffc107; border-radius: 4px; flex: 1; min-width: 250px;">
+				<label><strong>Quartz Staging</strong> Branch:</label>
+				<select id="staging-quartz-branch"><option value="main">main</option></select>
+				<button id="deploy-staging-quartz-btn">Deploy</button>
+				<div id="staging-quartz-info" style="font-size: 0.8em; color: #666; margin-top: 0.3em;"
+					data-branch="<%= typeof deployInfo !== 'undefined' && deployInfo['stage-quartz'] ? deployInfo['stage-quartz'].branch : '' %>"
+					data-deployed="<%= typeof deployInfo !== 'undefined' && deployInfo['stage-quartz'] ? deployInfo['stage-quartz'].deployedAt : '' %>">
+				</div>
+			</div>
+			<div style="display:inline-block; vertical-align:top; padding: 1em; background-color: #f8d7da; border: solid 1px #dc3545; border-radius: 4px; flex: 1; min-width: 250px;">
+				<label><strong>Quartz Production</strong> Branch:</label>
+				<select id="production-quartz-branch"><option value="main">main</option></select>
+				<button id="deploy-production-quartz-btn">Deploy</button>
+				<div id="production-quartz-info" style="font-size: 0.8em; color: #666; margin-top: 0.3em;"
+					data-branch="<%= typeof deployInfo !== 'undefined' && deployInfo['prod-quartz'] ? deployInfo['prod-quartz'].branch : '' %>"
+					data-deployed="<%= typeof deployInfo !== 'undefined' && deployInfo['prod-quartz'] ? deployInfo['prod-quartz'].deployedAt : '' %>">
+				</div>
+			</div>
+		</div>
 
-		
-		<a href="deploy-profile-editor" style="margin-left: 2em;" class="deploy"target="_blank">Deploy Profile Editor</a>
+		<details style="margin-top: 1em; background-color: whitesmoke; padding: 0.5em; border: solid 1px lightgray;">
+			<summary style="cursor: pointer;">Legacy Deploy (Marva, Profile Editor)</summary>
+			<div style="margin-top: 0.5em; display: flex; gap: 0.5em; flex-wrap: wrap;">
+				<a href="deploy-staging" class="deploy" target="_blank">Deploy Marva Staging</a>
+				<a href="deploy-production" class="deploy" target="_blank">Deploy Marva Production</a>
+				<a href="deploy-profile-editor" class="deploy" target="_blank">Deploy Profile Editor</a>
+			</div>
+		</details>
+
+		<script>
+			// Relative time display
+			function timeAgo(dateStr) {
+				const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+				if (seconds < 60) return 'just now';
+				const minutes = Math.floor(seconds / 60);
+				if (minutes < 60) return minutes + ' min ago';
+				const hours = Math.floor(minutes / 60);
+				if (hours < 24) return hours + ' hour' + (hours !== 1 ? 's' : '') + ' ago';
+				const days = Math.floor(hours / 24);
+				return days + ' day' + (days !== 1 ? 's' : '') + ' ago';
+			}
+
+			function renderDeployInfo(el) {
+				const branch = el.dataset.branch;
+				const deployed = el.dataset.deployed;
+				if (branch && deployed) {
+					el.textContent = 'Last deploy: ' + branch + ' | ' + timeAgo(deployed);
+				} else {
+					el.textContent = 'Last deploy: unknown';
+				}
+			}
+
+			const deployInfoEls = [
+				document.getElementById('staging-quartz-info'),
+				document.getElementById('production-quartz-info')
+			];
+
+			// Render on page load
+			deployInfoEls.forEach(renderDeployInfo);
+
+			// Update when tab becomes visible
+			document.addEventListener('visibilitychange', () => {
+				if (!document.hidden) deployInfoEls.forEach(renderDeployInfo);
+			});
+
+			// Fetch quartz branches and populate dropdowns
+			fetch('quartz-branches')
+				.then(r => r.json())
+				.then(branches => {
+					['staging-quartz-branch', 'production-quartz-branch'].forEach(id => {
+						const select = document.getElementById(id);
+						select.innerHTML = '';
+						branches.forEach(name => {
+							const opt = document.createElement('option');
+							opt.value = name;
+							opt.textContent = name;
+							select.appendChild(opt);
+						});
+					});
+				})
+				.catch(() => console.log('Could not load quartz branches'));
+
+			// Poll deploy info every 10s until it changes, then stop
+			function pollDeployInfo(region, infoElId) {
+				const el = document.getElementById(infoElId);
+				const previousDeployed = el.dataset.deployed || '';
+				const interval = setInterval(() => {
+					fetch('deploy-info?_=' + Date.now())
+						.then(r => r.json())
+						.then(info => {
+							if (info[region] && info[region].deployedAt !== previousDeployed) {
+								el.dataset.branch = info[region].branch;
+								el.dataset.deployed = info[region].deployedAt;
+								renderDeployInfo(el);
+								clearInterval(interval);
+							}
+						})
+						.catch(() => {});
+				}, 10000);
+			}
+
+			// Deploy buttons
+			document.getElementById('deploy-staging-quartz-btn').addEventListener('click', () => {
+				const branch = document.getElementById('staging-quartz-branch').value;
+				if (confirm('Deploy Quartz Staging with branch: ' + branch + '?')) {
+					window.open('deploy-staging-quartz?branch=' + encodeURIComponent(branch), '_blank');
+					pollDeployInfo('stage-quartz', 'staging-quartz-info');
+				}
+			});
+			document.getElementById('deploy-production-quartz-btn').addEventListener('click', () => {
+				const branch = document.getElementById('production-quartz-branch').value;
+				if (confirm('Deploy Quartz Production with branch: ' + branch + '?')) {
+					window.open('deploy-production-quartz?branch=' + encodeURIComponent(branch), '_blank');
+					pollDeployInfo('prod-quartz', 'production-quartz-info');
+				}
+			});
+		</script>
 
 
 		<hr>

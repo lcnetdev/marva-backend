@@ -11,8 +11,25 @@
 
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const shell = require('shelljs');
 const { hasDeployAuth, hasStatsAuth } = require('../config');
+
+const DEPLOY_INFO_PATH = path.join(__dirname, '..', 'deploy-info.json');
+
+function readDeployInfo() {
+  try {
+    return JSON.parse(fs.readFileSync(DEPLOY_INFO_PATH, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeDeployInfo(region, branch) {
+  const info = readDeployInfo();
+  info[region] = { branch, deployedAt: new Date().toISOString() };
+  fs.writeFileSync(DEPLOY_INFO_PATH, JSON.stringify(info, null, 2));
+}
 
 /**
  * Create admin routes
@@ -56,7 +73,8 @@ function createAdminRoutes(options) {
     res.render('index', {
       editorVersionStage: getEditorVersionStage(),
       editorVersion: getEditorVersion(),
-      config: config
+      config: config,
+      deployInfo: readDeployInfo()
     });
   });
 
@@ -184,12 +202,15 @@ function createAdminRoutes(options) {
   /**
    * GET /deploy-production-quartz - Deploy production Quartz
    * Requires deploy authentication
+   * Optional query param: ?branch=branch-name
    */
   router.get('/deploy-production-quartz', (req, res) => {
     if (!hasDeployAuth(req)) {
       return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
     }
-    const result = executeDeployScript('./scripts/deploy-production-quartz.sh');
+    const branch = req.query.branch || 'main';
+    const result = executeDeployScript(`./scripts/deploy-production-quartz.sh "${branch}"`);
+    writeDeployInfo('prod-quartz', branch);
     res.status(200).send(result);
   });
 
@@ -208,13 +229,43 @@ function createAdminRoutes(options) {
   /**
    * GET /deploy-staging-quartz - Deploy staging Quartz
    * Requires deploy authentication
+   * Optional query param: ?branch=branch-name
    */
   router.get('/deploy-staging-quartz', (req, res) => {
     if (!hasDeployAuth(req)) {
       return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
     }
-    const result = executeDeployScript('./scripts/deploy-staging-quartz.sh');
+    const branch = req.query.branch || 'main';
+    const result = executeDeployScript(`./scripts/deploy-staging-quartz.sh "${branch}"`);
+    writeDeployInfo('stage-quartz', branch);
     res.status(200).send(result);
+  });
+
+  /**
+   * GET /quartz-branches - Proxy to GitHub for active branches
+   * Requires deploy authentication
+   */
+  router.get('/quartz-branches', async (req, res) => {
+    if (!hasDeployAuth(req)) {
+      return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
+    }
+    try {
+      const resp = await fetch('https://github.com/lcnetdev/marva-quartz/branches/active.json');
+      const data = await resp.json();
+      const payload = data.payload || data;
+      const branchNames = (payload.branches || []).map(b => b.name).filter(n => n !== 'main');
+      const branches = ['main', ...branchNames];
+      res.json(branches);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch branches' });
+    }
+  });
+
+  /**
+   * GET /deploy-info - Get last deploy info for quartz regions
+   */
+  router.get('/deploy-info', (req, res) => {
+    res.json(readDeployInfo());
   });
 
   /**
