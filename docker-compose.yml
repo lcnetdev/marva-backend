@@ -32,18 +32,6 @@ services:
       - TXL_FLASK_SECRET=1234567890
     restart: always
 
-    # build:
-    #   context: ./scriptshifter/
-    #   dockerfile: Dockerfile
-    # container_name: 'scriptshifter'
-    # volumes:
-    #   - ./tmp:/tmp
-    # environment:
-    #   - TXL_FLASK_SECRET=1234567890
-    # # ports:
-    # #  - 5003:8000
-
-
   database:
     image: 'mongo:8'
     container_name: 'mongo' # give your container a name
@@ -77,9 +65,9 @@ services:
     build:
       context: ./dctap-dancer
       dockerfile: Dockerfile
-    container_name: 'dctap-dancer'
-    args:
-      VITE_BASE_PATH: /dancer/    
+      args:
+        VITE_BASE_PATH: /dancer/      
+    container_name: 'dctap-dancer' 
     volumes:
       - ./dctap-dancer/data:/app/data
     restart: always
