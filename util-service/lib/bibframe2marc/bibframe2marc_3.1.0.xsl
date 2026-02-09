@@ -11823,6 +11823,13 @@
                           </xsl:when>
                           <xsl:when test="local-name()='HierarchicalGeographic' or rdf:type[@rdf:resource='http://www.loc.gov/mads/rdf/v1#HierarchicalGeographic']">
                             <xsl:choose>
+                              <xsl:when test="contains(rdfs:label, '--')">
+                                <xsl:call-template name="tToken2Subfields">
+                                  <xsl:with-param name="pString" select="rdfs:label"/>
+                                  <xsl:with-param name="pSeparator" select="'--'"/>
+                                  <xsl:with-param name="pSubfieldCode" select="'z'"/>
+                                </xsl:call-template>
+                              </xsl:when>
                               <xsl:when test="contains(madsrdf:authoritativeLabel, '--')">
                                 <xsl:call-template name="tToken2Subfields">
                                   <xsl:with-param name="pString" select="madsrdf:authoritativeLabel"/>
@@ -14454,8 +14461,8 @@
         </xsl:choose>
       </xsl:for-each>
       <xsl:choose>
-        <xsl:when test="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record]        [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-          <xsl:for-each select="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record]        [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+        <xsl:when test="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))]       [not(rdfs:label/@xml:lang) or contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:resource,'id.loc') and not(contains(@rdf:resource, 'REPLACE'))">
@@ -14571,7 +14578,7 @@
                     <xsl:when test="contains($relURI, '/nalt/')">
                       <xsl:text>3</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
+                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/vocabulary/rbmscv/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
                       <xsl:text>7</xsl:text>
                     </xsl:when>
                     <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects'] or              bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects']">
@@ -14627,6 +14634,9 @@
                   <xsl:when test="contains($relURI, '/demogrpahicTerms/')">
                     <xsl:text>lcdgt</xsl:text>
                   </xsl:when>
+                  <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                    <xsl:text>rbmscv</xsl:text>
+                  </xsl:when>
                   <xsl:when test="contains($relURI, '/graphicMaterials/')">
                     <xsl:text>lctgm</xsl:text>
                   </xsl:when>
@@ -14643,6 +14653,18 @@
                   <xsl:value-of select="$vvGenreTag-2"/>
                 </marc:subfield>
               </xsl:if>
+              <xsl:choose>
+                <xsl:when test="parent::bf:genreForm/parent::bf:Item">
+                  <xsl:variable name="vvGenreTag-5">
+                    <xsl:value-of select="$pConversionAgency"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvGenreTag-5 != ''">
+                    <marc:subfield code="5">
+                      <xsl:value-of select="$vvGenreTag-5"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+              </xsl:choose>
               <xsl:choose>
                 <xsl:when test="$relURI != ''">
                   <xsl:variable name="vvGenreTag-0">
@@ -14678,7 +14700,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record]        ">
+          <xsl:for-each select="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))]       ">
             <xsl:variable name="relURI">
               <xsl:choose>
                 <xsl:when test="contains(@rdf:resource,'id.loc') and not(contains(@rdf:resource, 'REPLACE'))">
@@ -14794,7 +14816,7 @@
                     <xsl:when test="contains($relURI, '/nalt/')">
                       <xsl:text>3</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
+                    <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/vocabulary/rbmscv/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
                       <xsl:text>7</xsl:text>
                     </xsl:when>
                     <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects'] or              bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects']">
@@ -14850,6 +14872,9 @@
                   <xsl:when test="contains($relURI, '/demogrpahicTerms/')">
                     <xsl:text>lcdgt</xsl:text>
                   </xsl:when>
+                  <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+                    <xsl:text>rbmscv</xsl:text>
+                  </xsl:when>
                   <xsl:when test="contains($relURI, '/graphicMaterials/')">
                     <xsl:text>lctgm</xsl:text>
                   </xsl:when>
@@ -14866,6 +14891,18 @@
                   <xsl:value-of select="$vvGenreTag-2"/>
                 </marc:subfield>
               </xsl:if>
+              <xsl:choose>
+                <xsl:when test="parent::bf:genreForm/parent::bf:Item">
+                  <xsl:variable name="vvGenreTag-5">
+                    <xsl:value-of select="$pConversionAgency"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvGenreTag-5 != ''">
+                    <marc:subfield code="5">
+                      <xsl:value-of select="$vvGenreTag-5"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+              </xsl:choose>
               <xsl:choose>
                 <xsl:when test="$relURI != ''">
                   <xsl:variable name="vvGenreTag-0">
@@ -14962,6 +14999,9 @@
                       </xsl:when>
                       <xsl:when test="$vSourceUri != ''">
                         <xsl:choose>
+                          <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                            <xsl:value-of select="'lcgft'"/>
+                          </xsl:when>
                           <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                             <xsl:call-template name="tUriCode">
                               <xsl:with-param name="pUri" select="$vSourceUri"/>
@@ -15420,6 +15460,9 @@
                       </xsl:when>
                       <xsl:when test="$vSourceUri != ''">
                         <xsl:choose>
+                          <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                            <xsl:value-of select="'lcgft'"/>
+                          </xsl:when>
                           <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                             <xsl:call-template name="tUriCode">
                               <xsl:with-param name="pUri" select="$vSourceUri"/>
@@ -16402,6 +16445,18 @@
             </xsl:when>
           </xsl:choose>
           <xsl:choose>
+            <xsl:when test="ancestor::bf:contribution/parent::bf:Item">
+              <xsl:variable name="v-5">
+                <xsl:value-of select="$pConversionAgency"/>
+              </xsl:variable>
+              <xsl:if test="$v-5 != ''">
+                <marc:subfield code="5">
+                  <xsl:value-of select="$v-5"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:choose>
             <xsl:when test="$relURI != '' and contains($relURI, 'id.loc.gov/authorities/')">
               <xsl:variable name="v-0">
                 <xsl:value-of select="$relURI"/>
@@ -17326,6 +17381,12 @@
                 <xsl:variable name="vInd">
                   <xsl:choose>
                     <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/vocabulary/relationship/part']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/vocabulary/relationship/containerof']">
+                      <xsl:text>2</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/entities/relationships/containerof']">
                       <xsl:text>2</xsl:text>
                     </xsl:when>
                     <xsl:when test="ancestor::bf:Relation/bf:relationship//@rdf:*[.='http://id.loc.gov/ontologies/bibframe/hasPart']">
@@ -32158,7 +32219,7 @@
       </xsl:for-each>
     </marc:datafield>
   </xsl:template>
-  <xsl:template match="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record]        " mode="generate-vGenreTag">
+  <xsl:template match="       bf:Work/bf:genreForm/*[bflc:marcKey or marc:record] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'd-nb.info/gnd/') and not(contains(@rdf:resource, '#'))] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'd-nb.info/gnd/') and not(contains(@rdf:about, '#'))] |       bf:Work/bf:genreForm[contains(@rdf:resource, 'id.worldcat.org/fast/')] |       bf:Work/bf:genreForm/*[contains(@rdf:about, 'id.worldcat.org/fast/')] |       //bf:Item/bf:genreForm/*[bflc:marcKey or marc:record] |       //bf:Item/bf:genreForm[contains(@rdf:resource, 'id.loc.gov') and not(contains(@rdf:resource, '/vocabulary/')) and not(contains(@rdf:resource, 'REPLACE'))] |       //bf:Item/bf:genreForm/*[contains(@rdf:about, 'id.loc.gov') and not(contains(@rdf:about, '/vocabulary/')) and not(contains(@rdf:about, 'REPLACE'))]       " mode="generate-vGenreTag">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="relURI">
@@ -32276,7 +32337,7 @@
             <xsl:when test="contains($relURI, '/nalt/')">
               <xsl:text>3</xsl:text>
             </xsl:when>
-            <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
+            <xsl:when test="contains($relURI, '/names/') or contains($relURI, '/genreForms/') or              contains($relURI, '/demographicTerms/') or contains($relURI, '/graphicMaterials/') or              contains($relURI, '/vocabulary/rbmscv/') or              contains($relURI, '/fast/') or             contains($relURI, 'd-nb.info/gnd/')">
               <xsl:text>7</xsl:text>
             </xsl:when>
             <xsl:when test="madsrdf:isMemberOfMADSScheme[@rdf:resource='http://id.loc.gov/authorities/subjects'] or              bf:source[@rdf:resource='http://id.loc.gov/authorities/subjects']">
@@ -32332,6 +32393,9 @@
           <xsl:when test="contains($relURI, '/demogrpahicTerms/')">
             <xsl:text>lcdgt</xsl:text>
           </xsl:when>
+          <xsl:when test="contains($relURI, '/vocabulary/rbmscv/')">
+            <xsl:text>rbmscv</xsl:text>
+          </xsl:when>
           <xsl:when test="contains($relURI, '/graphicMaterials/')">
             <xsl:text>lctgm</xsl:text>
           </xsl:when>
@@ -32348,6 +32412,18 @@
           <xsl:value-of select="$vvGenreTag-2"/>
         </marc:subfield>
       </xsl:if>
+      <xsl:choose>
+        <xsl:when test="parent::bf:genreForm/parent::bf:Item">
+          <xsl:variable name="vvGenreTag-5">
+            <xsl:value-of select="$pConversionAgency"/>
+          </xsl:variable>
+          <xsl:if test="$vvGenreTag-5 != ''">
+            <marc:subfield code="5">
+              <xsl:value-of select="$vvGenreTag-5"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
+      </xsl:choose>
       <xsl:choose>
         <xsl:when test="$relURI != ''">
           <xsl:variable name="vvGenreTag-0">
@@ -32442,6 +32518,9 @@
               </xsl:when>
               <xsl:when test="$vSourceUri != ''">
                 <xsl:choose>
+                  <xsl:when test="$vSourceUri = 'http://id.loc.gov/authorities/genreForms'">
+                    <xsl:value-of select="'lcgft'"/>
+                  </xsl:when>
                   <xsl:when test="contains($vSourceUri,'id.loc.gov')">
                     <xsl:call-template name="tUriCode">
                       <xsl:with-param name="pUri" select="$vSourceUri"/>
@@ -35818,6 +35897,9 @@
       <xsl:attribute name="ind2">
         <xsl:variable name="vInd">
           <xsl:choose>
+            <xsl:when test="not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])">
+              <xsl:text>0</xsl:text>
+            </xsl:when>
             <xsl:when test="local-name()='SupplementaryContent'">
               <xsl:text>2</xsl:text>
             </xsl:when>
@@ -35833,7 +35915,7 @@
         </xsl:choose>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="not(contains(bf:title/bf:Title/bf:mainTitle, 'resource]'))">
+        <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'] and                      not(contains(bf:title/bf:Title/bf:mainTitle, 'resource]'))">
           <xsl:for-each select="bf:title/bf:Title/bf:mainTitle">
             <marc:subfield code="3">
               <xsl:value-of select="."/>
@@ -35849,13 +35931,17 @@
           <xsl:value-of select="$v856-u"/>
         </marc:subfield>
       </xsl:if>
-      <xsl:for-each select="bf:note/bf:Note/rdfs:label">
-        <marc:subfield code="z">
-          <xsl:call-template name="tChopPunct">
-            <xsl:with-param name="pString" select="."/>
-          </xsl:call-template>
-        </marc:subfield>
-      </xsl:for-each>
+      <xsl:choose>
+        <xsl:when test="rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance']">
+          <xsl:for-each select="bf:note/bf:Note/rdfs:label">
+            <marc:subfield code="z">
+              <xsl:call-template name="tChopPunct">
+                <xsl:with-param name="pString" select="."/>
+              </xsl:call-template>
+            </marc:subfield>
+          </xsl:for-each>
+        </xsl:when>
+      </xsl:choose>
     </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Work/bf:tableOfContents/bf:TableOfContents[not(rdfs:label) and rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']] |                     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']] |                     //bf:Item/bf:electronicLocator/*[rdf:value[@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI']]" mode="generate-856">
