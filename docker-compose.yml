@@ -86,7 +86,9 @@ services:
       - ./dist/staging:/staging
       - ./dist/profile-editor:/profile-editor
       - ./dist/prod-quartz:/prod-quartz
+      - ./dist/prod-quartz:/srv/prod/marva
       - ./dist/stage-quartz:/stage-quartz
+      - ./dist/stage-quartz:/srv/stage/marva
     ports:
       - 9401:8080
       - 9400:80
