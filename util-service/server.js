@@ -10,7 +10,7 @@ const MongoClient = mongo.MongoClient;
 
 const { config } = require('./config');
 const { createApp } = require('./app');
-const { COLLECTIONS } = require('./db/collections');
+const { COLLECTIONS, ensureAllIndexes } = require('./db/collections');
 const { initializeCaches, getStagingCache, getProductionCache } = require('./services/cacheService');
 
 // State objects
@@ -69,6 +69,10 @@ MongoClient.connect(uri).then(async (client) => {
   if (!prefsDoc) {
     await db.collection(COLLECTIONS.USER_PREFS).insertOne({ user: 'test0123456789', prefs: ':)' });
   }
+
+  // Ensure MongoDB indexes exist
+  await ensureAllIndexes(db);
+  console.log('MongoDB indexes ensured');
 
   // Initialize caches and change streams in background (don't block server startup)
   initializeCaches(db, mongo).catch(err => {
