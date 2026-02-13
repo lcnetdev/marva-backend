@@ -8300,7 +8300,7 @@
                   </xsl:choose>
                   <xsl:choose>
                     <xsl:when test="$vTag = '501' or $vTag = '533' or $vTag = '585'">
-                      <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                      <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                         <xsl:choose>
                           <xsl:when test="position() = 1">
                             <marc:subfield code="5">
@@ -8414,7 +8414,7 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <marc:subfield code="5">
@@ -9319,7 +9319,7 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
-                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <marc:subfield code="5">
@@ -9406,7 +9406,7 @@
                     <xsl:value-of select="$v588-a"/>
                   </marc:subfield>
                 </xsl:if>
-                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <marc:subfield code="5">
@@ -9474,7 +9474,7 @@
                         <xsl:value-of select="$v880-a"/>
                       </marc:subfield>
                     </xsl:if>
-                    <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                    <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <marc:subfield code="5">
@@ -9566,7 +9566,7 @@
                     <xsl:value-of select="$v500-a"/>
                   </marc:subfield>
                 </xsl:if>
-                <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <marc:subfield code="5">
@@ -9639,7 +9639,7 @@
                         <xsl:value-of select="$v880-a"/>
                       </marc:subfield>
                     </xsl:if>
-                    <xsl:for-each select="../bflc:applicableInstitution/bf:Agent/bf:code">
+                    <xsl:for-each select="../bflc:applicableInstitution/*/bf:code">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <marc:subfield code="5">
@@ -10352,7 +10352,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
+              <xsl:for-each select="bflc:applicableInstitution/*/bf:code">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="5">
@@ -10456,7 +10456,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
+              <xsl:for-each select="bflc:applicableInstitution/*/bf:code">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="5">
@@ -31676,7 +31676,7 @@
           <xsl:value-of select="."/>
         </marc:subfield>
       </xsl:for-each>
-      <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
+      <xsl:for-each select="bflc:applicableInstitution/*/bf:code">
         <marc:subfield code="5">
           <xsl:value-of select="."/>
         </marc:subfield>
@@ -31730,7 +31730,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:for-each select="bflc:applicableInstitution/bf:Agent/bf:code">
+      <xsl:for-each select="bflc:applicableInstitution/*/bf:code">
         <marc:subfield code="5">
           <xsl:value-of select="."/>
         </marc:subfield>
