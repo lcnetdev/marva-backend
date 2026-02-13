@@ -4297,66 +4297,6 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:choose>
-        <xsl:when test="/descendant::node()[bf:Title|bf:ProvisionActivity|bf:editionStatement|bf:Series]//@xml:lang[contains(., '-') and not(contains(., 'atn')) and not(contains(., 'hai'))]">
-          <marc:datafield>
-            <xsl:attribute name="tag">066</xsl:attribute>
-            <xsl:attribute name="ind1">
-              <xsl:text> </xsl:text>
-            </xsl:attribute>
-            <xsl:attribute name="ind2">
-              <xsl:text> </xsl:text>
-            </xsl:attribute>
-            <xsl:variable name="scriptCodesPreNS">
-              <xsl:variable name="df880scriptNS" select="exsl:node-set($df880script)"/>
-              <xsl:variable name="vLangs" select="//@xml:lang[contains(., '-') and not(contains(., 'atn'))]"/>
-              <!-- <xsl:for-each select="$df880scriptNS/*[lang]/lang"> -->
-              <marc:codes>
-                <!-- Those defined in the map. -->
-                <xsl:for-each select="$df880scriptNS/script/lang">
-                  <xsl:variable name="vLang" select="."/>
-                  <xsl:choose>
-                    <xsl:when test="$vLangs[translate(.,$upper,$lower) = $vLang ]">
-                      <marc:scriptCode>
-                        <xsl:value-of select="../code"/>
-                      </marc:scriptCode>
-                    </xsl:when>
-                    <xsl:when test="$vLangs[translate(substring-after(.,'-'),$upper,$lower) = $vLang ]">
-                      <marc:scriptCode>
-                        <xsl:value-of select="../code"/>
-                      </marc:scriptCode>
-                    </xsl:when>
-                  </xsl:choose>
-                </xsl:for-each>
-                <!-- For those not defined in the map. -->
-                <xsl:for-each select="$vLangs">
-                  <xsl:variable name="vLang" select="translate(substring-after(.,'-'),$upper,$lower)"/>
-                  <xsl:if test="count($df880scriptNS/script/lang[. = $vLang]) = 0">
-                    <marc:scriptCode>
-                      <xsl:value-of select="$vLang"/>
-                    </marc:scriptCode>
-                  </xsl:if>
-                </xsl:for-each>
-              </marc:codes>
-            </xsl:variable>
-            <xsl:variable name="scriptCodes" select="exsl:node-set($scriptCodesPreNS)"/>
-            <xsl:for-each select="$scriptCodes//marc:scriptCode[not(.=preceding::*[1])]">
-              <xsl:choose>
-                <xsl:when test="contains(., '/')">
-                  <marc:subfield code="c">
-                    <xsl:value-of select="substring-before(., '/')"/>
-                  </marc:subfield>
-                </xsl:when>
-                <xsl:otherwise>
-                  <marc:subfield code="c">
-                    <xsl:value-of select="."/>
-                  </marc:subfield>
-                </xsl:otherwise>
-              </xsl:choose>
-            </xsl:for-each>
-          </marc:datafield>
-        </xsl:when>
-      </xsl:choose>
       <xsl:apply-templates select="bf:Work/bf:classification/bf:ClassificationNal|bf:Work/bf:classification/bf:Classification[bf:assigner/@rdf:resource='http://id.loc.gov/vocabulary/organizations/dnal' or                     bf:assigner/*/@rdf:about='http://id.loc.gov/vocabulary/organizations/dnal']" mode="generate-070">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
