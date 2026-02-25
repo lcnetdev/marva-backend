@@ -19,8 +19,10 @@ const {
   createProfilesRoutes,
   createExternalRoutes,
   createMarcRoutes,
-  createLdpRoutes
+  createLdpRoutes,
+  createAuthRoutes
 } = require('./routes');
+const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
 
 /**
@@ -64,6 +66,15 @@ function createApp(options) {
   // ============================================
   // MOUNT ROUTES
   // ============================================
+
+  // Auth routes (login, callback, logout, refresh, me)
+  // Must be mounted BEFORE optionalAuth middleware so auth endpoints are accessible
+  const authRouter = createAuthRoutes();
+  app.use('/', authRouter);
+
+  // JWT optional auth — populates req.user if a valid Bearer token is present.
+  // Does NOT block requests without a token (backward compatibility).
+  app.use(optionalAuth);
 
   // Admin routes (version, status, cleanup, deploy, logs)
   // Store mutable version state

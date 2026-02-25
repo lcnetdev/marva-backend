@@ -11,11 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@node-saml/node-saml": "^5.1.0",
     "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^5.0.1",
     "fast-xml-parser": "^5.0.9",
     "got": "^14.4.5",
+    "jsonwebtoken": "^9.0.3",
     "marcjs": "^2.0.1",
     "mongodb": "^7.0.0",
     "node-cache": "^5.1.2",
@@ -27,8 +29,8 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^7.0.0",
     "mongodb-memory-server": "^10.1.4",
-    "nock": "^14.0.1"
+    "nock": "^14.0.1",
+    "supertest": "^7.0.0"
   }
 }

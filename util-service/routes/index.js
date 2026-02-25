@@ -15,6 +15,7 @@ const { createProfilesRoutes } = require('./profiles');
 const { createExternalRoutes } = require('./external');
 const { createMarcRoutes } = require('./marc');
 const { createLdpRoutes } = require('./ldp');
+const { createAuthRoutes } = require('./auth');
 
 module.exports = {
   createAdminRoutes,
@@ -27,5 +28,6 @@ module.exports = {
   createProfilesRoutes,
   createExternalRoutes,
   createMarcRoutes,
-  createLdpRoutes
+  createLdpRoutes,
+  createAuthRoutes
 };

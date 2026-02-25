@@ -17,3 +17,5 @@ db_restore/
 util-service/REFACTOR_PLAN.md
 util-service/TEST_PLAN.md
 util-service/deploy-info.json
+util-service/certs/*.cer
+util-service/certs/*.pem

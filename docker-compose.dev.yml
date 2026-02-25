@@ -1,0 +1,33 @@
+# Development override — adds a mock SAML IdP for local SSO testing.
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# The mock IdP serves a login form at http://localhost:8443/simplesaml
+# and returns configurable SAML assertions to the callback URL.
+#
+# Set these env vars in .env (or override inline):
+#   SAML_ENABLED=1
+#   SAML_ENTRY_POINT=http://mock-idp:8080/simplesaml/saml2/idp/SSOService.php
+#   SAML_IDP_CERT_PATH=/app/certs/mock-idp.crt
+#   SAML_ISSUER=http://localhost:9400/marva
+#   SAML_CALLBACK_URL=http://localhost:9400/marva/util/auth/callback
+#
+# Default test users:
+#   user1 / user1pass
+#   user2 / user2pass
+
+version: '3'
+services:
+
+  mock-idp:
+    image: kristophjunge/test-saml-idp
+    container_name: 'mock-idp'
+    ports:
+      - "8443:8443"
+      - "8080:8080"
+    environment:
+      - SIMPLESAMLPHP_SP_ENTITY_ID=http://localhost:9400/marva
+      - SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:9400/marva/util/auth/callback
+      - SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:9400/marva/util/auth/logout/callback
+    restart: unless-stopped
