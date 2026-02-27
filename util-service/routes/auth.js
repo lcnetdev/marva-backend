@@ -119,6 +119,7 @@ function createAuthRoutes() {
       idpCert: idpCert,
       wantAssertionsSigned: true,
       wantAuthnResponseSigned: false,
+      disableRequestedAuthnContext: true,
       audience: config.saml.issuer,
     };
     debug('Initializing SAML with options:', {
