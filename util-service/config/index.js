@@ -77,6 +77,7 @@ const config = {
     bfOrgMode: process.env.BFORGMODE === 'true' || process.env.BFORGMODE === '1',
     samlEnabled: process.env.SAML_ENABLED === 'true' || process.env.SAML_ENABLED === '1',
     devAuthBypass: process.env.DEV_AUTH_BYPASS === 'true' || process.env.DEV_AUTH_BYPASS === '1',
+    samlDebug: process.env.SAML_DEBUG === 'true' || process.env.SAML_DEBUG === '1',
   },
 
   // ID generation defaults
