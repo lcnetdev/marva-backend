@@ -244,7 +244,7 @@ function createAuthRoutes() {
     if (req.body?.SAMLResponse) {
       try {
         const decoded = Buffer.from(req.body.SAMLResponse, 'base64').toString('utf8');
-        debug('SAMLResponse (first 500 chars):', decoded.substring(0, 500));
+        debug('SAMLResponse (first 1500 chars):', decoded.substring(0, 1500));
       } catch { debug('Could not decode SAMLResponse'); }
     }
 
@@ -255,22 +255,36 @@ function createAuthRoutes() {
     try {
       const { saml, domainCfg } = getSamlForDomain(req);
 
-      // Diagnostic: compare cert in SAML response vs loaded cert
+      // Diagnostic: inspect SAML instance cert and response
       if (req.body?.SAMLResponse) {
         try {
           const xml = Buffer.from(req.body.SAMLResponse, 'base64').toString('utf8');
-          const certMatch = xml.match(/<ds:X509Certificate[^>]*>([^<]+)<\/ds:X509Certificate>/);
+          // Try broad pattern for X509Certificate (any namespace prefix)
+          const certMatch = xml.match(/<[^>]*X509Certificate[^>]*>([^<]+)<\/[^>]*X509Certificate>/);
+          const loadedCert = readIdpCert(domainCfg.idpCertPath);
           if (certMatch) {
             const responseCert = certMatch[1].replace(/\s/g, '');
-            const loadedCert = readIdpCert(domainCfg.idpCertPath);
             debug('Cert in SAML response (first 60):', responseCert.substring(0, 60));
             debug('Cert we loaded (first 60):', loadedCert.substring(0, 60));
             debug('Certs match:', responseCert === loadedCert);
             debug('Response cert length:', responseCert.length, '| Loaded cert length:', loadedCert.length);
           } else {
-            debug('No X509Certificate found in SAML response XML');
+            debug('No X509Certificate found in SAML response');
+            debug('X509 search in full XML:', xml.includes('X509') ? 'X509 IS in the XML' : 'X509 NOT in the XML');
           }
+          debug('Loaded cert empty?', !loadedCert || loadedCert.length === 0);
+          // Log the Signature section of the response
+          const sigMatch = xml.match(/<[^>]*Signature[^/][^>]*>[\s\S]{0,2000}/);
+          debug('Signature section (first 2000 chars):', sigMatch ? sigMatch[0] : '(no Signature element found)');
         } catch (e) { debug('Cert comparison failed:', e.message); }
+        // Log the cert that the SAML instance is actually using
+        debug('SAML instance idpCert (first 60):', saml.options?.idpCert
+          ? (typeof saml.options.idpCert === 'string'
+            ? saml.options.idpCert.substring(0, 60) + '...'
+            : `[array of ${saml.options.idpCert.length}]`)
+          : '(not set)');
+        debug('SAML instance idpCert length:', typeof saml.options?.idpCert === 'string'
+          ? saml.options.idpCert.length : 'N/A');
       }
 
       const { profile } = await saml.validatePostResponseAsync(req.body);
