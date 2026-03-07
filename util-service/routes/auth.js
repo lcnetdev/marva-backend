@@ -8,12 +8,15 @@
  * - /auth/logout - Initiate SAML logout
  * - /auth/logout/callback - SLO callback from IdP
  * - /auth/me - Return current user info from JWT
+ *
+ * Multi-domain: resolves the correct SAML config per request based on
+ * the Host header (see config/domains.js).
  */
 
 const express = require('express');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
-const { config } = require('../config');
+const { config, domainConfigs } = require('../config');
 const { requireAuth } = require('../middleware/jwtAuth');
 
 const debug = (...args) => {
@@ -22,6 +25,7 @@ const debug = (...args) => {
 
 // In-memory store for pending SAML request IDs (InResponseTo validation).
 // Entries auto-expire after 5 minutes via periodic cleanup.
+// Shared across all domains — request IDs are globally unique.
 const pendingRequests = new Map();
 const PENDING_TTL_MS = 5 * 60 * 1000;
 
@@ -37,9 +41,10 @@ setInterval(() => {
 
 /**
  * Read the IdP certificate from disk. Returns empty string if not configured.
+ * @param {string} [certPath] - Path to the cert file. Falls back to config.saml.idpCertPath.
  */
-function readIdpCert() {
-  const certPath = config.saml.idpCertPath;
+function readIdpCert(certPath) {
+  if (!certPath) certPath = config.saml.idpCertPath;
   debug('Reading IdP cert from:', certPath || '(not configured)');
   if (!certPath) return '';
   try {
@@ -54,6 +59,84 @@ function readIdpCert() {
     console.error('Failed to read IdP certificate:', err.message);
     return '';
   }
+}
+
+/**
+ * Resolve which domain's SAML config to use based on the request's Host header.
+ *
+ * Matching order:
+ *   1. Exact hostname match in domainConfigs
+ *   2. Prefix match (e.g., "localhost" matches "localhost:9401")
+ *   3. config.saml (the original single-domain config from env vars)
+ *
+ * @param {object} req - Express request
+ * @returns {object} Domain-specific SAML config
+ */
+function resolveDomainConfig(req) {
+  const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const hostname = rawHost.split(':')[0].toLowerCase();
+
+  debug('Resolving domain config for hostname:', hostname, '(raw Host:', rawHost, ')');
+
+  // Exact match
+  if (domainConfigs.has(hostname)) {
+    debug('Matched domain config:', hostname);
+    return domainConfigs.get(hostname);
+  }
+
+  // Prefix match (e.g., "localhost" for "localhost:9401")
+  for (const [key, domainCfg] of domainConfigs) {
+    if (hostname.startsWith(key)) {
+      debug('Prefix-matched domain config:', key);
+      return domainCfg;
+    }
+  }
+
+  // Fallback to the original single-domain config
+  debug('No domain match, falling back to config.saml');
+  return config.saml;
+}
+
+// Per-domain SAML instance cache (keyed by callbackUrl)
+const samlInstances = new Map();
+
+/**
+ * Get or create a SAML instance for the domain identified by the request.
+ * Instances are lazily created and cached.
+ *
+ * @param {object} req - Express request
+ * @returns {{ saml: SAML, domainCfg: object }}
+ */
+function getSamlForDomain(req) {
+  const domainCfg = resolveDomainConfig(req);
+  const cacheKey = domainCfg.callbackUrl;
+
+  if (samlInstances.has(cacheKey)) {
+    return { saml: samlInstances.get(cacheKey), domainCfg };
+  }
+
+  const { SAML } = require('@node-saml/node-saml');
+  const idpCert = readIdpCert(domainCfg.idpCertPath);
+
+  const samlOpts = {
+    callbackUrl:   domainCfg.callbackUrl,
+    entryPoint:    domainCfg.entryPoint,
+    issuer:        domainCfg.issuer,
+    idpCert:       idpCert,
+    wantAssertionsSigned: true,
+    wantAuthnResponseSigned: false,
+    disableRequestedAuthnContext: true,
+    audience:      domainCfg.issuer,
+  };
+
+  debug('Initializing SAML for domain:', cacheKey, 'with options:', {
+    ...samlOpts,
+    idpCert: idpCert ? `${idpCert.substring(0, 40)}... (${idpCert.length} chars)` : '(empty)',
+  });
+
+  const instance = new SAML(samlOpts);
+  samlInstances.set(cacheKey, instance);
+  return { saml: instance, domainCfg };
 }
 
 /**
@@ -72,6 +155,9 @@ function buildJwt(profile) {
       || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
     given_name: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] || '',
     family_name: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] || '',
+    objectidentifier: profile['http://schemas.microsoft.com/identity/claims/objectidentifier'] || '',
+    tenantid: profile['http://schemas.microsoft.com/identity/claims/tenantid'] || '',
+    upn: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || profile.nameID || '',
   };
 
   debug('--- JWT payload (what we extracted) ---');
@@ -87,11 +173,14 @@ function buildJwt(profile) {
  */
 function buildDevJwt() {
   const payload = {
-    sub: 'dev-user-001',
-    email: 'dev@localhost',
-    name: 'Dev User',
-    given_name: 'Dev',
-    family_name: 'User',
+    sub: 'jdoe@lib.loc.gov',
+    email: 'jdoe@loc.gov',
+    name: 'Doe, Jane A',
+    given_name: 'Jane',
+    family_name: 'Doe',
+    objectidentifier: 'a1b2c3d4-5678-9012-abcd-ef3456789012',
+    tenantid: 'f0e1d2c3-b4a5-6789-0123-456789abcdef',
+    upn: 'jdoe@lib.loc.gov',
   };
   return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiry });
 }
@@ -102,34 +191,6 @@ function buildDevJwt() {
  */
 function createAuthRoutes() {
   const router = express.Router();
-
-  // Lazily initialize SAML instance (only when first needed)
-  let samlInstance = null;
-
-  function getSaml() {
-    if (samlInstance) return samlInstance;
-    // Dynamic import to avoid loading @node-saml/node-saml when SAML is disabled
-    const { SAML } = require('@node-saml/node-saml');
-    const idpCert = readIdpCert();
-
-    const samlOpts = {
-      callbackUrl: config.saml.callbackUrl,
-      entryPoint: config.saml.entryPoint,
-      issuer: config.saml.issuer,
-      idpCert: idpCert,
-      wantAssertionsSigned: true,
-      wantAuthnResponseSigned: false,
-      disableRequestedAuthnContext: true,
-      audience: config.saml.issuer,
-    };
-    debug('Initializing SAML with options:', {
-      ...samlOpts,
-      idpCert: idpCert ? `${idpCert.substring(0, 40)}... (${idpCert.length} chars)` : '(empty)',
-    });
-
-    samlInstance = new SAML(samlOpts);
-    return samlInstance;
-  }
 
   // ============================================
   // GET /auth/login
@@ -145,15 +206,18 @@ function createAuthRoutes() {
       return res.status(503).json({ error: 'SSO is not configured' });
     }
 
+    // Resolve domain config early — needed for dev bypass redirect too
+    const domainCfg = resolveDomainConfig(req);
+
     // Dev auth bypass — skip SAML, issue test JWT immediately
     if (config.features.devAuthBypass) {
       const token = buildDevJwt();
-      debug('Dev bypass — redirecting to:', config.saml.postLoginRedirect);
-      return res.redirect(`${config.saml.postLoginRedirect}?token=${encodeURIComponent(token)}`);
+      debug('Dev bypass — redirecting to:', domainCfg.postLoginRedirect);
+      return res.redirect(`${domainCfg.postLoginRedirect}?token=${encodeURIComponent(token)}`);
     }
 
     try {
-      const saml = getSaml();
+      const { saml } = getSamlForDomain(req);
       const url = await saml.getAuthorizeUrlAsync('', req.headers.host, {});
       debug('SAML redirect URL:', url);
       // Extract the request ID from the generated URL for InResponseTo validation
@@ -189,7 +253,7 @@ function createAuthRoutes() {
     }
 
     try {
-      const saml = getSaml();
+      const { saml, domainCfg } = getSamlForDomain(req);
       const { profile } = await saml.validatePostResponseAsync(req.body);
 
       if (!profile) {
@@ -199,8 +263,8 @@ function createAuthRoutes() {
 
       debug('SAML profile received:', JSON.stringify(profile, null, 2));
       const token = buildJwt(profile);
-      debug('JWT issued, redirecting to:', config.saml.postLoginRedirect);
-      return res.redirect(`${config.saml.postLoginRedirect}?token=${encodeURIComponent(token)}`);
+      debug('JWT issued, redirecting to:', domainCfg.postLoginRedirect);
+      return res.redirect(`${domainCfg.postLoginRedirect}?token=${encodeURIComponent(token)}`);
     } catch (err) {
       console.error('SAML callback error:', err);
       debug('SAML validation error details:', err.message);
@@ -232,13 +296,16 @@ function createAuthRoutes() {
   // ============================================
   router.get('/auth/logout', async (req, res) => {
     debug('--- /auth/logout ---');
+    const domainCfg = resolveDomainConfig(req);
+    const fallbackRedirect = domainCfg.postLoginRedirect || '/marva/';
+
     if (!config.features.samlEnabled || config.features.devAuthBypass) {
-      debug('SAML disabled or dev bypass — redirecting to /marva/');
-      return res.redirect('/marva/');
+      debug('SAML disabled or dev bypass — redirecting to:', fallbackRedirect);
+      return res.redirect(fallbackRedirect);
     }
 
     try {
-      const saml = getSaml();
+      const { saml } = getSamlForDomain(req);
       // Try to get user info from JWT for the logout request
       let nameID = '';
       let sessionIndex = '';
@@ -261,7 +328,7 @@ function createAuthRoutes() {
     } catch (err) {
       console.error('SAML logout error:', err);
       // Even if SLO fails, redirect to the app (user is effectively logged out client-side)
-      return res.redirect('/marva/');
+      return res.redirect(fallbackRedirect);
     }
   });
 
@@ -269,7 +336,8 @@ function createAuthRoutes() {
   // GET /auth/logout/callback
   // ============================================
   router.get('/auth/logout/callback', (req, res) => {
-    return res.redirect('/marva/');
+    const domainCfg = resolveDomainConfig(req);
+    return res.redirect(domainCfg.postLoginRedirect || '/marva/');
   });
 
   return router;

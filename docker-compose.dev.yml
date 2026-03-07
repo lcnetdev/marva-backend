@@ -30,4 +30,6 @@ services:
       - SIMPLESAMLPHP_SP_ENTITY_ID=http://localhost:9400/marva
       - SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:9400/marva/util/auth/callback
       - SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:9400/marva/util/auth/logout/callback
+    volumes:
+      - ./config/simplesamlphp/authsources.php:/var/www/simplesamlphp/config/authsources.php
     restart: unless-stopped

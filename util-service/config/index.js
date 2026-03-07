@@ -139,8 +139,13 @@ function hasStatsAuth(req) {
   return req.headers.authorization === `Basic ${correctLogin}`;
 }
 
+// Multi-domain SAML config — hostname -> SAML overrides
+const { getDomainConfigs } = require('./domains');
+const domainConfigs = getDomainConfigs();
+
 module.exports = {
   config,
+  domainConfigs,
   getMarkLogicConfig,
   createBasicAuthValue,
   hasDeployAuth,

@@ -10,6 +10,7 @@ dist/staging/*
 dist/profile-editor/*
 util-lang/supervisord.log
 *.env
+!example.env
 MONGODB_MIGRATION.md
 database_files_copy/
 database_files_old/
