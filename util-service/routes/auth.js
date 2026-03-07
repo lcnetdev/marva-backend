@@ -254,6 +254,25 @@ function createAuthRoutes() {
 
     try {
       const { saml, domainCfg } = getSamlForDomain(req);
+
+      // Diagnostic: compare cert in SAML response vs loaded cert
+      if (req.body?.SAMLResponse) {
+        try {
+          const xml = Buffer.from(req.body.SAMLResponse, 'base64').toString('utf8');
+          const certMatch = xml.match(/<ds:X509Certificate[^>]*>([^<]+)<\/ds:X509Certificate>/);
+          if (certMatch) {
+            const responseCert = certMatch[1].replace(/\s/g, '');
+            const loadedCert = readIdpCert(domainCfg.idpCertPath);
+            debug('Cert in SAML response (first 60):', responseCert.substring(0, 60));
+            debug('Cert we loaded (first 60):', loadedCert.substring(0, 60));
+            debug('Certs match:', responseCert === loadedCert);
+            debug('Response cert length:', responseCert.length, '| Loaded cert length:', loadedCert.length);
+          } else {
+            debug('No X509Certificate found in SAML response XML');
+          }
+        } catch (e) { debug('Cert comparison failed:', e.message); }
+      }
+
       const { profile } = await saml.validatePostResponseAsync(req.body);
 
       if (!profile) {
