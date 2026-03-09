@@ -23,7 +23,38 @@ const { validateBibframe } = require('../services/bfValidationService');
  */
 function createPublishingRoutes(options) {
   const router = express.Router();
-  const { postLog } = options;
+  const { postLog, getDb } = options;
+
+  /**
+   * Extract catId from lclocal:user in RDF XML and add to user's catIdHistory.
+   * Format: "username (catId)" — e.g. "jdoe (mm123)"
+   * Only adds if catId is not already in the history array ($addToSet).
+   * @param {string} rdfxml - The RDF XML payload
+   * @param {object} [user] - req.user from JWT (optional)
+   */
+  async function recordCatIdFromPublish(rdfxml, user) {
+    if (!getDb || !rdfxml || !user) return;
+    try {
+      const match = rdfxml.match(/<lclocal:user>[^<]*\(([^)]+)\)[^<]*<\/lclocal:user>/);
+      if (!match) return;
+      const catId = match[1].trim();
+      if (!catId) return;
+
+      const username = user.username;
+      if (!username) return;
+
+      const db = getDb();
+      if (!db) return;
+
+      const { COLLECTIONS } = require('../db/collections');
+      await db.collection(COLLECTIONS.USERS).updateOne(
+        { username },
+        { $addToSet: { catIdHistory: catId } }
+      );
+    } catch (err) {
+      console.error('catId history update error (non-fatal):', err.message);
+    }
+  }
 
   /**
    * Sanitize error string by removing credentials
@@ -91,6 +122,9 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       postLogEntry.postingName = req.body.name;
       addToPostLog(postLogEntry);
+
+      // Record catId from XML into user's catIdHistory
+      recordCatIdFromPublish(rdfxml, req.user);
 
       let postStatus = { status: 'published' };
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
@@ -170,6 +204,9 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       postLogEntry.postingName = req.body.name;
       addToPostLog(postLogEntry);
+
+      // Record catId from XML into user's catIdHistory
+      recordCatIdFromPublish(rdfxml, req.user);
 
       let postStatus = { status: 'published' };
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {

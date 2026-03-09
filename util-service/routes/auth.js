@@ -148,9 +148,10 @@ function buildJwt(profile) {
     debug(`  ${key}:`, value);
   }
 
+  const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || profile.nameID || '';
   const payload = {
     sub: profile.nameID || profile['http://schemas.microsoft.com/identity/claims/objectidentifier'] || '',
-    email: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || profile.nameID || '',
+    email,
     name: profile['http://schemas.microsoft.com/identity/claims/displayname']
       || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
     given_name: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] || '',
@@ -158,6 +159,7 @@ function buildJwt(profile) {
     objectidentifier: profile['http://schemas.microsoft.com/identity/claims/objectidentifier'] || '',
     tenantid: profile['http://schemas.microsoft.com/identity/claims/tenantid'] || '',
     upn: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || profile.nameID || '',
+    username: email.includes('@') ? email.split('@')[0] : email,
   };
 
   debug('--- JWT payload (what we extracted) ---');
@@ -181,16 +183,20 @@ function buildDevJwt() {
     objectidentifier: 'a1b2c3d4-5678-9012-abcd-ef3456789012',
     tenantid: 'f0e1d2c3-b4a5-6789-0123-456789abcdef',
     upn: 'jdoe@lib.loc.gov',
+    username: 'jdoe',
   };
   return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiry });
 }
 
 /**
  * Create auth routes
+ * @param {object} [options] - Configuration options
+ * @param {function} [options.getDb] - Function to get database instance
  * @returns {Router} Express router
  */
-function createAuthRoutes() {
+function createAuthRoutes(options = {}) {
   const router = express.Router();
+  const { getDb } = options;
 
   // ============================================
   // GET /auth/login
@@ -212,6 +218,32 @@ function createAuthRoutes() {
     // Dev auth bypass — skip SAML, issue test JWT immediately
     if (config.features.devAuthBypass) {
       const token = buildDevJwt();
+
+      // Upsert dev user in MongoDB
+      if (getDb) {
+        try {
+          const db = getDb();
+          if (db) {
+            const { COLLECTIONS } = require('../db/collections');
+            await db.collection(COLLECTIONS.USERS).updateOne(
+              { username: 'jdoe' },
+              {
+                $set: {
+                  sub: 'jdoe@lib.loc.gov', email: 'jdoe@loc.gov',
+                  name: 'Doe, Jane A', givenName: 'Jane', familyName: 'Doe',
+                  objectIdentifier: 'a1b2c3d4-5678-9012-abcd-ef3456789012',
+                  tenantId: 'f0e1d2c3-b4a5-6789-0123-456789abcdef',
+                  upn: 'jdoe@lib.loc.gov', username: 'jdoe',
+                  lastLogin: new Date(),
+                },
+                $setOnInsert: { catId: null, catIdHistory: [], createdAt: new Date() },
+              },
+              { upsert: true }
+            );
+          }
+        } catch (e) { console.error('Dev user upsert error (non-fatal):', e.message); }
+      }
+
       debug('Dev bypass — redirecting to:', domainCfg.postLoginRedirect);
       return res.redirect(`${domainCfg.postLoginRedirect}?token=${encodeURIComponent(token)}`);
     }
@@ -296,6 +328,46 @@ function createAuthRoutes() {
 
       debug('SAML profile received:', JSON.stringify(profile, null, 2));
       const token = buildJwt(profile);
+
+      // Upsert user record in MongoDB
+      if (getDb) {
+        try {
+          const db = getDb();
+          if (db) {
+            const { COLLECTIONS } = require('../db/collections');
+            const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || profile.nameID || '';
+            const username = email.includes('@') ? email.split('@')[0] : email;
+            await db.collection(COLLECTIONS.USERS).updateOne(
+              { username },
+              {
+                $set: {
+                  sub: profile.nameID || profile['http://schemas.microsoft.com/identity/claims/objectidentifier'] || '',
+                  email,
+                  name: profile['http://schemas.microsoft.com/identity/claims/displayname']
+                    || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
+                  givenName: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] || '',
+                  familyName: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] || '',
+                  objectIdentifier: profile['http://schemas.microsoft.com/identity/claims/objectidentifier'] || '',
+                  tenantId: profile['http://schemas.microsoft.com/identity/claims/tenantid'] || '',
+                  upn: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || profile.nameID || '',
+                  username,
+                  lastLogin: new Date(),
+                },
+                $setOnInsert: {
+                  catId: null,
+                  catIdHistory: [],
+                  createdAt: new Date(),
+                },
+              },
+              { upsert: true }
+            );
+            debug('User upserted:', username);
+          }
+        } catch (upsertErr) {
+          console.error('User upsert error (non-fatal):', upsertErr.message);
+        }
+      }
+
       debug('JWT issued, redirecting to:', domainCfg.postLoginRedirect);
       return res.redirect(`${domainCfg.postLoginRedirect}?token=${encodeURIComponent(token)}`);
     } catch (err) {

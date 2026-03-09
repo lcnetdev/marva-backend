@@ -20,7 +20,9 @@ const {
   createExternalRoutes,
   createMarcRoutes,
   createLdpRoutes,
-  createAuthRoutes
+  createAuthRoutes,
+  createUsersRoutes,
+  createEventsRoutes
 } = require('./routes');
 const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
@@ -69,7 +71,7 @@ function createApp(options) {
 
   // Auth routes (login, callback, logout, refresh, me)
   // Must be mounted BEFORE optionalAuth middleware so auth endpoints are accessible
-  const authRouter = createAuthRoutes();
+  const authRouter = createAuthRoutes({ getDb });
   app.use('/', authRouter);
 
   // JWT optional auth — populates req.user if a valid Bearer token is present.
@@ -140,7 +142,8 @@ function createApp(options) {
 
   // Publishing routes (publish, nacostub, validate, copycat)
   const publishingRouter = createPublishingRoutes({
-    postLog
+    postLog,
+    getDb
   });
   app.use('/', publishingRouter);
 
@@ -158,6 +161,14 @@ function createApp(options) {
   // MARC preview routes
   const marcRouter = createMarcRoutes();
   app.use('/', marcRouter);
+
+  // User management routes
+  const usersRouter = createUsersRoutes({ getDb });
+  app.use('/', usersRouter);
+
+  // Event log routes
+  const eventsRouter = createEventsRoutes({ getDb });
+  app.use('/', eventsRouter);
 
   // LDP routes (api-staging, api-production)
   // Pass getDb as a function for lazy evaluation
