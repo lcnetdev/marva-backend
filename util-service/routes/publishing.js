@@ -14,6 +14,7 @@ const express = require('express');
 const got = require('got').got;
 const { config, getMarkLogicConfig } = require('../config');
 const { validateBibframe } = require('../services/bfValidationService');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create publishing routes
@@ -87,7 +88,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /publish/production - Publish RDF to production MarkLogic
    */
-  router.post('/publish/production', async (req, res) => {
+  router.post('/publish/production', requireAuth, async (req, res) => {
     const name = req.body.name + '.rdf';
     const rdfxml = req.body.rdfxml;
     const mlConfig = getMarkLogicConfig('production');
@@ -164,7 +165,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /publish/staging - Publish RDF to staging MarkLogic
    */
-  router.post('/publish/staging', async (req, res) => {
+  router.post('/publish/staging', requireAuth, async (req, res) => {
     const name = req.body.name + '.rdf';
     const rdfxml = req.body.rdfxml;
     const mlConfig = getMarkLogicConfig('staging');
@@ -258,7 +259,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /nacostub/staging - Publish NACO stub to staging
    */
-  router.post('/nacostub/staging', async (req, res) => {
+  router.post('/nacostub/staging', requireAuth, async (req, res) => {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('staging');
@@ -353,7 +354,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /nacostub/production - Publish NACO stub to production
    */
-  router.post('/nacostub/production', async (req, res) => {
+  router.post('/nacostub/production', requireAuth, async (req, res) => {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('production');
@@ -443,7 +444,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /validate/:loc - Validate RDF against MarkLogic or locally
    */
-  router.post('/validate/:loc', async (req, res) => {
+  router.post('/validate/:loc', requireAuth, async (req, res) => {
     const rdfxml = req.body.rdfxml;
 
     // Use local validation if BFORGMODE flag is set
@@ -551,7 +552,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /copycat/upload/:location - Upload MARC from copycat
    */
-  router.post('/copycat/upload/:location', async (req, res) => {
+  router.post('/copycat/upload/:location', requireAuth, async (req, res) => {
     const location = req.params.location;
     const endpoint = '/controllers/ingest/marc-bib.xqy';
     const mlConfig = getMarkLogicConfig(location === 'prod' ? 'production' : 'staging');

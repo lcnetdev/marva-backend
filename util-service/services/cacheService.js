@@ -49,13 +49,16 @@ function getProductionCache() {
 }
 
 /**
- * Normalize username (replace double spaces)
- * @param {string} user - Username to normalize
+ * Extract the username from a user string like "jdoe (asdr34)" or "cameron (xyz)".
+ * Returns the part before the first parenthesis, trimmed and lowercased.
+ * @param {string} user - Raw user string from lclocal:user
  * @returns {string} Normalized username
  */
 function normalizeUser(user) {
+  if (!user) return user;
   try {
-    return user?.replace(/  /g, ' ') || user;
+    const before = String(user).split('(')[0].trim().toLowerCase();
+    return before || String(user).trim().toLowerCase();
   } catch {
     return user;
   }

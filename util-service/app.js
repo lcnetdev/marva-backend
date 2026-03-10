@@ -95,7 +95,8 @@ function createApp(options) {
     startCleanup: () => {
       // TODO: Implement actual cleanup logic from cleanupService
       cleanupStatus = { running: true, lastRun: new Date().toISOString(), deleted: 0 };
-    }
+    },
+    getDb
   });
   app.use('/', adminRouter);
 

@@ -381,10 +381,25 @@ function createAuthRoutes(options = {}) {
   // ============================================
   // GET /auth/refresh
   // ============================================
-  router.get('/auth/refresh', requireAuth, (req, res) => {
+  router.get('/auth/refresh', requireAuth, async (req, res) => {
     // req.user is set by requireAuth middleware
     const { iat, exp, ...claims } = req.user;
     const token = jwt.sign(claims, config.jwt.secret, { expiresIn: config.jwt.expiry });
+
+    // Update lastLogin on refresh
+    if (getDb && req.user.username) {
+      try {
+        const db = getDb();
+        if (db) {
+          const { COLLECTIONS } = require('../db/collections');
+          await db.collection(COLLECTIONS.USERS).updateOne(
+            { username: req.user.username },
+            { $set: { lastLogin: new Date() } }
+          );
+        }
+      } catch (e) { /* non-fatal */ }
+    }
+
     return res.json({ token });
   });
 

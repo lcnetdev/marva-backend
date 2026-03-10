@@ -101,6 +101,23 @@ function createUsersRoutes(options) {
     }
   });
 
+  /**
+   * GET /users - List all users (username, name, catId, catIdHistory)
+   */
+  router.get('/users', requireAuth, async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'Database not connected' });
+      const users = await db.collection(COLLECTIONS.USERS).find(
+        {},
+        { projection: { _id: 0, username: 1, name: 1, catId: 1, catIdHistory: 1 } }
+      ).sort({ name: 1 }).toArray();
+      return res.json({ results: users });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   return router;
 }
 
