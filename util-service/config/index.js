@@ -54,9 +54,30 @@ const config = {
     statsPw: process.env.STATSPW?.replace(/"/g, '')
   },
 
+  // SAML Configuration
+  saml: {
+    entryPoint: process.env.SAML_ENTRY_POINT || '',
+    issuer: process.env.SAML_ISSUER || '',
+    callbackUrl: process.env.SAML_CALLBACK_URL || '',
+    logoutUrl: process.env.SAML_LOGOUT_URL || '',
+    logoutCallbackUrl: process.env.SAML_LOGOUT_CALLBACK_URL || '',
+    idpCertPath: process.env.SAML_IDP_CERT_PATH || '',
+    postLoginRedirect: process.env.POST_LOGIN_REDIRECT || '/marva/',
+  },
+
+  // JWT Configuration
+  jwt: {
+    secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION',
+    expiry: process.env.JWT_EXPIRY || '1h',
+    refreshWindowMinutes: parseInt(process.env.JWT_REFRESH_WINDOW, 10) || 15,
+  },
+
   // Feature flags
   features: {
-    bfOrgMode: process.env.BFORGMODE === 'true' || process.env.BFORGMODE === '1'
+    bfOrgMode: process.env.BFORGMODE === 'true' || process.env.BFORGMODE === '1',
+    samlEnabled: process.env.SAML_ENABLED === 'true' || process.env.SAML_ENABLED === '1',
+    devAuthBypass: process.env.DEV_AUTH_BYPASS === 'true' || process.env.DEV_AUTH_BYPASS === '1',
+    samlDebug: process.env.SAML_DEBUG === 'true' || process.env.SAML_DEBUG === '1',
   },
 
   // ID generation defaults
@@ -118,8 +139,13 @@ function hasStatsAuth(req) {
   return req.headers.authorization === `Basic ${correctLogin}`;
 }
 
+// Multi-domain SAML config — hostname -> SAML overrides
+const { getDomainConfigs } = require('./domains');
+const domainConfigs = getDomainConfigs();
+
 module.exports = {
   config,
+  domainConfigs,
   getMarkLogicConfig,
   createBasicAuthValue,
   hasDeployAuth,

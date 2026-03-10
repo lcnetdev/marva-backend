@@ -17,6 +17,7 @@ const marcjs = require('marcjs');
 const Marc = marcjs.Marc;
 const { ClientCredentials } = require('simple-oauth2');
 const { config } = require('../config');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 // WorldCat MARC cache
 const wcMarcCache = new NodeCache();
@@ -234,7 +235,7 @@ function createExternalRoutes() {
   /**
    * POST /worldcat/search/ - Search WorldCat
    */
-  router.post('/worldcat/search/', async (req, res) => {
+  router.post('/worldcat/search/', requireAuth, async (req, res) => {
     console.log('searching worldcat');
 
     const wcQuery = req.body.query;

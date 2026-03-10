@@ -14,6 +14,7 @@ const express = require('express');
 const got = require('got').got;
 const { config, getMarkLogicConfig } = require('../config');
 const { validateBibframe } = require('../services/bfValidationService');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create publishing routes
@@ -23,7 +24,38 @@ const { validateBibframe } = require('../services/bfValidationService');
  */
 function createPublishingRoutes(options) {
   const router = express.Router();
-  const { postLog } = options;
+  const { postLog, getDb } = options;
+
+  /**
+   * Extract catId from lclocal:user in RDF XML and add to user's catIdHistory.
+   * Format: "username (catId)" — e.g. "jdoe (mm123)"
+   * Only adds if catId is not already in the history array ($addToSet).
+   * @param {string} rdfxml - The RDF XML payload
+   * @param {object} [user] - req.user from JWT (optional)
+   */
+  async function recordCatIdFromPublish(rdfxml, user) {
+    if (!getDb || !rdfxml || !user) return;
+    try {
+      const match = rdfxml.match(/<lclocal:user>[^<]*\(([^)]+)\)[^<]*<\/lclocal:user>/);
+      if (!match) return;
+      const catId = match[1].trim();
+      if (!catId) return;
+
+      const username = user.username;
+      if (!username) return;
+
+      const db = getDb();
+      if (!db) return;
+
+      const { COLLECTIONS } = require('../db/collections');
+      await db.collection(COLLECTIONS.USERS).updateOne(
+        { username },
+        { $addToSet: { catIdHistory: catId } }
+      );
+    } catch (err) {
+      console.error('catId history update error (non-fatal):', err.message);
+    }
+  }
 
   /**
    * Sanitize error string by removing credentials
@@ -56,7 +88,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /publish/production - Publish RDF to production MarkLogic
    */
-  router.post('/publish/production', async (req, res) => {
+  router.post('/publish/production', requireAuth, async (req, res) => {
     const name = req.body.name + '.rdf';
     const rdfxml = req.body.rdfxml;
     const mlConfig = getMarkLogicConfig('production');
@@ -91,6 +123,9 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       postLogEntry.postingName = req.body.name;
       addToPostLog(postLogEntry);
+
+      // Record catId from XML into user's catIdHistory
+      recordCatIdFromPublish(rdfxml, req.user);
 
       let postStatus = { status: 'published' };
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
@@ -130,7 +165,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /publish/staging - Publish RDF to staging MarkLogic
    */
-  router.post('/publish/staging', async (req, res) => {
+  router.post('/publish/staging', requireAuth, async (req, res) => {
     const name = req.body.name + '.rdf';
     const rdfxml = req.body.rdfxml;
     const mlConfig = getMarkLogicConfig('staging');
@@ -170,6 +205,9 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       postLogEntry.postingName = req.body.name;
       addToPostLog(postLogEntry);
+
+      // Record catId from XML into user's catIdHistory
+      recordCatIdFromPublish(rdfxml, req.user);
 
       let postStatus = { status: 'published' };
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
@@ -221,7 +259,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /nacostub/staging - Publish NACO stub to staging
    */
-  router.post('/nacostub/staging', async (req, res) => {
+  router.post('/nacostub/staging', requireAuth, async (req, res) => {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('staging');
@@ -316,7 +354,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /nacostub/production - Publish NACO stub to production
    */
-  router.post('/nacostub/production', async (req, res) => {
+  router.post('/nacostub/production', requireAuth, async (req, res) => {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('production');
@@ -406,7 +444,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /validate/:loc - Validate RDF against MarkLogic or locally
    */
-  router.post('/validate/:loc', async (req, res) => {
+  router.post('/validate/:loc', requireAuth, async (req, res) => {
     const rdfxml = req.body.rdfxml;
 
     // Use local validation if BFORGMODE flag is set
@@ -514,7 +552,7 @@ function createPublishingRoutes(options) {
   /**
    * POST /copycat/upload/:location - Upload MARC from copycat
    */
-  router.post('/copycat/upload/:location', async (req, res) => {
+  router.post('/copycat/upload/:location', requireAuth, async (req, res) => {
     const location = req.params.location;
     const endpoint = '/controllers/ingest/marc-bib.xqy';
     const mlConfig = getMarkLogicConfig(location === 'prod' ? 'production' : 'staging');

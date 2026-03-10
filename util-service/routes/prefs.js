@@ -8,6 +8,7 @@
 
 const express = require('express');
 const { COLLECTIONS } = require('../db/collections');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create user preferences routes
@@ -23,7 +24,7 @@ function createPrefsRoutes(options) {
   /**
    * POST /prefs/:user - Save user preferences
    */
-  router.post('/prefs/:user', async (req, res) => {
+  router.post('/prefs/:user', requireAuth, async (req, res) => {
     const user = req.params.user;
     const newPrefs = req.body;
 
@@ -56,7 +57,7 @@ function createPrefsRoutes(options) {
   /**
    * GET /prefs/:user - Get user preferences
    */
-  router.get('/prefs/:user', async (req, res) => {
+  router.get('/prefs/:user', requireAuth, async (req, res) => {
     const user = req.params.user;
 
     try {

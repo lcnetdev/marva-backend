@@ -53,8 +53,13 @@ function createAdminRoutes(options) {
     getPostLog,
     getStatus,
     getCleanupStatus,
-    startCleanup
+    startCleanup,
+    getDb
   } = options;
+
+  // Cached username → full name map for recent-events enrichment
+  let adminUserNameMap = null;
+  let adminUserNameMapAge = 0;
 
   // ============================================
   // ROOT / DEPLOY DASHBOARD
@@ -76,6 +81,101 @@ function createAdminRoutes(options) {
       config: config,
       deployInfo: readDeployInfo()
     });
+  });
+
+  // ============================================
+  // ACTIVE USERS
+  // ============================================
+
+  /**
+   * GET /active-users - Users who logged in within the last hour
+   * Requires deploy authentication (same as index.ejs)
+   */
+  router.get('/active-users', async (req, res) => {
+    if (!hasDeployAuth(req)) {
+      return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
+    }
+    try {
+      const db = getDb ? getDb() : null;
+      if (!db) return res.status(500).json({ error: 'Database not connected' });
+
+      const { COLLECTIONS } = require('../db/collections');
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const users = await db.collection(COLLECTIONS.USERS)
+        .find(
+          { lastLogin: { $gte: oneHourAgo } },
+          { projection: { _id: 0, username: 1, name: 1, email: 1, lastLogin: 1, catId: 1 } }
+        )
+        .sort({ lastLogin: -1 })
+        .toArray();
+
+      return res.json({ count: users.length, users });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ============================================
+  // RECENT EVENTS
+  // ============================================
+
+  /**
+   * GET /recent-events - Most recent 500 events from the event log
+   * Requires deploy authentication (same as index.ejs)
+   */
+  router.get('/recent-events', async (req, res) => {
+    if (!hasDeployAuth(req)) {
+      return res.set('WWW-Authenticate', 'Basic').status(401).send('Authentication required.');
+    }
+    try {
+      const db = getDb ? getDb() : null;
+      if (!db) return res.status(500).json({ error: 'Database not connected' });
+
+      const { COLLECTIONS } = require('../db/collections');
+      const regionParam = (req.query.region || '').toLowerCase().trim();
+      const query = {};
+      if (regionParam && regionParam !== 'all') {
+        query.region = regionParam;
+      }
+
+      const events = await db.collection(COLLECTIONS.EVENT_LOG)
+        .find(query, { projection: { _id: 0 } })
+        .sort({ timestamp: -1 })
+        .limit(500)
+        .toArray();
+
+      // Enrich with full names from users collection (cached)
+      if (!adminUserNameMap || (Date.now() - adminUserNameMapAge) >= 60 * 60 * 1000) {
+        try {
+          const users = await db.collection(COLLECTIONS.USERS)
+            .find({}, { projection: { _id: 0, username: 1, name: 1 } })
+            .toArray();
+          adminUserNameMap = {};
+          for (const u of users) {
+            if (u.username) adminUserNameMap[u.username] = u.name || '';
+          }
+          adminUserNameMapAge = Date.now();
+        } catch (e) {
+          if (!adminUserNameMap) adminUserNameMap = {};
+        }
+      }
+      for (const evt of events) {
+        if (evt.username && adminUserNameMap[evt.username]) {
+          evt.name = adminUserNameMap[evt.username];
+        }
+        if (Array.isArray(evt.metadata)) {
+          for (const m of evt.metadata) {
+            if (m.user && adminUserNameMap[m.user]) {
+              m.name = adminUserNameMap[m.user];
+            }
+          }
+        }
+      }
+
+      return res.json({ count: events.length, events });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
   });
 
   // ============================================

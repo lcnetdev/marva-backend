@@ -131,10 +131,10 @@
 			<summary style="cursor: pointer;">Legacy Deploy (Marva, Profile Editor)</summary>
 			<div style="margin-top: 0.5em; display: flex; gap: 0.5em; flex-wrap: wrap;">
 				<a href="deploy-staging" class="deploy" target="_blank">Deploy Marva Staging</a>
-				<a href="deploy-production" class="deploy" target="_blank">Deploy Marva Production</a>
-				<a href="deploy-profile-editor" class="deploy" target="_blank">Deploy Profile Editor</a>
+				<a href="deploy-production" class="deploy" target="_blank">Deploy Marva Production</a>				
 			</div>
 		</details>
+		<div><a href="../dancer/" style="margin-top: 1em; display: inline-block;" target="_blank">Open DCTap Dancer Editor</a></div>
 
 		<script>
 			// Relative time display
@@ -276,247 +276,273 @@
 
 		</script>
 
+
+		<h2>Active Users <span id="active-users-count" style="font-weight:normal; font-size:0.8em; color:#666;"></span></h2>
+		<p style="color:#888; font-size:0.85em;">Users who logged in or refreshed login within the last hour</p>
+		<table id="active-users-table" border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%;">
+			<thead>
+				<tr style="background:#f0f0f0;">
+					<th>Username</th>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Cat ID</th>
+					<th>Last Login</th>
+				</tr>
+			</thead>
+			<tbody id="active-users-body">
+				<tr><td colspan="5" style="text-align:center; color:#999;">Loading...</td></tr>
+			</tbody>
+		</table>
+		<script>
+			(function() {
+				fetch('./active-users')
+					.then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw new Error(e.error || r.statusText); }); })
+					.then(function(data) {
+						document.getElementById('active-users-count').textContent = '(' + data.count + ')';
+						var tbody = document.getElementById('active-users-body');
+						if (!data.users || data.users.length === 0) {
+							tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">No active users</td></tr>';
+							return;
+						}
+						tbody.innerHTML = data.users.map(function(u) {
+							var login = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '';
+							return '<tr><td>' + (u.username||'') + '</td><td>' + (u.name||'') + '</td><td>' + (u.email||'') + '</td><td>' + (u.catId||'') + '</td><td>' + login + '</td></tr>';
+						}).join('');
+					})
+					.catch(function(err) {
+						document.getElementById('active-users-body').innerHTML = '<tr><td colspan="5" style="color:red;">Error: ' + err.message + '</td></tr>';
+					});
+			})();
+		</script>
+		
+
+
+		<h2>Recent Events <span id="recent-events-count" style="font-weight:normal; font-size:0.8em; color:#666;"></span></h2>
+		<p style="color:#888; font-size:0.85em;">Most recent 500 events from the event log
+			&nbsp;&mdash;&nbsp;Region:
+			<select id="recent-events-region" style="font-size:0.95em;">
+				<option value="all" selected>All</option>
+				<option value="production">Production</option>
+				<option value="staging">Staging</option>
+				<option value="dev">Dev</option>
+			</select>
+		</p>
+		<table id="recent-events-table" border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%;">
+			<thead>
+				<tr style="background:#f0f0f0;">
+					<th>Timestamp</th>
+					<th>Username</th>
+					<th>Event Type</th>
+					<th>Region</th>
+					<th>eId</th>
+					<th>LCCN</th>
+					<th>Instance ID</th>
+					<th>Details</th>
+				</tr>
+			</thead>
+			<tbody id="recent-events-body">
+				<tr><td colspan="8" style="text-align:center; color:#999;">Loading...</td></tr>
+			</tbody>
+		</table>
+		<script>
+			(function() {
+				function loadRecentEvents() {
+					var region = document.getElementById('recent-events-region').value;
+					var url = './recent-events?region=' + encodeURIComponent(region);
+					var tbody = document.getElementById('recent-events-body');
+					tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999;">Loading...</td></tr>';
+
+					fetch(url)
+						.then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw new Error(e.error || r.statusText); }); })
+						.then(function(data) {
+							document.getElementById('recent-events-count').textContent = '(' + data.count + ')';
+							if (!data.events || data.events.length === 0) {
+								tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999;">No events</td></tr>';
+								return;
+							}
+							var rows = [];
+							data.events.forEach(function(e) {
+								var ts = e.timestamp ? new Date(e.timestamp).toLocaleString() : '';
+								var isSaveRecord = e.eventType === 'SAVED_RECORD' && Array.isArray(e.metadata) && e.metadata.length > 0 && e.metadata[0] && e.metadata[0].user;
+								var saveCount = isSaveRecord ? e.metadata.length : '';
+								var detailCol = '';
+								if (isSaveRecord) {
+									detailCol = saveCount + ' save' + (saveCount===1?'':'s');
+								} else if (e.metadata) {
+									var meta = JSON.stringify(e.metadata);
+									if (meta.length > 80) meta = meta.substring(0, 80) + '\u2026';
+									detailCol = meta;
+								}
+								var userDisplay = (e.username||'') + (e.name ? ' <span style="color:#888; font-size:0.85em;">(' + e.name + ')</span>' : '');
+								rows.push('<tr><td>' + ts + '</td><td>' + userDisplay + '</td><td>' + (e.eventType||'') + '</td><td>' + (e.region||'') + '</td><td>' + (e.eId!=null?e.eId:'') + '</td><td>' + (e.lccn!=null?e.lccn:'') + '</td><td>' + (e.instanceId||'') + '</td><td style="font-size:0.8em; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + detailCol + '</td></tr>');
+								if (isSaveRecord) {
+									e.metadata.slice().reverse().forEach(function(m) {
+										var mTime = m.time ? new Date(m.time).toLocaleString() : '';
+										var mUserDisplay = (m.user||'') + (m.name ? ' (' + m.name + ')' : '');
+										rows.push('<tr style="background:#f9f9f9; color:#666; font-size:0.85em;"><td style="padding-left:2em;">\u2514 ' + mTime + '</td><td>' + mUserDisplay + '</td><td colspan="6"></td></tr>');
+									});
+								}
+							});
+							tbody.innerHTML = rows.join('');
+						})
+						.catch(function(err) {
+							tbody.innerHTML = '<tr><td colspan="8" style="color:red;">Error: ' + err.message + '</td></tr>';
+						});
+				}
+
+				document.getElementById('recent-events-region').addEventListener('change', loadRecentEvents);
+				loadRecentEvents();
+			})();
+		</script>
+
 		<hr>
 
-		<h2>Profiles</h2>
-		<div><a href="../dancer/" target="_blank">Open DCTap Dancer Editor</a></div>
 
-		<div><a href="../profile-editor-prod/" target="_blank">Open Production Profile Editor</a></div>
-		<div style="margin-bottom:1em;"><a href="../profile-editor-stage/" target="_blank">Open Staging Profile Editor</a></div>
-
-
-		<div class="button-container" style="float:left; background: #c9eeff; padding: 0.5em;">LOAD: 
-			<select id="loadDataSelect" type="select">
-				<option default>Select to load</option>
-				<option value="profile/prod">Production Profiles</option>
-				<option value="profile/stage">Staging Profiles</option>
-				<option value="starting/prod">Production Starting Points</option>
-				<option value="starting/stage">Staging Starting Points</option>
-				<option value="index.resourceType:ontology/prod">Production Ontology</option>
-				<option value="index.resourceType:ontology/stage">Staging Ontology</option>
-
-				<option value="index.resourceType:vocabulary/prod">Production Languages</option>
-				<option value="index.resourceType:vocabulary/stage">Staging Languages</option>
-
-				<option value="index.label:propertyTypes/prod">Production Property Types</option>
-				<option value="index.label:propertyTypes/stage">Staging Property Types</option>
-
-
-			</select>
-			<!-- <button id="loadProdProfiles">Prod Profile</button> <button id="loadStageProfiles">Stage Profile</button><button id="loadProdStarting">Prod StartingPoint</button> <button id="loadStageStarting">Stage StartingPoint</button> -->
-		</div>
-		<div class="button-container" style="float:right; background:#ffccbc; padding: 0.5em;">SAVE: 
-			<!-- <button id="saveProdProfile">Prod Profile</button><button id="saveStageProfile">Stage Profile</button> <button id="saveProdStarting">Prod StartingPoint</button><button id="saveStageStarting">Stage StartingPoint</button>  -->
-			<select id="saveDataSelect" type="select">
-				<option default>Select where to save</option>
-				<option value="profile/prod">Production Profiles</option>
-				<option value="profile/stage">Staging Profiles</option>
-				<option value="starting/prod">Production Starting Points</option>
-				<option value="starting/stage">Staging Starting Points</option>
-
-
-				<option value="index.resourceType:ontology/prod">Production Ontology</option>
-				<option value="index.resourceType:ontology/stage">Staging Ontology</option>
-
-				<option value="index.resourceType:vocabulary/prod">Production Languages</option>
-				<option value="index.resourceType:vocabulary/stage">Staging Languages</option>
-
-
-				<option value="index.label:propertyTypes/prod">Production Property Types</option>
-				<option value="index.label:propertyTypes/stage">Staging Property Types</option>
-
-
-
+		<details>
+			<summary>Legacy profile tools</summary>
 				
-			</select>	
-		</div>
+			<h2>Profiles</h2>
+			<div><a href="../dancer/" target="_blank">Open DCTap Dancer Editor</a></div>
+
+			<div><a href="../profile-editor-prod/" target="_blank">Open Production Profile Editor</a></div>
+			<div style="margin-bottom:1em;"><a href="../profile-editor-stage/" target="_blank">Open Staging Profile Editor</a></div>
+
+
+			<div class="button-container" style="float:left; background: #c9eeff; padding: 0.5em;">LOAD: 
+				<select id="loadDataSelect" type="select">
+					<option default>Select to load</option>
+					<option value="profile/prod">Production Profiles</option>
+					<option value="profile/stage">Staging Profiles</option>
+					<option value="starting/prod">Production Starting Points</option>
+					<option value="starting/stage">Staging Starting Points</option>
+					<option value="index.resourceType:ontology/prod">Production Ontology</option>
+					<option value="index.resourceType:ontology/stage">Staging Ontology</option>
+
+					<option value="index.resourceType:vocabulary/prod">Production Languages</option>
+					<option value="index.resourceType:vocabulary/stage">Staging Languages</option>
+
+					<option value="index.label:propertyTypes/prod">Production Property Types</option>
+					<option value="index.label:propertyTypes/stage">Staging Property Types</option>
+
+
+				</select>
+				<!-- <button id="loadProdProfiles">Prod Profile</button> <button id="loadStageProfiles">Stage Profile</button><button id="loadProdStarting">Prod StartingPoint</button> <button id="loadStageStarting">Stage StartingPoint</button> -->
+			</div>
+			<div class="button-container" style="float:right; background:#ffccbc; padding: 0.5em;">SAVE: 
+				<!-- <button id="saveProdProfile">Prod Profile</button><button id="saveStageProfile">Stage Profile</button> <button id="saveProdStarting">Prod StartingPoint</button><button id="saveStageStarting">Stage StartingPoint</button>  -->
+				<select id="saveDataSelect" type="select">
+					<option default>Select where to save</option>
+					<option value="profile/prod">Production Profiles</option>
+					<option value="profile/stage">Staging Profiles</option>
+					<option value="starting/prod">Production Starting Points</option>
+					<option value="starting/stage">Staging Starting Points</option>
+
+
+					<option value="index.resourceType:ontology/prod">Production Ontology</option>
+					<option value="index.resourceType:ontology/stage">Staging Ontology</option>
+
+					<option value="index.resourceType:vocabulary/prod">Production Languages</option>
+					<option value="index.resourceType:vocabulary/stage">Staging Languages</option>
+
+
+					<option value="index.label:propertyTypes/prod">Production Property Types</option>
+					<option value="index.label:propertyTypes/stage">Staging Property Types</option>
 
 
 
-		<div style="clear:both;height: 1em;"></div>
-	    <div id="jsoneditor" style="width: 100%; clear: both;"></div>
+					
+				</select>	
+			</div>
 
 
-	    <details style="margin-top:2em; background-color: whitesmoke;">
-	    	<summary>Bootstrap profile editor data (profiles, starting points, languages, etc) from github</summary>
-	    	<p>
-	    		This will load the latest version of the profiles <a href="https://github.com/lcnetdev/bfe-profiles">from github</a>
-	    	</p>
-	    	<br><a target="_blank" href="profiles/bootstrap">Click to start process.</a>
-	    </details>
+
+			<div style="clear:both;height: 1em;"></div>
+			<div id="jsoneditor" style="width: 100%; clear: both;"></div>
 
 
-	    <script>
-	        // create the editor
-	        const container = document.getElementById("jsoneditor")
-	        const options = {
-	        	mode: 'code',
-	        	modes: ['code', 'form', 'text', 'tree', 'view', 'preview']
-	        }
-	        const editor = new JSONEditor(container, options)
+
+			<script>
+				// create the editor
+				const container = document.getElementById("jsoneditor")
+				const options = {
+					mode: 'code',
+					modes: ['code', 'form', 'text', 'tree', 'view', 'preview']
+				}
+				const editor = new JSONEditor(container, options)
 
 
-	        // get json
-	        const updatedJson = editor.get()
+				// get json
+				const updatedJson = editor.get()
 
 
-	        let save = async function(where,what){
+				let save = async function(where,what){
 
-	        	if (!confirm('You are about to save whatever is in the editor below into ' + where + ' Are you sure you want to?')){
-	        		return false
-	        	}
-	        	try{
+					if (!confirm('You are about to save whatever is in the editor below into ' + where + ' Are you sure you want to?')){
+						return false
+					}
+					try{
 
 
-					const postit = await fetch(`profiles/save/${where}`, {
-						method: 'POST',
+						const postit = await fetch(`profiles/save/${where}`, {
+							method: 'POST',
+							headers: {
+								'Accept': 'application/json',
+								'Content-Type': 'application/json'
+							},
+								body: JSON.stringify(what)
+						});
+
+						if (postit.status != 200){
+							alert("Error: Recieved Status: " + postit.status)
+							return false
+						}
+
+					}catch(err){
+						alert(err)
+					}
+
+				}
+
+
+				let load = async function(where){
+
+					editor.setText("LOADING....")
+					const getit = await fetch(`profiles/${where}`, {
+						method: 'GET',
 						headers: {
 							'Accept': 'application/json',
 							'Content-Type': 'application/json'
-						},
-							body: JSON.stringify(what)
+						}						
 					});
 
-					if (postit.status != 200){
-						alert("Error: Recieved Status: " + postit.status)
-						return false
-					}
-
-				}catch(err){
-					alert(err)
+					let data = await getit.json()
+					editor.set(data)
 				}
 
-	        }
 
 
-	        let load = async function(where){
+				document.getElementById('loadDataSelect').addEventListener('change',(event)=>{
+					load(event.target.value)
+				});	
 
-	        	editor.setText("LOADING....")
-				const getit = await fetch(`profiles/${where}`, {
-					method: 'GET',
-					headers: {
-						'Accept': 'application/json',
-						'Content-Type': 'application/json'
-					}						
-				});
-
-				let data = await getit.json()
-				editor.set(data)
-	        }
-
-
-
-	        document.getElementById('loadDataSelect').addEventListener('change',(event)=>{
-	        	load(event.target.value)
-	        });	
-
-	        document.getElementById('saveDataSelect').addEventListener('change',(event)=>{
-	        	save(event.target.value, editor.get())
-	        });	
+				document.getElementById('saveDataSelect').addEventListener('change',(event)=>{
+					save(event.target.value, editor.get())
+				});	
 
 
 
 
-	    </script>
+			</script>
 
 
 
-
+		</details>
 
 
 
 		<hr>
 
-		<div style="flex">
 
-			<div style="flex:1" id="error-reports-div">
-				<h2>Error Reports</h2>	
-				<ul id="error-reports-ul">
-				</ul>		
-			</div>
-			<div style="flex:1" id="source-log-div">
-				<h2>Source Log</h2>	
-				<ul id="source-log-ul">
-				</ul>		
-			</div>
-
-
-		<script>
-
-	        let loadErrorReports = async function(where){
-
-				const getit = await fetch(`errorlog/`, {
-					method: 'GET',
-					headers: {
-						'Accept': 'application/json',
-						'Content-Type': 'application/json'
-					}						
-				});
-
-				let data = await getit.json()
-				
-				document.getElementById('error-reports-ul').innerHTML = ''
-
-				for (let k in data){
-
-					let el = document.createElement('li')
-
-					data[k] = data[k].split('_')
-					data[k].shift()
-					data[k] = data[k].join('_')
-
-					el.innerHTML = `<a href="errordoc/${k}" target="_blank">${data[k]}</a>`
-
-					document.getElementById('error-reports-ul').appendChild(el)
-				}
-
-
-	        }
-
-	        loadErrorReports()
-
-
-
-
-	        let loadSourceLog = async function(where){
-
-				const getit = await fetch(`sourcelog/`, {
-					method: 'GET',
-					headers: {
-						'Accept': 'application/json',
-						'Content-Type': 'application/json'
-					}						
-				});
-
-				let data = await getit.json()
-				
-				document.getElementById('source-log-ul').innerHTML = ''
-
-				for (let k in data){
-
-					let el = document.createElement('li')
-					data[k] = data[k].split('_')
-					data[k].shift()
-					data[k] = data[k].join('_')
-
-					el.innerHTML = `<a href="sourcelog/${k}" target="_blank">${data[k]}</a>`
-
-					document.getElementById('source-log-ul').appendChild(el)
-				}
-
-
-	        }
-
-	        loadSourceLog()
-
-
-
-
-
-
-
-
-		</script>
 
 
 	</body>

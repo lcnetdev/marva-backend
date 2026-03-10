@@ -14,6 +14,7 @@
 const express = require('express');
 const router = express.Router();
 const ldpService = require('../services/ldpService');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create LDP routes with database and cache injection
@@ -41,7 +42,7 @@ function createLdpRoutes(options) {
   /**
    * PUT /api-staging/ldp/:eid - Store RDF record in staging
    */
-  ldpRouter.put('/api-staging/ldp/:eid', async (req, res) => {
+  ldpRouter.put('/api-staging/ldp/:eid', requireAuth, async (req, res) => {
     const { eid } = req.params;
     const rdfContent = req.body;
 
@@ -67,7 +68,7 @@ function createLdpRoutes(options) {
   /**
    * GET /api-staging/ldp/:eid - Retrieve RDF record from staging
    */
-  ldpRouter.get('/api-staging/ldp/:eid', async (req, res) => {
+  ldpRouter.get('/api-staging/ldp/:eid', requireAuth, async (req, res) => {
     const { eid } = req.params;
 
     try {
@@ -91,7 +92,7 @@ function createLdpRoutes(options) {
   /**
    * PUT /api-production/ldp/:eid - Store RDF record in production
    */
-  ldpRouter.put('/api-production/ldp/:eid', async (req, res) => {
+  ldpRouter.put('/api-production/ldp/:eid', requireAuth, async (req, res) => {
     const { eid } = req.params;
     const rdfContent = req.body;
 
@@ -117,7 +118,7 @@ function createLdpRoutes(options) {
   /**
    * GET /api-production/ldp/:eid - Retrieve RDF record from production
    */
-  ldpRouter.get('/api-production/ldp/:eid', async (req, res) => {
+  ldpRouter.get('/api-production/ldp/:eid', requireAuth, async (req, res) => {
     const { eid } = req.params;
 
     try {

@@ -13,7 +13,9 @@ const COLLECTIONS = {
   LCCN_NACO: 'lccnNACO',
   MARVA_001: 'marva001',
   USER_PREFS: 'userPrefs',
-  ERROR_REPORTS: 'errorReports'
+  ERROR_REPORTS: 'errorReports',
+  USERS: 'users',
+  EVENT_LOG: 'eventLog'
 };
 
 // Index definitions for each collection
@@ -41,6 +43,16 @@ const INDEXES = {
     { key: { user: 1 }, name: 'user_index', unique: true }
   ],
   [COLLECTIONS.ERROR_REPORTS]: [
+    { key: { timestamp: -1 }, name: 'timestamp_index' }
+  ],
+  [COLLECTIONS.USERS]: [
+    { key: { username: 1 }, name: 'username_index', unique: true }
+  ],
+  [COLLECTIONS.EVENT_LOG]: [
+    { key: { username: 1 }, name: 'username_index' },
+    { key: { eId: 1 }, name: 'eid_index' },
+    { key: { lccn: 1 }, name: 'lccn_index' },
+    { key: { instanceId: 1 }, name: 'instanceId_index' },
     { key: { timestamp: -1 }, name: 'timestamp_index' }
   ]
 };

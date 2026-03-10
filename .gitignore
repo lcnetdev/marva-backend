@@ -10,6 +10,7 @@ dist/staging/*
 dist/profile-editor/*
 util-lang/supervisord.log
 *.env
+!example.env
 MONGODB_MIGRATION.md
 database_files_copy/
 database_files_old/
@@ -17,3 +18,5 @@ db_restore/
 util-service/REFACTOR_PLAN.md
 util-service/TEST_PLAN.md
 util-service/deploy-info.json
+util-service/certs/*.cer
+util-service/certs/*.pem

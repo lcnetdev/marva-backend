@@ -9,6 +9,7 @@
 const express = require('express');
 const { hasDeployAuth } = require('../config');
 const { COLLECTIONS } = require('../db/collections');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create ID generation routes
@@ -40,7 +41,7 @@ function createIdsRoutes(options) {
   /**
    * GET /lccnnaco - Get next NACO ID and increment
    */
-  router.get('/lccnnaco', async (req, res) => {
+  router.get('/lccnnaco', requireAuth, async (req, res) => {
     const nacoIdObj = getNacoIdObj();
     if (!nacoIdObj) {
       return res.status(500).json({ error: 'NACO ID not initialized' });
@@ -93,7 +94,7 @@ function createIdsRoutes(options) {
   /**
    * GET /marva001 - Get next MARVA001 ID and increment
    */
-  router.get('/marva001', async (req, res) => {
+  router.get('/marva001', requireAuth, async (req, res) => {
     const marva001Obj = getMarva001Obj();
     if (!marva001Obj) {
       return res.status(500).json({ error: 'MARVA001 ID not initialized' });

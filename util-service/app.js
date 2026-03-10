@@ -19,8 +19,12 @@ const {
   createProfilesRoutes,
   createExternalRoutes,
   createMarcRoutes,
-  createLdpRoutes
+  createLdpRoutes,
+  createAuthRoutes,
+  createUsersRoutes,
+  createEventsRoutes
 } = require('./routes');
+const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
 
 /**
@@ -65,6 +69,15 @@ function createApp(options) {
   // MOUNT ROUTES
   // ============================================
 
+  // Auth routes (login, callback, logout, refresh, me)
+  // Must be mounted BEFORE optionalAuth middleware so auth endpoints are accessible
+  const authRouter = createAuthRoutes({ getDb });
+  app.use('/', authRouter);
+
+  // JWT optional auth — populates req.user if a valid Bearer token is present.
+  // Does NOT block requests without a token (backward compatibility).
+  app.use(optionalAuth);
+
   // Admin routes (version, status, cleanup, deploy, logs)
   // Store mutable version state
   let currentEditorVersion = editorVersion;
@@ -82,7 +95,8 @@ function createApp(options) {
     startCleanup: () => {
       // TODO: Implement actual cleanup logic from cleanupService
       cleanupStatus = { running: true, lastRun: new Date().toISOString(), deleted: 0 };
-    }
+    },
+    getDb
   });
   app.use('/', adminRouter);
 
@@ -129,7 +143,8 @@ function createApp(options) {
 
   // Publishing routes (publish, nacostub, validate, copycat)
   const publishingRouter = createPublishingRoutes({
-    postLog
+    postLog,
+    getDb
   });
   app.use('/', publishingRouter);
 
@@ -147,6 +162,14 @@ function createApp(options) {
   // MARC preview routes
   const marcRouter = createMarcRoutes();
   app.use('/', marcRouter);
+
+  // User management routes
+  const usersRouter = createUsersRoutes({ getDb });
+  app.use('/', usersRouter);
+
+  // Event log routes
+  const eventsRouter = createEventsRoutes({ getDb });
+  app.use('/', eventsRouter);
 
   // LDP routes (api-staging, api-production)
   // Pass getDb as a function for lazy evaluation

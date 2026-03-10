@@ -9,6 +9,7 @@
 
 const express = require('express');
 const { COLLECTIONS } = require('../db/collections');
+const { requireAuth } = require('../middleware/jwtAuth');
 
 /**
  * Create records routes
@@ -28,30 +29,30 @@ function createRecordsRoutes(options) {
   // ============================================
 
   /**
-   * GET /myrecords/production/:user - Get user's production records
+   * GET /myrecords/production or /myrecords/production/:user
+   * Uses JWT username (lowercased) to look up records in cache.
+   * The :user param is kept for backwards compatibility but ignored.
    */
-  router.get('/myrecords/production/:user', (req, res) => {
-    const user = req.params.user;
+  function handleMyRecordsProduction(req, res) {
+    const user = req.user.username.toLowerCase();
     const cache = getProductionCache();
-    if (user && cache.byUser[user]) {
-      res.json(cache.byUser[user]);
-    } else {
-      res.json({});
-    }
-  });
+    res.json(cache.byUser[user] || {});
+  }
+  router.get('/myrecords/production', requireAuth, handleMyRecordsProduction);
+  router.get('/myrecords/production/:user', requireAuth, handleMyRecordsProduction);
 
   /**
-   * GET /myrecords/staging/:user - Get user's staging records
+   * GET /myrecords/staging or /myrecords/staging/:user
+   * Uses JWT username (lowercased) to look up records in cache.
+   * The :user param is kept for backwards compatibility but ignored.
    */
-  router.get('/myrecords/staging/:user', (req, res) => {
-    const user = req.params.user;
+  function handleMyRecordsStaging(req, res) {
+    const user = req.user.username.toLowerCase();
     const cache = getStagingCache();
-    if (user && cache.byUser[user]) {
-      res.json(cache.byUser[user]);
-    } else {
-      res.json({});
-    }
-  });
+    res.json(cache.byUser[user] || {});
+  }
+  router.get('/myrecords/staging', requireAuth, handleMyRecordsStaging);
+  router.get('/myrecords/staging/:user', requireAuth, handleMyRecordsStaging);
 
   // ============================================
   // ALL RECORDS ENDPOINTS
