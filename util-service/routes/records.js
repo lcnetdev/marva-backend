@@ -10,6 +10,7 @@
 const express = require('express');
 const { COLLECTIONS } = require('../db/collections');
 const { requireAuth } = require('../middleware/jwtAuth');
+const { normalizeUser } = require('../services/cacheService');
 
 /**
  * Create records routes
@@ -133,7 +134,8 @@ function createRecordsRoutes(options) {
    * POST /delete/:stage/:user/:eid - Soft delete a record
    */
   router.post('/delete/:stage/:user/:eid', (req, res) => {
-    const { stage, user, eid } = req.params;
+    const { stage, eid } = req.params;
+    const user = normalizeUser(req.params.user);
     let result = false;
 
     const cache = stage === 'staging' ? getStagingCache() : getProductionCache();
