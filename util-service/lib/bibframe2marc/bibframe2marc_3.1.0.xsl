@@ -17656,20 +17656,23 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:copy-of select="$vShared"/>
-              <sf xmlns="http://www.loc.gov/bf2marc" code="7">
-                <switch>
-                  <case test="$vLangTagLabel!=''">
-                    <transform>
-                      <xsl:variable name="bcp47code">
-                        <xsl:call-template name="tOutputBCP47">
-                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
-                        </xsl:call-template>
-                      </xsl:variable>
-                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
-                    </transform>
-                  </case>
-                </switch>
-              </sf>
+              <xsl:choose>
+                <xsl:when test="$vLangTagLabel!=''">
+                  <xsl:variable name="vvAddRelationMarcKeyTag-7">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:variable>
+                  <xsl:if test="$vvAddRelationMarcKeyTag-7 != ''">
+                    <marc:subfield code="7">
+                      <xsl:value-of select="$vvAddRelationMarcKeyTag-7"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
+              </xsl:choose>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
