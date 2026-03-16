@@ -4,6 +4,7 @@
   <xsl:strip-space elements="*"/>
   <xsl:param name="pRecordId" select="'default'"/>
   <xsl:param name="pCatScript" select="'Latn'"/>
+  <xsl:param name="bcp47inferrence" select="true()"/>
   <xsl:param name="pGenerationDatestamp">
     <xsl:choose>
       <xsl:when test="function-available('date:date-time')">
@@ -20,6 +21,7 @@
   <xsl:param name="pSRULookup"/>
   <xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable>
   <xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
+  <xsl:param name="pCatScriptNormalized" select="translate($pCatScript, $upper, $lower)"/>
   <xsl:variable name="xslProcessor">
     <xsl:value-of select="system-property('xsl:vendor')"/>
   </xsl:variable>
@@ -112,6 +114,10 @@
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>guru</lang>
       <code>Guru</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>khmr</lang>
+      <code>Khmr</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>knda</lang>
@@ -752,1972 +758,1356 @@
       <type>woodwind, ethnic</type>
     </performer>
   </xsl:variable>
-  <xsl:variable name="languages">
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>aa</xmllang>
-      <iso6392>aar</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ab</xmllang>
-      <iso6392>abk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ace</xmllang>
-      <iso6392>ace</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ach</xmllang>
-      <iso6392>ach</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ada</xmllang>
-      <iso6392>ada</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ady</xmllang>
-      <iso6392>ady</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>afa</xmllang>
-      <iso6392>afa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>afh</xmllang>
-      <iso6392>afh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>af</xmllang>
-      <iso6392>afr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ain</xmllang>
-      <iso6392>ain</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ak</xmllang>
-      <iso6392>aka</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>akk</xmllang>
-      <iso6392>akk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sq</xmllang>
-      <iso6392>sqi</iso6392>
-      <iso6392>alb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ale</xmllang>
-      <iso6392>ale</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>alg</xmllang>
-      <iso6392>alg</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>alt</xmllang>
-      <iso6392>alt</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>am</xmllang>
-      <iso6392>amh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ang</xmllang>
-      <iso6392>ang</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>anp</xmllang>
-      <iso6392>anp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>apa</xmllang>
-      <iso6392>apa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ar</xmllang>
-      <iso6392>ara</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>arc</xmllang>
-      <iso6392>arc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>an</xmllang>
-      <iso6392>arg</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hy</xmllang>
-      <iso6392>hye</iso6392>
-      <iso6392>arm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>arn</xmllang>
-      <iso6392>arn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>arp</xmllang>
-      <iso6392>arp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>art</xmllang>
-      <iso6392>art</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>arw</xmllang>
-      <iso6392>arw</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>as</xmllang>
-      <iso6392>asm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ast</xmllang>
-      <iso6392>ast</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ath</xmllang>
-      <iso6392>ath</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>aus</xmllang>
-      <iso6392>aus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>av</xmllang>
-      <iso6392>ava</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ae</xmllang>
-      <iso6392>ave</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>awa</xmllang>
-      <iso6392>awa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ay</xmllang>
-      <iso6392>aym</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>az</xmllang>
-      <iso6392>aze</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bad</xmllang>
-      <iso6392>bad</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bai</xmllang>
-      <iso6392>bai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ba</xmllang>
-      <iso6392>bak</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bal</xmllang>
-      <iso6392>bal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bm</xmllang>
-      <iso6392>bam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ban</xmllang>
-      <iso6392>ban</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>eu</xmllang>
-      <iso6392>eus</iso6392>
-      <iso6392>baq</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bas</xmllang>
-      <iso6392>bas</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bat</xmllang>
-      <iso6392>bat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bej</xmllang>
-      <iso6392>bej</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>be</xmllang>
-      <iso6392>bel</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bem</xmllang>
-      <iso6392>bem</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bn</xmllang>
-      <iso6392>ben</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ber</xmllang>
-      <iso6392>ber</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bho</xmllang>
-      <iso6392>bho</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bh</xmllang>
-      <iso6392>bih</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bik</xmllang>
-      <iso6392>bik</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bin</xmllang>
-      <iso6392>bin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bi</xmllang>
-      <iso6392>bis</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bla</xmllang>
-      <iso6392>bla</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bnt</xmllang>
-      <iso6392>bnt</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bo</xmllang>
-      <iso6392>bod</iso6392>
-      <iso6392>tib</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bs</xmllang>
-      <iso6392>bos</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bra</xmllang>
-      <iso6392>bra</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>br</xmllang>
-      <iso6392>bre</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>btk</xmllang>
-      <iso6392>btk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bua</xmllang>
-      <iso6392>bua</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bug</xmllang>
-      <iso6392>bug</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>bg</xmllang>
-      <iso6392>bul</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>my</xmllang>
-      <iso6392>mya</iso6392>
-      <iso6392>bur</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>byn</xmllang>
-      <iso6392>byn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cad</xmllang>
-      <iso6392>cad</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cai</xmllang>
-      <iso6392>cai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>car</xmllang>
-      <iso6392>car</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ca</xmllang>
-      <iso6392>cat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cau</xmllang>
-      <iso6392>cau</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ceb</xmllang>
-      <iso6392>ceb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cel</xmllang>
-      <iso6392>cel</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cs</xmllang>
-      <iso6392>ces</iso6392>
-      <iso6392>cze</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ch</xmllang>
-      <iso6392>cha</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chb</xmllang>
-      <iso6392>chb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ce</xmllang>
-      <iso6392>che</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chg</xmllang>
-      <iso6392>chg</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zh</xmllang>
-      <iso6392>zho</iso6392>
-      <iso6392>chi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chk</xmllang>
-      <iso6392>chk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chm</xmllang>
-      <iso6392>chm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chn</xmllang>
-      <iso6392>chn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cho</xmllang>
-      <iso6392>cho</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chp</xmllang>
-      <iso6392>chp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chr</xmllang>
-      <iso6392>chr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cu</xmllang>
-      <iso6392>chu</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cv</xmllang>
-      <iso6392>chv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>chy</xmllang>
-      <iso6392>chy</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cmc</xmllang>
-      <iso6392>cmc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cop</xmllang>
-      <iso6392>cop</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kw</xmllang>
-      <iso6392>cor</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>co</xmllang>
-      <iso6392>cos</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cpe</xmllang>
-      <iso6392>cpe</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cpf</xmllang>
-      <iso6392>cpf</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cpp</xmllang>
-      <iso6392>cpp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cr</xmllang>
-      <iso6392>cre</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>crh</xmllang>
-      <iso6392>crh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>crp</xmllang>
-      <iso6392>crp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>csb</xmllang>
-      <iso6392>csb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cus</xmllang>
-      <iso6392>cus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>cy</xmllang>
-      <iso6392>cym</iso6392>
-      <iso6392>wel</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dak</xmllang>
-      <iso6392>dak</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>da</xmllang>
-      <iso6392>dan</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dar</xmllang>
-      <iso6392>dar</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>day</xmllang>
-      <iso6392>day</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>del</xmllang>
-      <iso6392>del</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>den</xmllang>
-      <iso6392>den</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>de</xmllang>
-      <iso6392>ger</iso6392>
-      <iso6392>deu</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dgr</xmllang>
-      <iso6392>dgr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>din</xmllang>
-      <iso6392>din</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dv</xmllang>
-      <iso6392>div</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>doi</xmllang>
-      <iso6392>doi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dra</xmllang>
-      <iso6392>dra</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dsb</xmllang>
-      <iso6392>dsb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dua</xmllang>
-      <iso6392>dua</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dum</xmllang>
-      <iso6392>dum</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nl</xmllang>
-      <iso6392>nld</iso6392>
-      <iso6392>dut</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dyu</xmllang>
-      <iso6392>dyu</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>dz</xmllang>
-      <iso6392>dzo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>efi</xmllang>
-      <iso6392>efi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>egy</xmllang>
-      <iso6392>egy</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>eka</xmllang>
-      <iso6392>eka</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>el</xmllang>
-      <iso6392>ell</iso6392>
-      <iso6392>gre</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>elx</xmllang>
-      <iso6392>elx</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>en</xmllang>
-      <iso6392>eng</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>enm</xmllang>
-      <iso6392>enm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>eo</xmllang>
-      <iso6392>epo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>et</xmllang>
-      <iso6392>est</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ee</xmllang>
-      <iso6392>ewe</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ewo</xmllang>
-      <iso6392>ewo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fan</xmllang>
-      <iso6392>fan</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fo</xmllang>
-      <iso6392>fao</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fa</xmllang>
-      <iso6392>fas</iso6392>
-      <iso6392>per</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fat</xmllang>
-      <iso6392>fat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fj</xmllang>
-      <iso6392>fij</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fil</xmllang>
-      <iso6392>fil</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fi</xmllang>
-      <iso6392>fin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fiu</xmllang>
-      <iso6392>fiu</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fon</xmllang>
-      <iso6392>fon</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fr</xmllang>
-      <iso6392>fre</iso6392>
-      <iso6392>fra</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>frm</xmllang>
-      <iso6392>frm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fro</xmllang>
-      <iso6392>fro</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>frr</xmllang>
-      <iso6392>frr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>frs</xmllang>
-      <iso6392>frs</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fy</xmllang>
-      <iso6392>fry</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ff</xmllang>
-      <iso6392>ful</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>fur</xmllang>
-      <iso6392>fur</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gaa</xmllang>
-      <iso6392>gaa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gay</xmllang>
-      <iso6392>gay</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gba</xmllang>
-      <iso6392>gba</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gem</xmllang>
-      <iso6392>gem</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ka</xmllang>
-      <iso6392>geo</iso6392>
-      <iso6392>kat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gez</xmllang>
-      <iso6392>gez</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gil</xmllang>
-      <iso6392>gil</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gd</xmllang>
-      <iso6392>gla</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ga</xmllang>
-      <iso6392>gle</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gl</xmllang>
-      <iso6392>glg</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gv</xmllang>
-      <iso6392>glv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gmh</xmllang>
-      <iso6392>gmh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>goh</xmllang>
-      <iso6392>goh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gon</xmllang>
-      <iso6392>gon</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gor</xmllang>
-      <iso6392>gor</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>got</xmllang>
-      <iso6392>got</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>grb</xmllang>
-      <iso6392>grb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>grc</xmllang>
-      <iso6392>grc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gn</xmllang>
-      <iso6392>grn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gsw</xmllang>
-      <iso6392>gsw</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gu</xmllang>
-      <iso6392>guj</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>gwi</xmllang>
-      <iso6392>gwi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hai</xmllang>
-      <iso6392>hai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ht</xmllang>
-      <iso6392>hat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ha</xmllang>
-      <iso6392>hau</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>haw</xmllang>
-      <iso6392>haw</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>he</xmllang>
-      <iso6392>heb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hz</xmllang>
-      <iso6392>her</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hil</xmllang>
-      <iso6392>hil</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>him</xmllang>
-      <iso6392>him</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hi</xmllang>
-      <iso6392>hin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hit</xmllang>
-      <iso6392>hit</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hmn</xmllang>
-      <iso6392>hmn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ho</xmllang>
-      <iso6392>hmo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hr</xmllang>
-      <iso6392>hrv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hsb</xmllang>
-      <iso6392>hsb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hu</xmllang>
-      <iso6392>hun</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>hup</xmllang>
-      <iso6392>hup</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>iba</xmllang>
-      <iso6392>iba</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ig</xmllang>
-      <iso6392>ibo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>is</xmllang>
-      <iso6392>isl</iso6392>
-      <iso6392>ice</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>io</xmllang>
-      <iso6392>ido</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ii</xmllang>
-      <iso6392>iii</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ijo</xmllang>
-      <iso6392>ijo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>iu</xmllang>
-      <iso6392>iku</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ie</xmllang>
-      <iso6392>ile</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ilo</xmllang>
-      <iso6392>ilo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ia</xmllang>
-      <iso6392>ina</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>inc</xmllang>
-      <iso6392>inc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>id</xmllang>
-      <iso6392>ind</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ine</xmllang>
-      <iso6392>ine</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>inh</xmllang>
-      <iso6392>inh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ik</xmllang>
-      <iso6392>ipk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ira</xmllang>
-      <iso6392>ira</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>iro</xmllang>
-      <iso6392>iro</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>it</xmllang>
-      <iso6392>ita</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>jv</xmllang>
-      <iso6392>jav</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>jbo</xmllang>
-      <iso6392>jbo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ja</xmllang>
-      <iso6392>jpn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>jpr</xmllang>
-      <iso6392>jpr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>jrb</xmllang>
-      <iso6392>jrb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kaa</xmllang>
-      <iso6392>kaa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kab</xmllang>
-      <iso6392>kab</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kac</xmllang>
-      <iso6392>kac</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kl</xmllang>
-      <iso6392>kal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kam</xmllang>
-      <iso6392>kam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kn</xmllang>
-      <iso6392>kan</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kar</xmllang>
-      <iso6392>kar</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ks</xmllang>
-      <iso6392>kas</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kr</xmllang>
-      <iso6392>kau</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kaw</xmllang>
-      <iso6392>kaw</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kk</xmllang>
-      <iso6392>kaz</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kbd</xmllang>
-      <iso6392>kbd</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kha</xmllang>
-      <iso6392>kha</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>khi</xmllang>
-      <iso6392>khi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>km</xmllang>
-      <iso6392>khm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kho</xmllang>
-      <iso6392>kho</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ki</xmllang>
-      <iso6392>kik</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rw</xmllang>
-      <iso6392>kin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ky</xmllang>
-      <iso6392>kir</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kmb</xmllang>
-      <iso6392>kmb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kok</xmllang>
-      <iso6392>kok</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kv</xmllang>
-      <iso6392>kom</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kg</xmllang>
-      <iso6392>kon</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ko</xmllang>
-      <iso6392>kor</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kos</xmllang>
-      <iso6392>kos</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kpe</xmllang>
-      <iso6392>kpe</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>krc</xmllang>
-      <iso6392>krc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>krl</xmllang>
-      <iso6392>krl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kro</xmllang>
-      <iso6392>kro</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kru</xmllang>
-      <iso6392>kru</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kj</xmllang>
-      <iso6392>kua</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kum</xmllang>
-      <iso6392>kum</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ku</xmllang>
-      <iso6392>kur</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>kut</xmllang>
-      <iso6392>kut</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lad</xmllang>
-      <iso6392>lad</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lah</xmllang>
-      <iso6392>lah</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lam</xmllang>
-      <iso6392>lam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lo</xmllang>
-      <iso6392>lao</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>la</xmllang>
-      <iso6392>lat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lv</xmllang>
-      <iso6392>lav</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lez</xmllang>
-      <iso6392>lez</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>li</xmllang>
-      <iso6392>lim</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ln</xmllang>
-      <iso6392>lin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lt</xmllang>
-      <iso6392>lit</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lol</xmllang>
-      <iso6392>lol</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>loz</xmllang>
-      <iso6392>loz</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lb</xmllang>
-      <iso6392>ltz</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lua</xmllang>
-      <iso6392>lua</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lu</xmllang>
-      <iso6392>lub</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lg</xmllang>
-      <iso6392>lug</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lui</xmllang>
-      <iso6392>lui</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lun</xmllang>
-      <iso6392>lun</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>luo</xmllang>
-      <iso6392>luo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>lus</xmllang>
-      <iso6392>lus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mk</xmllang>
-      <iso6392>mkd</iso6392>
-      <iso6392>mac</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mad</xmllang>
-      <iso6392>mad</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mag</xmllang>
-      <iso6392>mag</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mh</xmllang>
-      <iso6392>mah</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mai</xmllang>
-      <iso6392>mai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mak</xmllang>
-      <iso6392>mak</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ml</xmllang>
-      <iso6392>mal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>man</xmllang>
-      <iso6392>man</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mi</xmllang>
-      <iso6392>mri</iso6392>
-      <iso6392>mao</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>map</xmllang>
-      <iso6392>map</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mr</xmllang>
-      <iso6392>mar</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mas</xmllang>
-      <iso6392>mas</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ms</xmllang>
-      <iso6392>msa</iso6392>
-      <iso6392>may</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mdf</xmllang>
-      <iso6392>mdf</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mdr</xmllang>
-      <iso6392>mdr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>men</xmllang>
-      <iso6392>men</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mga</xmllang>
-      <iso6392>mga</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mic</xmllang>
-      <iso6392>mic</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>min</xmllang>
-      <iso6392>min</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mis</xmllang>
-      <iso6392>mis</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mkh</xmllang>
-      <iso6392>mkh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mg</xmllang>
-      <iso6392>mlg</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mt</xmllang>
-      <iso6392>mlt</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mnc</xmllang>
-      <iso6392>mnc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mni</xmllang>
-      <iso6392>mni</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mno</xmllang>
-      <iso6392>mno</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>moh</xmllang>
-      <iso6392>moh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mn</xmllang>
-      <iso6392>mon</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mos</xmllang>
-      <iso6392>mos</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mul</xmllang>
-      <iso6392>mul</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mun</xmllang>
-      <iso6392>mun</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mus</xmllang>
-      <iso6392>mus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mwl</xmllang>
-      <iso6392>mwl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>mwr</xmllang>
-      <iso6392>mwr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>myn</xmllang>
-      <iso6392>myn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>myv</xmllang>
-      <iso6392>myv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nah</xmllang>
-      <iso6392>nah</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nai</xmllang>
-      <iso6392>nai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nap</xmllang>
-      <iso6392>nap</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>na</xmllang>
-      <iso6392>nau</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nv</xmllang>
-      <iso6392>nav</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nr</xmllang>
-      <iso6392>nbl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nd</xmllang>
-      <iso6392>nde</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ng</xmllang>
-      <iso6392>ndo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nds</xmllang>
-      <iso6392>nds</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ne</xmllang>
-      <iso6392>nep</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>new</xmllang>
-      <iso6392>new</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nia</xmllang>
-      <iso6392>nia</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nic</xmllang>
-      <iso6392>nic</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>niu</xmllang>
-      <iso6392>niu</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nn</xmllang>
-      <iso6392>nno</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nb</xmllang>
-      <iso6392>nob</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nog</xmllang>
-      <iso6392>nog</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>non</xmllang>
-      <iso6392>non</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>no</xmllang>
-      <iso6392>nor</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nqo</xmllang>
-      <iso6392>nqo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nso</xmllang>
-      <iso6392>nso</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nub</xmllang>
-      <iso6392>nub</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nwc</xmllang>
-      <iso6392>nwc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ny</xmllang>
-      <iso6392>nya</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nym</xmllang>
-      <iso6392>nym</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nyn</xmllang>
-      <iso6392>nyn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nyo</xmllang>
-      <iso6392>nyo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>nzi</xmllang>
-      <iso6392>nzi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>oc</xmllang>
-      <iso6392>oci</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>oj</xmllang>
-      <iso6392>oji</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>or</xmllang>
-      <iso6392>ori</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>om</xmllang>
-      <iso6392>orm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>osa</xmllang>
-      <iso6392>osa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>os</xmllang>
-      <iso6392>oss</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ota</xmllang>
-      <iso6392>ota</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>oto</xmllang>
-      <iso6392>oto</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>paa</xmllang>
-      <iso6392>paa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pag</xmllang>
-      <iso6392>pag</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pal</xmllang>
-      <iso6392>pal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pam</xmllang>
-      <iso6392>pam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pa</xmllang>
-      <iso6392>pan</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pap</xmllang>
-      <iso6392>pap</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pau</xmllang>
-      <iso6392>pau</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>peo</xmllang>
-      <iso6392>peo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>phi</xmllang>
-      <iso6392>phi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>phn</xmllang>
-      <iso6392>phn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pi</xmllang>
-      <iso6392>pli</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pl</xmllang>
-      <iso6392>pol</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pon</xmllang>
-      <iso6392>pon</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pt</xmllang>
-      <iso6392>por</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pra</xmllang>
-      <iso6392>pra</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>pro</xmllang>
-      <iso6392>pro</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ps</xmllang>
-      <iso6392>pus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>qaa-qtz</xmllang>
-      <iso6392>qaa-qtz</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>qu</xmllang>
-      <iso6392>que</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>raj</xmllang>
-      <iso6392>raj</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rap</xmllang>
-      <iso6392>rap</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rar</xmllang>
-      <iso6392>rar</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>roa</xmllang>
-      <iso6392>roa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rm</xmllang>
-      <iso6392>roh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rom</xmllang>
-      <iso6392>rom</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ro</xmllang>
-      <iso6392>ron</iso6392>
-      <iso6392>rum</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rn</xmllang>
-      <iso6392>run</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>rup</xmllang>
-      <iso6392>rup</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ru</xmllang>
-      <iso6392>rus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sad</xmllang>
-      <iso6392>sad</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sg</xmllang>
-      <iso6392>sag</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sah</xmllang>
-      <iso6392>sah</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sai</xmllang>
-      <iso6392>sai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sal</xmllang>
-      <iso6392>sal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sam</xmllang>
-      <iso6392>sam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sa</xmllang>
-      <iso6392>san</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sas</xmllang>
-      <iso6392>sas</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sat</xmllang>
-      <iso6392>sat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>scn</xmllang>
-      <iso6392>scn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sco</xmllang>
-      <iso6392>sco</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sel</xmllang>
-      <iso6392>sel</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sem</xmllang>
-      <iso6392>sem</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sga</xmllang>
-      <iso6392>sga</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sgn</xmllang>
-      <iso6392>sgn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>shn</xmllang>
-      <iso6392>shn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sid</xmllang>
-      <iso6392>sid</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>si</xmllang>
-      <iso6392>sin</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sio</xmllang>
-      <iso6392>sio</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sit</xmllang>
-      <iso6392>sit</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sla</xmllang>
-      <iso6392>sla</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sk</xmllang>
-      <iso6392>slk</iso6392>
-      <iso6392>slo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sl</xmllang>
-      <iso6392>slv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sma</xmllang>
-      <iso6392>sma</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>se</xmllang>
-      <iso6392>sme</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>smi</xmllang>
-      <iso6392>smi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>smj</xmllang>
-      <iso6392>smj</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>smn</xmllang>
-      <iso6392>smn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sm</xmllang>
-      <iso6392>smo</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sms</xmllang>
-      <iso6392>sms</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sn</xmllang>
-      <iso6392>sna</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sd</xmllang>
-      <iso6392>snd</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>snk</xmllang>
-      <iso6392>snk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sog</xmllang>
-      <iso6392>sog</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>so</xmllang>
-      <iso6392>som</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>son</xmllang>
-      <iso6392>son</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>st</xmllang>
-      <iso6392>sot</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>es</xmllang>
-      <iso6392>spa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sc</xmllang>
-      <iso6392>srd</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>srn</xmllang>
-      <iso6392>srn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sr</xmllang>
-      <iso6392>srp</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>srr</xmllang>
-      <iso6392>srr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ssa</xmllang>
-      <iso6392>ssa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ss</xmllang>
-      <iso6392>ssw</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>suk</xmllang>
-      <iso6392>suk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>su</xmllang>
-      <iso6392>sun</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sus</xmllang>
-      <iso6392>sus</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sux</xmllang>
-      <iso6392>sux</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sw</xmllang>
-      <iso6392>swa</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>sv</xmllang>
-      <iso6392>swe</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>syc</xmllang>
-      <iso6392>syc</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>syr</xmllang>
-      <iso6392>syr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ty</xmllang>
-      <iso6392>tah</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tai</xmllang>
-      <iso6392>tai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ta</xmllang>
-      <iso6392>tam</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tt</xmllang>
-      <iso6392>tat</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>te</xmllang>
-      <iso6392>tel</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tem</xmllang>
-      <iso6392>tem</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ter</xmllang>
-      <iso6392>ter</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tet</xmllang>
-      <iso6392>tet</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tg</xmllang>
-      <iso6392>tgk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tl</xmllang>
-      <iso6392>tgl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>th</xmllang>
-      <iso6392>tha</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tig</xmllang>
-      <iso6392>tig</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ti</xmllang>
-      <iso6392>tir</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tiv</xmllang>
-      <iso6392>tiv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tkl</xmllang>
-      <iso6392>tkl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tlh</xmllang>
-      <iso6392>tlh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tli</xmllang>
-      <iso6392>tli</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tmh</xmllang>
-      <iso6392>tmh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tog</xmllang>
-      <iso6392>tog</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>to</xmllang>
-      <iso6392>ton</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tpi</xmllang>
-      <iso6392>tpi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tsi</xmllang>
-      <iso6392>tsi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tn</xmllang>
-      <iso6392>tsn</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ts</xmllang>
-      <iso6392>tso</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tk</xmllang>
-      <iso6392>tuk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tum</xmllang>
-      <iso6392>tum</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tup</xmllang>
-      <iso6392>tup</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tr</xmllang>
-      <iso6392>tur</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tut</xmllang>
-      <iso6392>tut</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tvl</xmllang>
-      <iso6392>tvl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tw</xmllang>
-      <iso6392>twi</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>tyv</xmllang>
-      <iso6392>tyv</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>udm</xmllang>
-      <iso6392>udm</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>uga</xmllang>
-      <iso6392>uga</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ug</xmllang>
-      <iso6392>uig</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>uk</xmllang>
-      <iso6392>ukr</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>umb</xmllang>
-      <iso6392>umb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>und</xmllang>
-      <iso6392>und</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ur</xmllang>
-      <iso6392>urd</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>uz</xmllang>
-      <iso6392>uzb</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>vai</xmllang>
-      <iso6392>vai</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ve</xmllang>
-      <iso6392>ven</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>vi</xmllang>
-      <iso6392>vie</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>vo</xmllang>
-      <iso6392>vol</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>vot</xmllang>
-      <iso6392>vot</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>wak</xmllang>
-      <iso6392>wak</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>wal</xmllang>
-      <iso6392>wal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>war</xmllang>
-      <iso6392>war</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>was</xmllang>
-      <iso6392>was</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>wen</xmllang>
-      <iso6392>wen</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>wa</xmllang>
-      <iso6392>wln</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>wo</xmllang>
-      <iso6392>wol</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>xal</xmllang>
-      <iso6392>xal</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>xh</xmllang>
-      <iso6392>xho</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>yao</xmllang>
-      <iso6392>yao</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>yap</xmllang>
-      <iso6392>yap</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>yi</xmllang>
-      <iso6392>yid</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>yo</xmllang>
-      <iso6392>yor</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>ypk</xmllang>
-      <iso6392>ypk</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zap</xmllang>
-      <iso6392>zap</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zbl</xmllang>
-      <iso6392>zbl</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zen</xmllang>
-      <iso6392>zen</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zgh</xmllang>
-      <iso6392>zgh</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>za</xmllang>
-      <iso6392>zha</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>znd</xmllang>
-      <iso6392>znd</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zu</xmllang>
-      <iso6392>zul</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zun</xmllang>
-      <iso6392>zun</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zxx</xmllang>
-      <iso6392>zxx</iso6392>
-    </language>
-    <language xmlns:bf2marc="http://www.loc.gov/bf2marc">
-      <xmllang>zza</xmllang>
-      <iso6392>zza</iso6392>
-    </language>
+  <xsl:variable name="langcode-to-script">
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ab</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>af</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>am</langcode>
+      <script>ethi</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ar</langcode>
+      <script>arab</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>as</langcode>
+      <script>beng</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ay</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>be</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>bg</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>bn</langcode>
+      <script>beng</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>bs</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ca</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ch</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>cs</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>cy</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>da</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>de</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>dv</langcode>
+      <script>thaa</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>dz</langcode>
+      <script>tibt</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>el</langcode>
+      <script>grek</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>en</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>eo</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>es</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>et</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>eu</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fa</langcode>
+      <script>arab</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fi</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fj</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fo</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fr</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>fy</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ga</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>gl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>gn</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>gu</langcode>
+      <script>gujr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>gv</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>he</langcode>
+      <script>hebr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>hi</langcode>
+      <script>deva</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>hr</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ht</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>hu</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>hy</langcode>
+      <script>armn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>id</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>in</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>is</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>it</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>iw</langcode>
+      <script>hebr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ja</langcode>
+      <script>jpan</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ka</langcode>
+      <script>geor</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>kk</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>kl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>km</langcode>
+      <script>khmr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>kn</langcode>
+      <script>knda</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ko</langcode>
+      <script>kore</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>la</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>lb</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ln</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>lo</langcode>
+      <script>laoo</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>lt</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>lv</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mg</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mh</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mk</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ml</langcode>
+      <script>mlym</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mo</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mr</langcode>
+      <script>deva</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ms</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mt</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>my</langcode>
+      <script>mymr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>na</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nb</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nd</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ne</langcode>
+      <script>deva</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nn</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>no</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nr</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ny</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>om</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>or</langcode>
+      <script>orya</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>pa</langcode>
+      <script>guru</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>pl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ps</langcode>
+      <script>arab</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>pt</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>qu</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>rm</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>rn</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ro</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ru</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>rw</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sg</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>si</langcode>
+      <script>sinh</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sk</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sm</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>so</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sq</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ss</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>st</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sv</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>sw</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ta</langcode>
+      <script>taml</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>te</langcode>
+      <script>telu</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>th</langcode>
+      <script>thai</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ti</langcode>
+      <script>ethi</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tn</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>to</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tr</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ts</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>uk</langcode>
+      <script>cyrl</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ur</langcode>
+      <script>arab</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>ve</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>vi</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>xh</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>yi</langcode>
+      <script>hebr</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>zu</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>dsb</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>frr</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>frs</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>gsw</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>hsb</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>kok</langcode>
+      <script>deva</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>mai</langcode>
+      <script>deva</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>men</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nds</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>niu</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>nso</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tem</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tkl</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tmh</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tpi</langcode>
+      <script>latn</script>
+    </langcode-script>
+    <langcode-script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <langcode>tvl</langcode>
+      <script>latn</script>
+    </langcode-script>
   </xsl:variable>
+  <xsl:variable name="langcode-to-scriptNS" select="exsl:node-set($langcode-to-script)"/>
+  <xsl:variable name="iso6392-to-iso6391">
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>aar</iso6392>
+      <iso6391>aa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>abk</iso6392>
+      <iso6391>ab</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>afr</iso6392>
+      <iso6391>af</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>aka</iso6392>
+      <iso6391>ak</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sqi</iso6392>
+      <iso6391>sq</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>alb</iso6392>
+      <iso6391>sq</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>amh</iso6392>
+      <iso6391>am</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ara</iso6392>
+      <iso6391>ar</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>arg</iso6392>
+      <iso6391>an</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hye</iso6392>
+      <iso6391>hy</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>arm</iso6392>
+      <iso6391>hy</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>asm</iso6392>
+      <iso6391>as</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ava</iso6392>
+      <iso6391>av</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ave</iso6392>
+      <iso6391>ae</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>aym</iso6392>
+      <iso6391>ay</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>aze</iso6392>
+      <iso6391>az</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bak</iso6392>
+      <iso6391>ba</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bam</iso6392>
+      <iso6391>bm</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>eus</iso6392>
+      <iso6391>eu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>baq</iso6392>
+      <iso6391>eu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bel</iso6392>
+      <iso6391>be</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ben</iso6392>
+      <iso6391>bn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bih</iso6392>
+      <iso6391>bh</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bis</iso6392>
+      <iso6391>bi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bod</iso6392>
+      <iso6391>bo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tib</iso6392>
+      <iso6391>bo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bos</iso6392>
+      <iso6391>bs</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bre</iso6392>
+      <iso6391>br</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bul</iso6392>
+      <iso6391>bg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mya</iso6392>
+      <iso6391>my</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>bur</iso6392>
+      <iso6391>my</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cat</iso6392>
+      <iso6391>ca</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ces</iso6392>
+      <iso6391>cs</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cze</iso6392>
+      <iso6391>cs</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cha</iso6392>
+      <iso6391>ch</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>che</iso6392>
+      <iso6391>ce</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>zho</iso6392>
+      <iso6391>zh</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>chi</iso6392>
+      <iso6391>zh</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>chu</iso6392>
+      <iso6391>cu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>chv</iso6392>
+      <iso6391>cv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cor</iso6392>
+      <iso6391>kw</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cos</iso6392>
+      <iso6391>co</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cre</iso6392>
+      <iso6391>cr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>cym</iso6392>
+      <iso6391>cy</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>wel</iso6392>
+      <iso6391>cy</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>dan</iso6392>
+      <iso6391>da</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ger</iso6392>
+      <iso6391>de</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>deu</iso6392>
+      <iso6391>de</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>div</iso6392>
+      <iso6391>dv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nld</iso6392>
+      <iso6391>nl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>dut</iso6392>
+      <iso6391>nl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>dzo</iso6392>
+      <iso6391>dz</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ell</iso6392>
+      <iso6391>el</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>gre</iso6392>
+      <iso6391>el</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>eng</iso6392>
+      <iso6391>en</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>epo</iso6392>
+      <iso6391>eo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>est</iso6392>
+      <iso6391>et</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ewe</iso6392>
+      <iso6391>ee</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fao</iso6392>
+      <iso6391>fo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fas</iso6392>
+      <iso6391>fa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>per</iso6392>
+      <iso6391>fa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fij</iso6392>
+      <iso6391>fj</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fin</iso6392>
+      <iso6391>fi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fre</iso6392>
+      <iso6391>fr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fra</iso6392>
+      <iso6391>fr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>fry</iso6392>
+      <iso6391>fy</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ful</iso6392>
+      <iso6391>ff</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>geo</iso6392>
+      <iso6391>ka</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kat</iso6392>
+      <iso6391>ka</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>gla</iso6392>
+      <iso6391>gd</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>gle</iso6392>
+      <iso6391>ga</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>glg</iso6392>
+      <iso6391>gl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>glv</iso6392>
+      <iso6391>gv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>grn</iso6392>
+      <iso6391>gn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>guj</iso6392>
+      <iso6391>gu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hat</iso6392>
+      <iso6391>ht</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hau</iso6392>
+      <iso6391>ha</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>heb</iso6392>
+      <iso6391>he</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>her</iso6392>
+      <iso6391>hz</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hin</iso6392>
+      <iso6391>hi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hmo</iso6392>
+      <iso6391>ho</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hrv</iso6392>
+      <iso6391>hr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>hun</iso6392>
+      <iso6391>hu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ibo</iso6392>
+      <iso6391>ig</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>isl</iso6392>
+      <iso6391>is</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ice</iso6392>
+      <iso6391>is</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ido</iso6392>
+      <iso6391>io</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>iii</iso6392>
+      <iso6391>ii</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>iku</iso6392>
+      <iso6391>iu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ile</iso6392>
+      <iso6391>ie</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ina</iso6392>
+      <iso6391>ia</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ind</iso6392>
+      <iso6391>id</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ipk</iso6392>
+      <iso6391>ik</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ita</iso6392>
+      <iso6391>it</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>jav</iso6392>
+      <iso6391>jv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>jpn</iso6392>
+      <iso6391>ja</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kal</iso6392>
+      <iso6391>kl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kan</iso6392>
+      <iso6391>kn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kas</iso6392>
+      <iso6391>ks</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kau</iso6392>
+      <iso6391>kr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kaz</iso6392>
+      <iso6391>kk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>khm</iso6392>
+      <iso6391>km</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kik</iso6392>
+      <iso6391>ki</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kin</iso6392>
+      <iso6391>rw</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kir</iso6392>
+      <iso6391>ky</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kom</iso6392>
+      <iso6391>kv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kon</iso6392>
+      <iso6391>kg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kor</iso6392>
+      <iso6391>ko</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kua</iso6392>
+      <iso6391>kj</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>kur</iso6392>
+      <iso6391>ku</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lao</iso6392>
+      <iso6391>lo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lat</iso6392>
+      <iso6391>la</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lav</iso6392>
+      <iso6391>lv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lim</iso6392>
+      <iso6391>li</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lin</iso6392>
+      <iso6391>ln</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lit</iso6392>
+      <iso6391>lt</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ltz</iso6392>
+      <iso6391>lb</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lub</iso6392>
+      <iso6391>lu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>lug</iso6392>
+      <iso6391>lg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mkd</iso6392>
+      <iso6391>mk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mac</iso6392>
+      <iso6391>mk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mah</iso6392>
+      <iso6391>mh</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mal</iso6392>
+      <iso6391>ml</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mri</iso6392>
+      <iso6391>mi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mao</iso6392>
+      <iso6391>mi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mar</iso6392>
+      <iso6391>mr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>msa</iso6392>
+      <iso6391>ms</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>may</iso6392>
+      <iso6391>ms</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mlg</iso6392>
+      <iso6391>mg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mlt</iso6392>
+      <iso6391>mt</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>mon</iso6392>
+      <iso6391>mn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nau</iso6392>
+      <iso6391>na</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nav</iso6392>
+      <iso6391>nv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nbl</iso6392>
+      <iso6391>nr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nde</iso6392>
+      <iso6391>nd</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ndo</iso6392>
+      <iso6391>ng</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nep</iso6392>
+      <iso6391>ne</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nno</iso6392>
+      <iso6391>nn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nob</iso6392>
+      <iso6391>nb</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nor</iso6392>
+      <iso6391>no</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>nya</iso6392>
+      <iso6391>ny</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>oci</iso6392>
+      <iso6391>oc</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>oji</iso6392>
+      <iso6391>oj</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ori</iso6392>
+      <iso6391>or</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>orm</iso6392>
+      <iso6391>om</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>oss</iso6392>
+      <iso6391>os</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>pan</iso6392>
+      <iso6391>pa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>pli</iso6392>
+      <iso6391>pi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>pol</iso6392>
+      <iso6391>pl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>por</iso6392>
+      <iso6391>pt</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>pus</iso6392>
+      <iso6391>ps</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>que</iso6392>
+      <iso6391>qu</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>roh</iso6392>
+      <iso6391>rm</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ron</iso6392>
+      <iso6391>ro</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>rum</iso6392>
+      <iso6391>ro</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>run</iso6392>
+      <iso6391>rn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>rus</iso6392>
+      <iso6391>ru</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sag</iso6392>
+      <iso6391>sg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>san</iso6392>
+      <iso6391>sa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sin</iso6392>
+      <iso6391>si</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>slk</iso6392>
+      <iso6391>sk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>slo</iso6392>
+      <iso6391>sk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>slv</iso6392>
+      <iso6391>sl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sme</iso6392>
+      <iso6391>se</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>smo</iso6392>
+      <iso6391>sm</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sna</iso6392>
+      <iso6391>sn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>snd</iso6392>
+      <iso6391>sd</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>som</iso6392>
+      <iso6391>so</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sot</iso6392>
+      <iso6391>st</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>spa</iso6392>
+      <iso6391>es</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>srd</iso6392>
+      <iso6391>sc</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>srp</iso6392>
+      <iso6391>sr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ssw</iso6392>
+      <iso6391>ss</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>sun</iso6392>
+      <iso6391>su</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>swa</iso6392>
+      <iso6391>sw</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>swe</iso6392>
+      <iso6391>sv</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tah</iso6392>
+      <iso6391>ty</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tam</iso6392>
+      <iso6391>ta</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tat</iso6392>
+      <iso6391>tt</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tel</iso6392>
+      <iso6391>te</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tgk</iso6392>
+      <iso6391>tg</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tgl</iso6392>
+      <iso6391>tl</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tha</iso6392>
+      <iso6391>th</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tir</iso6392>
+      <iso6391>ti</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ton</iso6392>
+      <iso6391>to</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tsn</iso6392>
+      <iso6391>tn</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tso</iso6392>
+      <iso6391>ts</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tuk</iso6392>
+      <iso6391>tk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>tur</iso6392>
+      <iso6391>tr</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>twi</iso6392>
+      <iso6391>tw</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>uig</iso6392>
+      <iso6391>ug</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ukr</iso6392>
+      <iso6391>uk</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>urd</iso6392>
+      <iso6391>ur</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>uzb</iso6392>
+      <iso6391>uz</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>ven</iso6392>
+      <iso6391>ve</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>vie</iso6392>
+      <iso6391>vi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>vol</iso6392>
+      <iso6391>vo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>wln</iso6392>
+      <iso6391>wa</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>wol</iso6392>
+      <iso6391>wo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>xho</iso6392>
+      <iso6391>xh</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>yid</iso6392>
+      <iso6391>yi</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>yor</iso6392>
+      <iso6391>yo</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>zha</iso6392>
+      <iso6391>za</iso6391>
+    </iso6392to1>
+    <iso6392to1 xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <iso6392>zul</iso6392>
+      <iso6391>zu</iso6391>
+    </iso6392to1>
+  </xsl:variable>
+  <xsl:variable name="iso6392-to-iso6391NS" select="exsl:node-set($iso6392-to-iso6391)"/>
   <xsl:template match="/">
     <xsl:choose>
       <xsl:when test="rdf:RDF">
@@ -4386,8 +3776,17 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[             contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or              string-length(@xml:lang)='2' or              string-length(@xml:lang)='3'         ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
@@ -4711,11 +4110,16 @@
             </marc:subfield>
           </xsl:for-each>
           <xsl:copy-of select="$vShared"/>
-          <!--<xsl:if test="$vLangTagLabel!=''">
-          <marc:subfield code="7">
-            <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-          </marc:subfield>
-        </xsl:if>-->
+          <xsl:if test="$vLangTagLabel!=''">
+            <marc:subfield code="7">
+              <xsl:variable name="bcp47code">
+                <xsl:call-template name="tOutputBCP47">
+                  <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                </xsl:call-template>
+              </xsl:variable>
+              <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vNameVariant//marc:datafield[@tag!='']">
@@ -4764,6 +4168,19 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -4780,8 +4197,17 @@
           </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="vTitleResource" select="exsl:node-set($vTitleResourcePreNS)"/>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[               contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                string-length(@xml:lang)='2' or                string-length(@xml:lang)='3'             ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
@@ -5053,6 +4479,19 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -5083,8 +4522,17 @@
           </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="vRelResource" select="exsl:node-set($vRelResourcePreNS)"/>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[             contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or              string-length(@xml:lang)='2' or              string-length(@xml:lang)='3'           ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
@@ -5170,6 +4618,23 @@
               <xsl:value-of select="$v240-1"/>
             </marc:subfield>
           </xsl:if>
+          <xsl:variable name="v240-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v240-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v240-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
@@ -5207,6 +4672,19 @@
               <xsl:if test="$v880-1 != ''">
                 <marc:subfield code="1">
                   <xsl:value-of select="$v880-1"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -5638,15 +5116,25 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:for-each select="bf:Instance[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance')]/bf:title/bf:Title[not(rdf:type)]|bf:Work[not(../bf:Instance/bf:title/bf:Title[not(rdf:type)])]/bf:title/bf:Title[not(rdf:type)]">
-        <xsl:variable name="vLangTagScript" select="bf:mainTitle[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangMainTitle">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangMainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
         <xsl:choose>
-          <xsl:when test="position()=1 and (count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))])">
+          <xsl:when test="position()=1 and (count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)] and bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle])">
             <marc:datafield>
               <xsl:attribute name="tag">880</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -5669,11 +5157,11 @@
               <xsl:attribute name="ind2">
                 <xsl:variable name="vInd">
                   <xsl:choose>
-                    <xsl:when test="bflc:nonSortNum[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:value-of select="bflc:nonSortNum[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
+                    <xsl:when test="bflc:nonSortNum[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                      <xsl:value-of select="bflc:nonSortNum[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]"/>
                     </xsl:when>
-                    <xsl:when test="bflc:titleSortKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and                           (string-length(bflc:titleSortKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]) &lt; string-length(bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]))">
-                      <xsl:value-of select="string-length(bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]) - string-length(bflc:titleSortKey[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))])"/>
+                    <xsl:when test="bflc:titleSortKey[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)] and                           (string-length(bflc:titleSortKey[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]) &lt; string-length(bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]))">
+                      <xsl:value-of select="string-length(bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]) - string-length(bflc:titleSortKey[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)])"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
@@ -5703,8 +5191,8 @@
               </xsl:if>
               <xsl:variable name="v880-a">
                 <xsl:choose>
-                  <xsl:when test="bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                    <xsl:for-each select="bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                    <xsl:for-each select="bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <xsl:call-template name="tChopPunct">
@@ -5719,16 +5207,16 @@
                   </xsl:when>
                 </xsl:choose>
                 <xsl:choose>
-                  <xsl:when test="                   bf:partNumber[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and                   not(                     substring(                       bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))],                        string-length(bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]),                       1) = '.'                   )                 ">
+                  <xsl:when test="                   bf:partNumber[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)] and                   not(                     substring(                       bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)],                        string-length(bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]),                       1) = '.'                   )                 ">
                     <xsl:text>.</xsl:text>
                   </xsl:when>
-                  <xsl:when test="bf:partName[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:partName[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text>.</xsl:text>
                   </xsl:when>
-                  <xsl:when test="bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> :</xsl:text>
                   </xsl:when>
-                  <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> /</xsl:text>
                   </xsl:when>
                 </xsl:choose>
@@ -5741,14 +5229,14 @@
               <xsl:variable name="v880-n">
                 <xsl:variable name="nExists">
                   <xsl:choose>
-                    <xsl:when test="bf:partNumber[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:partNumber[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:value-of select="'1'"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
-                  <xsl:when test="bf:partNumber[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                    <xsl:for-each select="bf:partNumber[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:partNumber[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                    <xsl:for-each select="bf:partNumber[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <xsl:call-template name="tChopPunct">
@@ -5763,13 +5251,13 @@
                   </xsl:when>
                 </xsl:choose>
                 <xsl:choose>
-                  <xsl:when test="$nExists='1' and bf:partName[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$nExists='1' and bf:partName[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text>.</xsl:text>
                   </xsl:when>
-                  <xsl:when test="$nExists='1' and bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$nExists='1' and bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> :</xsl:text>
                   </xsl:when>
-                  <xsl:when test="$nExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$nExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> /</xsl:text>
                   </xsl:when>
                 </xsl:choose>
@@ -5782,14 +5270,14 @@
               <xsl:variable name="v880-p">
                 <xsl:variable name="pExists">
                   <xsl:choose>
-                    <xsl:when test="bf:partName[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:partName[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:value-of select="'1'"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
-                  <xsl:when test="bf:partName[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                    <xsl:for-each select="bf:partName[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:partName[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                    <xsl:for-each select="bf:partName[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <xsl:call-template name="tChopPunct">
@@ -5804,10 +5292,10 @@
                   </xsl:when>
                 </xsl:choose>
                 <xsl:choose>
-                  <xsl:when test="$pExists='1' and bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$pExists='1' and bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> :</xsl:text>
                   </xsl:when>
-                  <xsl:when test="$pExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$pExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> /</xsl:text>
                   </xsl:when>
                 </xsl:choose>
@@ -5820,14 +5308,14 @@
               <xsl:variable name="v880-b">
                 <xsl:variable name="bExists">
                   <xsl:choose>
-                    <xsl:when test="bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:value-of select="'1'"/>
                     </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
-                  <xsl:when test="bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                    <xsl:for-each select="bf:subtitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                    <xsl:for-each select="bf:subtitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <xsl:call-template name="tChopPunct">
@@ -5842,9 +5330,12 @@
                   </xsl:when>
                 </xsl:choose>
                 <xsl:choose>
-                  <xsl:when test="$bExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="$bExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                     <xsl:text> /</xsl:text>
                   </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>.</xsl:text>
+                  </xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>
               <xsl:if test="$v880-b != ''">
@@ -5854,8 +5345,8 @@
               </xsl:if>
               <xsl:variable name="v880-c">
                 <xsl:choose>
-                  <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                    <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
+                    <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
                           <xsl:value-of select="."/>
@@ -5867,7 +5358,7 @@
                     </xsl:for-each>
                     <xsl:variable name="vEndsWith">
                       <xsl:call-template name="tEndsWith">
-                        <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
+                        <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]"/>
                         <xsl:with-param name="pEndChar" select="'.'"/>
                       </xsl:call-template>
                     </xsl:variable>
@@ -5882,6 +5373,19 @@
                   <xsl:value-of select="$v880-c"/>
                 </marc:subfield>
               </xsl:if>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -5893,21 +5397,30 @@
             <xsl:value-of select="4 + $prevTitleCount"/>
           </xsl:if>
         </xsl:variable>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="vTag">
           <xsl:choose>
             <xsl:when test="$vOccurrenceNumber != ''">
               <xsl:text>246</xsl:text>
             </xsl:when>
-            <xsl:when test="count(bf:mainTitle)='1' and                       bf:mainTitle[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                           )                       ]">
+            <xsl:when test="count(bf:mainTitle)='1' and                       bf:mainTitle[                           not(@xml:lang) or                            translate(@xml:lang,$upper,$lower)=$vLangTagLabel                       ]">
               <xsl:text>246</xsl:text>
             </xsl:when>
-            <xsl:when test="count(bf:mainTitle)='1' and                       bf:mainTitle[                         @xml:lang and                          contains(@xml:lang, '-') and                          not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                       ]">
+            <xsl:when test="count(bf:mainTitle)='1' and                       bf:mainTitle[                         @xml:lang and                          translate(@xml:lang,$upper,$lower)=$vLangTagScript                       ]">
               <xsl:text>880</xsl:text>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="bf:mainTitle[                     not(@xml:lang) or                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                      (                       string-length(@xml:lang)='2' or                        string-length(@xml:lang)='3'                     )                   ]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="bf:mainTitle[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
         <marc:datafield>
           <xsl:attribute name="tag">
             <xsl:value-of select="$vTag"/>
@@ -6016,28 +5529,9 @@
             </xsl:choose>
           </xsl:attribute>
           <xsl:choose>
-            <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangTagLabel)] and bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vvTag-6">
                 <xsl:value-of select="concat('880-0', $vOccurrenceNumber)"/>
-              </xsl:variable>
-              <xsl:if test="$vvTag-6 != ''">
-                <marc:subfield code="6">
-                  <xsl:value-of select="$vvTag-6"/>
-                </marc:subfield>
-              </xsl:if>
-            </xsl:when>
-            <xsl:when test="$vTag = '880'">
-              <xsl:variable name="vScript">
-                <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
-              </xsl:variable>
-              <xsl:variable name="v880Script">
-                <xsl:variable name="vlang">
-                  <xsl:value-of select="$vScript"/>
-                </xsl:variable>
-                <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
-              </xsl:variable>
-              <xsl:variable name="vvTag-6">
-                <xsl:value-of select="concat('246-00', '/' , $v880Script)"/>
               </xsl:variable>
               <xsl:if test="$vvTag-6 != ''">
                 <marc:subfield code="6">
@@ -6062,7 +5556,7 @@
           </xsl:for-each>
           <xsl:choose>
             <xsl:when test="$vTag = '246'">
-              <xsl:for-each select="bf:mainTitle[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                         ]">
+              <xsl:for-each select="bf:mainTitle[                             not(@xml:lang) or                              translate(@xml:lang,$upper,$lower)=$vLangTagLabel                         ]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="a">
@@ -6076,7 +5570,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:subtitle[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                         ]">
+              <xsl:for-each select="bf:subtitle[                             not(@xml:lang) or                              translate(@xml:lang,$upper,$lower)=$vLangTagLabel                         ]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="b">
@@ -6090,7 +5584,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:date[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                         ]">
+              <xsl:for-each select="bf:date[                             not(@xml:lang) or                              translate(@xml:lang,$upper,$lower)=$vLangTagLabel                         ]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="f">
@@ -6104,72 +5598,14 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:partNumber[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                         ]">
+              <xsl:for-each select="bf:partNumber[                             not(@xml:lang) or                              translate(@xml:lang,$upper,$lower)=$vLangTagLabel                         ]">
                 <marc:subfield code="n">
                   <xsl:call-template name="tChopPunct">
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:for-each select="bf:partName[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                         ]">
-                <marc:subfield code="p">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-            </xsl:when>
-            <xsl:when test="$vTag = '880'">
-              <xsl:for-each select="bf:mainTitle[                             @xml:lang and                               not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                       ]">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="a">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vTag $a.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bf:subtitle[                             @xml:lang and                               not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                       ]">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="b">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vTag $b.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bf:date[                             @xml:lang and                               not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                       ]">
-                <xsl:choose>
-                  <xsl:when test="position() = 1">
-                    <marc:subfield code="f">
-                      <xsl:call-template name="tChopPunct">
-                        <xsl:with-param name="pString" select="."/>
-                      </xsl:call-template>
-                    </marc:subfield>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element vTag $f.</xsl:message>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:for-each>
-              <xsl:for-each select="bf:partNumber[                             @xml:lang and                               not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                      ]">
-                <marc:subfield code="n">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
-                </marc:subfield>
-              </xsl:for-each>
-              <xsl:for-each select="bf:partName[                             @xml:lang and                               not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))                       ]">
+              <xsl:for-each select="bf:partName[                             not(@xml:lang) or                              translate(@xml:lang,$upper,$lower)=$vLangTagLabel                         ]">
                 <marc:subfield code="p">
                   <xsl:call-template name="tChopPunct">
                     <xsl:with-param name="pString" select="."/>
@@ -6190,12 +5626,28 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:variable name="vvTag-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$vvTag-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$vvTag-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
-          <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-            <xsl:variable name="vLangTag" select="bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+          <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangTagLabel)] and bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:variable name="vScript">
-              <xsl:value-of select="translate(substring-after($vLangTag,'-'),$upper,$lower)"/>
+              <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
             </xsl:variable>
             <xsl:variable name="v880Script">
               <xsl:variable name="vlang">
@@ -6398,13 +5850,35 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Work/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     (       bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']     ) and      (       bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or        rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ] |     bf:Instance[rdf:type/@rdf:resource!='http://id.loc.gov/ontologies/bflc/SecondaryInstance']/bf:title/*[(     local-name()='VariantTitle' or     rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']     ) and     (       bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']     ) and      (     bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] or      rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]     )     ]">
-        <xsl:variable name="vLangTagLabel" select="bf:mainTitle[                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                    string-length(@xml:lang)='2' or                    string-length(@xml:lang)='3'                   ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="bf:mainTitle[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bf:mainTitle"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="vOccurrenceNumber">
           <xsl:if test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
             <xsl:variable name="prevTitleCount" select="count(parent::bf:title/preceding-sibling::bf:title/*[(             local-name()='VariantTitle' or             rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']             ) and             (               bf:variantType = 'former' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/for']             ) and             bf:mainTitle[@xml:lang]])"/>
@@ -6534,6 +6008,23 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:variable name="v247-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v247-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v247-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
@@ -6666,14 +6157,36 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:for-each select="bf:Instance/bf:editionStatement[                     not(@xml:lang) or                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3']">
-        <xsl:variable name="vLangTagLabel" select="self::node()/@xml:lang"/>
+      <xsl:for-each select="bf:Instance/bf:editionStatement[                     not(@xml:lang) or                      contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3']">
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="ancestor::bf:Instance/bf:editionStatement"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880" select="ancestor::bf:Instance/bf:editionStatement[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]"/>
-        <xsl:variable name="vLangTagScript" select="$v880/@xml:lang"/>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript">
@@ -6723,6 +6236,23 @@
               <xsl:value-of select="$v250-a"/>
             </marc:subfield>
           </xsl:if>
+          <xsl:variable name="v250-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v250-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v250-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880/@xml:lang">
@@ -6759,6 +6289,19 @@
               <xsl:if test="$v880-a != ''">
                 <marc:subfield code="a">
                   <xsl:value-of select="$v880-a"/>
+                </marc:subfield>
+              </xsl:if>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
                 </marc:subfield>
               </xsl:if>
             </marc:datafield>
@@ -6853,30 +6396,15 @@
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vLangTagLabel">
-          <xsl:choose>
-            <xsl:when test="bflc:simpleAgent[                       contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                        string-length(@xml:lang)='2' or                        string-length(@xml:lang)='3'                     ]/@xml:lang">
-              <xsl:value-of select="bflc:simpleAgent[                           contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            string-length(@xml:lang)='2' or                            string-length(@xml:lang)='3'                         ]/@xml:lang"/>
-            </xsl:when>
-            <xsl:when test="bflc:simplePlace[                       contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                        string-length(@xml:lang)='2' or                        string-length(@xml:lang)='3'                     ]/@xml:lang">
-              <xsl:value-of select="bflc:simplePlace[                           contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            string-length(@xml:lang)='2' or                            string-length(@xml:lang)='3'                         ]/@xml:lang"/>
-            </xsl:when>
-            <xsl:when test="bf:place/bf:*[not(@rdf:about)]/rdfs:label[                       contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                        string-length(@xml:lang)='2' or                        string-length(@xml:lang)='3'                     ]/@xml:lang">
-              <xsl:value-of select="bf:place/bf:*[not(@rdf:about)]/rdfs:label[                           contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            string-length(@xml:lang)='2' or                            string-length(@xml:lang)='3'                       ]/@xml:lang"/>
-            </xsl:when>
-          </xsl:choose>
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bflc:*[not(@xml:lang) or                                                    contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized) or                                                    string-length(@xml:lang)='2' or                                                    string-length(@xml:lang)='3'                                             ][1]"/>
+          </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="vLangTagScript">
-          <xsl:choose>
-            <xsl:when test="bflc:simpleAgent[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang">
-              <xsl:value-of select="bflc:simpleAgent[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang"/>
-            </xsl:when>
-            <xsl:when test="bflc:simplePlace[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang">
-              <xsl:value-of select="bflc:simplePlace[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang"/>
-            </xsl:when>
-            <xsl:when test="bf:place/bf:*[not(@rdf:about)]/rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(bf:place/*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang">
-              <xsl:value-of select="bf:place/*/rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(bf:place/*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]/@xml:lang"/>
-            </xsl:when>
-          </xsl:choose>
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bflc:*[@xml:lang and                                                    translate(@xml:lang,$upper,$lower)!=$vLangTagLabel and                                                    (                                                     contains(@xml:lang, '-') or                                                      string-length(@xml:lang)='2' or                                                      string-length(@xml:lang)='3'                                                   )                                             ][1]"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
@@ -6974,33 +6502,33 @@
                 </xsl:choose>
               </xsl:for-each>
               <xsl:choose>
-                <xsl:when test="bflc:simplePlace[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                           )                           ]">
-                  <xsl:for-each select="bflc:simplePlace[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                   ]">
+                <xsl:when test="bflc:simplePlace[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                  <xsl:for-each select="bflc:simplePlace[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simplePlace[                                     not(@xml:lang) or                                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                      (                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                 ]">
+                      <xsl:if test="following-sibling::bflc:simplePlace[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:if test="../bflc:simpleAgent[                                       not(@xml:lang) or                                        contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                        (                                         string-length(@xml:lang)='2' or                                          string-length(@xml:lang)='3'                                       )                                   ]">
+                        <xsl:if test="../bflc:simpleAgent[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                           <xsl:text> :</xsl:text>
                         </xsl:if>
-                        <xsl:if test="not(../bflc:simpleAgent[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                         ]) and ../bflc:simpleDate[                                             not(@xml:lang) or                                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                              (                                             string-length(@xml:lang)='2' or                                              string-length(@xml:lang)='3'                                           )                                         ]">
+                        <xsl:if test="not(../bflc:simpleAgent[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]) and                                      ../bflc:simpleDate[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                           <xsl:text> ,</xsl:text>
                         </xsl:if>
                       </xsl:if>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
-                <xsl:when test="bf:place/*[                       (local-name()='Place' or local-name()='Geographic' or local-name()='Authority' or local-name()='Resource') and                       rdfs:label[                         not(@xml:lang) or                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                          (                         string-length(@xml:lang)='2' or                          string-length(@xml:lang)='3'                         )                       ]                      ]">
-                  <xsl:for-each select="bf:place/*/rdfs:label[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                           )                       ]">
+                <xsl:when test="bf:place/*[                       (local-name()='Place' or local-name()='Geographic' or local-name()='Authority' or local-name()='Resource') and                       rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]                      ]">
+                  <xsl:for-each select="bf:place/*/rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
-                <xsl:when test="bf:place/*[                       (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                       madsrdf:authoritativeLabel[                               not(@xml:lang) or                                contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                (                                 string-length(@xml:lang)='2' or                                  string-length(@xml:lang)='3'                             )                           ]                       ]">
-                  <xsl:for-each select="bf:place/*/madsrdf:authoritativeLabel[                                     not(@xml:lang) or                                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                      (                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                 ]">
+                <xsl:when test="bf:place/*[                       (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                       madsrdf:authoritativeLabel[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]                       ]">
+                  <xsl:for-each select="bf:place/*/madsrdf:authoritativeLabel[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
                     </marc:subfield>
@@ -7008,23 +6536,23 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
-                <xsl:when test="bflc:simpleAgent[                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                           ]">
-                  <xsl:for-each select="bflc:simpleAgent[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                     ]">
+                <xsl:when test="bflc:simpleAgent[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                  <xsl:for-each select="bflc:simpleAgent[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="b">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simpleAgent[                                     not(@xml:lang) or                                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                      (                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                 ]">
+                      <xsl:if test="following-sibling::bflc:simpleAgent[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text> :</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
-                        <xsl:if test="../bflc:simpleDate[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                   ]">
+                        <xsl:if test="../bflc:simpleDate[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                           <xsl:text>,</xsl:text>
                         </xsl:if>
                       </xsl:if>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
-                <xsl:when test="bf:agent/bf:Agent/rdfs:label[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                           )                         ]">
-                  <xsl:for-each select="bf:agent/bf:Agent/rdfs:label[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                            )                         ]">
+                <xsl:when test="bf:agent/bf:Agent/rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                  <xsl:for-each select="bf:agent/bf:Agent/rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="b">
                       <xsl:value-of select="."/>
                     </marc:subfield>
@@ -7032,11 +6560,11 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
-                <xsl:when test="bflc:simpleDate[                           not(@xml:lang) or                            contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                            (                             string-length(@xml:lang)='2' or                              string-length(@xml:lang)='3'                           )                         ]">
-                  <xsl:for-each select="bflc:simpleDate[                                         not(@xml:lang) or                                          contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          (                                           string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3'                                         )                                     ]">
+                <xsl:when test="bflc:simpleDate[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                  <xsl:for-each select="bflc:simpleDate[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="c">
                       <xsl:value-of select="."/>
-                      <xsl:if test="following-sibling::bflc:simpleDate[                                     not(@xml:lang) or                                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                      (                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                   ]">
+                      <xsl:if test="following-sibling::bflc:simpleDate[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
                       <xsl:if test="position() = last()">
@@ -7069,14 +6597,31 @@
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
-                <xsl:when test="bf:date[                           not(@rdf:datatype) and                            (                             not(@xml:lang) or                              contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                              (                               string-length(@xml:lang)='2' or                                string-length(@xml:lang)='3'                             )                           )                       ]">
-                  <xsl:for-each select="bf:date[                                 not(@rdf:datatype) and                                  (                                   not(@xml:lang) or                                    contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                    (                                     string-length(@xml:lang)='2' or                                      string-length(@xml:lang)='3'                                   )                                 )                             ]">
+                <xsl:when test="bf:date[                           not(@rdf:datatype) and                            (not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel)                       ]">
+                  <xsl:for-each select="bf:date[                                 not(@rdf:datatype) and                                  (not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel)                             ]">
                     <marc:subfield code="c">
                       <xsl:value-of select="."/>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
               </xsl:choose>
+              <xsl:variable name="v264-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v264-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v264-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
@@ -7134,33 +6679,33 @@
                     </marc:subfield>
                   </xsl:if>
                   <xsl:choose>
-                    <xsl:when test="bflc:simplePlace[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:for-each select="bflc:simplePlace[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bflc:simplePlace[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                      <xsl:for-each select="bflc:simplePlace[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="a">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simplePlace[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                          <xsl:if test="following-sibling::bflc:simplePlace[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                             <xsl:text> ;</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:if test="../bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                            <xsl:if test="../bflc:simpleAgent[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                               <xsl:text> :</xsl:text>
                             </xsl:if>
-                            <xsl:if test="not(../bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]) and ../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                            <xsl:if test="not(../bflc:simpleAgent[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]) and ../bflc:simpleDate[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                               <xsl:text>,</xsl:text>
                             </xsl:if>
                           </xsl:if>
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
-                    <xsl:when test="bf:place/*[                              (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                               rdfs:label[@xml:lang or not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]                              ]">
-                      <xsl:for-each select="bf:place/bf:*/rdfs:label[@xml:lang or not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:place/*[                              (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                              rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]                              ]">
+                      <xsl:for-each select="bf:place/bf:*/rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="a">
                           <xsl:value-of select="."/>
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
-                    <xsl:when test="bf:place/*[                               (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                               madsrdf:authoritativeLabel[@xml:lang or not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]                              ]">
-                      <xsl:for-each select="bf:place/bf:*/madsrdf:authoritativeLabel[@xml:lang or not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:place/*[                               (local-name()='Place' or local-name()='Geographic' or local-name()='Authority') and                               madsrdf:authoritativeLabel[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]                              ]">
+                      <xsl:for-each select="bf:place/bf:*/madsrdf:authoritativeLabel[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="a">
                           <xsl:value-of select="."/>
                         </marc:subfield>
@@ -7168,23 +6713,23 @@
                     </xsl:when>
                   </xsl:choose>
                   <xsl:choose>
-                    <xsl:when test="bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:for-each select="bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bflc:simpleAgent[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                      <xsl:for-each select="bflc:simpleAgent[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="b">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                          <xsl:if test="following-sibling::bflc:simpleAgent[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                             <xsl:text> :</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
-                            <xsl:if test="../bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                            <xsl:if test="../bflc:simpleDate[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                               <xsl:text>,</xsl:text>
                             </xsl:if>
                           </xsl:if>
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
-                    <xsl:when test="bf:agent/bf:Agent/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:for-each select="bf:agent/bf:Agent/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:agent/bf:Agent/rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                      <xsl:for-each select="bf:agent/bf:Agent/rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="b">
                           <xsl:value-of select="."/>
                         </marc:subfield>
@@ -7192,11 +6737,11 @@
                     </xsl:when>
                   </xsl:choose>
                   <xsl:choose>
-                    <xsl:when test="bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:for-each select="bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bflc:simpleDate[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                      <xsl:for-each select="bflc:simpleDate[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="c">
                           <xsl:value-of select="."/>
-                          <xsl:if test="following-sibling::bflc:simpleDate[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                          <xsl:if test="following-sibling::bflc:simpleDate[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                             <xsl:text>,</xsl:text>
                           </xsl:if>
                           <xsl:if test="position() = last()">
@@ -7229,14 +6774,27 @@
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
-                    <xsl:when test="bf:date[not(@rdf:datatype) and @xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-                      <xsl:for-each select="bf:date[not(@rdf:datatype) and @xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                    <xsl:when test="bf:date[not(@rdf:datatype) and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                      <xsl:for-each select="bf:date[not(@rdf:datatype) and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <marc:subfield code="c">
                           <xsl:value-of select="."/>
                         </marc:subfield>
                       </xsl:for-each>
                     </xsl:when>
                   </xsl:choose>
+                  <xsl:variable name="v880-7">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:variable>
+                  <xsl:if test="$v880-7 != ''">
+                    <marc:subfield code="7">
+                      <xsl:value-of select="$v880-7"/>
+                    </marc:subfield>
+                  </xsl:if>
                 </marc:datafield>
               </xsl:when>
             </xsl:choose>
@@ -7655,10 +7213,19 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:for-each select="         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, '/relationship/series') or contains(bf:Relationship/@rdf:about, '/relationship/series')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |              bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bflc:Uncontrolled[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bf:relation/bf:Relation[bf:relationship[contains(@rdf:resource, 'hasSeries') or contains(bf:Relationship/@rdf:about, 'hasSeries')]]/bf:associatedResource/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |                  bf:Work/bf:hasSeries/bf:Series[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         bf:Work/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']] |         //bf:Item/bflc:relationship/bflc:Relationship[bflc:relation[contains(@rdf:resource, 'hasSeries') or contains(bflc:Relation/@rdf:about, 'hasSeries')]]/bf:relatedTo/bf:*[bf:status/@rdf:resource[.='http://id.loc.gov/vocabulary/mstatus/t'] or bf:status/bf:Status/@rdf:about[.='http://id.loc.gov/vocabulary/mstatus/t']]">
-        <xsl:variable name="vLangTagLabel" select="bf:title/bf:Title/bf:mainTitle[                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                    string-length(@xml:lang)='2' or                    string-length(@xml:lang)='3'                 ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="bf:title/bf:Title/bf:mainTitle[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bf:title/bf:Title/bf:mainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bf:title/bf:Title/bf:mainTitle"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="vScript">
-          <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+          <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
         </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
@@ -7670,7 +7237,7 @@
           <xsl:value-of select="35+position()"/>
         </xsl:variable>
         <xsl:choose>
-          <xsl:when test="bf:title/bf:Title/bf:mainTitle[                     not(@xml:lang) or                      contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3']">
+          <xsl:when test="bf:title/bf:Title/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <marc:datafield>
               <xsl:attribute name="tag">490</xsl:attribute>
               <xsl:attribute name="ind1">
@@ -7721,8 +7288,8 @@
               </xsl:for-each>
               <xsl:variable name="vMainTitle">
                 <xsl:choose>
-                  <xsl:when test="bf:title/bf:Title/bf:mainTitle[                                 not(@xml:lang) or                                  contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                  string-length(@xml:lang)='2' or                                  string-length(@xml:lang)='3']">
-                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle[                                       not(@xml:lang) or                                         contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                        string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3']">
+                  <xsl:when test="bf:title/bf:Title/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                       <xsl:value-of select="."/>
                     </xsl:for-each>
                   </xsl:when>
@@ -7730,8 +7297,8 @@
               </xsl:variable>
               <xsl:variable name="vParallelTitle">
                 <xsl:choose>
-                  <xsl:when test="bf:title/bf:ParallelTitle/bf:mainTitle[                                 not(@xml:lang) or                                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                  string-length(@xml:lang)='2' or                                  string-length(@xml:lang)='3']">
-                    <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[                                   not(@xml:lang) or                                     contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                    string-length(@xml:lang)='2' or                                    string-length(@xml:lang)='3']">
+                  <xsl:when test="bf:title/bf:ParallelTitle/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
+                    <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                       <xsl:value-of select="."/>
                     </xsl:for-each>
                   </xsl:when>
@@ -7754,7 +7321,7 @@
                       <xsl:when test="bf:identifiedBy/*[local-name()='Issn']">
                         <xsl:value-of select="concat($vMainTitle, ',')"/>
                       </xsl:when>
-                      <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[                                               not(@xml:lang) or                                                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                                string-length(@xml:lang)='2' or                                                string-length(@xml:lang)='3']">
+                      <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:value-of select="concat($vMainTitle, ' ;')"/>
                       </xsl:when>
                       <xsl:otherwise>
@@ -7771,7 +7338,7 @@
               </xsl:choose>
               <xsl:choose>
                 <xsl:when test="$vParallelTitle != ''">
-                  <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[                                               not(@xml:lang) or                                                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                                string-length(@xml:lang)='2' or                                                string-length(@xml:lang)='3']">
+                  <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
                       <xsl:if test="position() != last()">
@@ -7784,7 +7351,7 @@
                         <xsl:when test="bf:identifiedBy/*[local-name()='Issn']">
                           <xsl:value-of select="concat($vMainTitle, ',')"/>
                         </xsl:when>
-                        <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[                                                 not(@xml:lang) or                                                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                                  string-length(@xml:lang)='2' or                                                  string-length(@xml:lang)='3']">
+                        <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                           <xsl:value-of select="concat($vMainTitle, ' ;')"/>
                         </xsl:when>
                       </xsl:choose>
@@ -7800,7 +7367,7 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[                                         not(@xml:lang) or                                           contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                          string-length(@xml:lang)='2' or                                          string-length(@xml:lang)='3']">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
@@ -7815,7 +7382,7 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[                                           not(@xml:lang) or                                             contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                            string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3']">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
@@ -7830,18 +7397,35 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[                                           not(@xml:lang) or                                             contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                            string-length(@xml:lang)='2' or                                            string-length(@xml:lang)='3']">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
               </xsl:choose>
-              <xsl:for-each select="../../bf:seriesEnumeration[                                   not(@xml:lang) or                                     contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                                    string-length(@xml:lang)='2' or                                    string-length(@xml:lang)='3']">
+              <xsl:for-each select="../../bf:seriesEnumeration[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                 <marc:subfield code="v">
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v490-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v490-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v490-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -7893,8 +7477,8 @@
               </xsl:for-each>
               <xsl:variable name="vMainTitle">
                 <xsl:choose>
-                  <xsl:when test="bf:title/bf:Title/bf:mainTitle[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
-                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                  <xsl:when test="bf:title/bf:Title/bf:mainTitle[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                    <xsl:for-each select="bf:title/bf:Title/bf:mainTitle[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                       <xsl:value-of select="."/>
                     </xsl:for-each>
                   </xsl:when>
@@ -7902,8 +7486,8 @@
               </xsl:variable>
               <xsl:variable name="vParallelTitle">
                 <xsl:choose>
-                  <xsl:when test="bf:title/bf:ParallelTitle/bf:mainTitle[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
-                    <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                  <xsl:when test="bf:title/bf:ParallelTitle/bf:mainTitle[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
+                    <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                       <xsl:value-of select="."/>
                     </xsl:for-each>
                   </xsl:when>
@@ -7926,7 +7510,7 @@
                       <xsl:when test="bf:identifiedBy/*[local-name()='Issn']">
                         <xsl:value-of select="concat($vMainTitle, ',')"/>
                       </xsl:when>
-                      <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                      <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <xsl:value-of select="concat($vMainTitle, ' ;')"/>
                       </xsl:when>
                       <xsl:otherwise>
@@ -7943,7 +7527,7 @@
               </xsl:choose>
               <xsl:choose>
                 <xsl:when test="$vParallelTitle != ''">
-                  <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                  <xsl:for-each select="bf:title/bf:ParallelTitle/bf:mainTitle[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                     <marc:subfield code="a">
                       <xsl:value-of select="."/>
                       <xsl:if test="position() != last()">
@@ -7956,7 +7540,7 @@
                         <xsl:when test="bf:identifiedBy/*[local-name()='Issn']">
                           <xsl:value-of select="concat($vMainTitle, ',')"/>
                         </xsl:when>
-                        <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                        <xsl:when test="ancestor::bf:Relation/bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                           <xsl:value-of select="concat($vMainTitle, ' ;')"/>
                         </xsl:when>
                       </xsl:choose>
@@ -7972,7 +7556,7 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
@@ -7987,7 +7571,7 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
@@ -8002,23 +7586,47 @@
                       <xsl:if test="following-sibling::bf:identifiedBy/*[local-name()='Issn' or rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Issn']">
                         <xsl:text>,</xsl:text>
                       </xsl:if>
-                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+                      <xsl:if test="ancestor::bf:Relation/bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                         <xsl:text> ;</xsl:text>
                       </xsl:if>
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:when>
               </xsl:choose>
-              <xsl:for-each select="../../bf:seriesEnumeration[contains(translate(@xml:lang,$upper,$lower), $vScript)]">
+              <xsl:for-each select="../../bf:seriesEnumeration[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <marc:subfield code="v">
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Instance/bf:seriesStatement">
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="."/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))">
@@ -8050,6 +7658,23 @@
               <marc:subfield code="a">
                 <xsl:value-of select="."/>
               </marc:subfield>
+              <xsl:variable name="v880-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagScript!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
           <xsl:otherwise>
@@ -8064,17 +7689,43 @@
               <marc:subfield code="a">
                 <xsl:value-of select="."/>
               </marc:subfield>
+              <xsl:variable name="v490-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v490-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v490-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Instance/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]|bf:Work/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]|//bf:Item/bf:note/bf:Note[rdfs:*[. != ''] or rdf:value[. != ''] or bf:*]">
-        <xsl:variable name="vLabel" select="rdfs:label[                 not(@xml:lang) or                  (                   string-length(@xml:lang)='2' or                    string-length(@xml:lang)='3' or                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))                 )                ][1]"/>
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'             ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLabel" select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel][1]"/>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -8161,7 +7812,7 @@
         <xsl:variable name="vSimple880">
           <xsl:choose>
             <xsl:when test="$v880Script != ''">
-              <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <marc:datafield>
                   <xsl:attribute name="tag">880</xsl:attribute>
                   <xsl:choose>
@@ -8314,6 +7965,23 @@
                       </xsl:for-each>
                     </xsl:when>
                   </xsl:choose>
+                  <xsl:variable name="v880-7">
+                    <xsl:choose>
+                      <xsl:when test="$vLangTagScript!=''">
+                        <xsl:variable name="bcp47code">
+                          <xsl:call-template name="tOutputBCP47">
+                            <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                      </xsl:when>
+                    </xsl:choose>
+                  </xsl:variable>
+                  <xsl:if test="$v880-7 != ''">
+                    <marc:subfield code="7">
+                      <xsl:value-of select="$v880-7"/>
+                    </marc:subfield>
+                  </xsl:if>
                 </marc:datafield>
               </xsl:for-each>
             </xsl:when>
@@ -8387,7 +8055,7 @@
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='with' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/with')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8426,6 +8094,23 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v501-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v501-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v501-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8435,7 +8120,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="(                     local-name(../..)='Work' and                      (                        translate(bf:noteType,$upper,$lower)='credits' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/credits'                     )                   )">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8476,6 +8161,23 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v508-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v508-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v508-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8485,7 +8187,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="(                     local-name(../..)='Work' and                      (                        translate(bf:noteType,$upper,$lower)='participants' or                        rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/participants'                     )                   )">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8551,6 +8253,23 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v511-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v511-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v511-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8560,7 +8279,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='report type' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/report')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8587,6 +8306,23 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
+                <xsl:variable name="v513-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v513-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v513-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8596,7 +8332,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='issuance information' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuance')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8623,6 +8359,23 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
+                <xsl:variable name="v515-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v515-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v515-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8632,7 +8385,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='type of computer data' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/computer')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -8659,6 +8412,23 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
+                <xsl:variable name="v516-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v516-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v516-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8668,7 +8438,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='additional physical form' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/addphys')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">530</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -8718,6 +8488,23 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
+                <xsl:variable name="v530-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v530-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v530-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8727,7 +8514,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='reproduction version' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/repro')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">533</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -8774,6 +8561,23 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v533-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v533-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v533-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8783,7 +8587,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='original version' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/orig')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">534</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -8819,6 +8623,23 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
+                <xsl:variable name="v534-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v534-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v534-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -8829,7 +8650,7 @@
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='funding information' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/fundinfo')">
             <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+              <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
             </xsl:variable>
             <marc:datafield>
               <xsl:attribute name="tag">536</xsl:attribute>
@@ -8856,7 +8677,7 @@
                   </xsl:if>
                 </xsl:when>
               </xsl:choose>
-              <xsl:for-each select="rdfs:label[not(@xml:lang) or              string-length(@xml:lang)='2' or              string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="starts-with(.,'Contract:')">
                     <xsl:variable name="v536-b">
@@ -8939,6 +8760,23 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+              <xsl:variable name="v536-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v536-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v536-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
@@ -8958,7 +8796,7 @@
                       <xsl:value-of select="$v880-6"/>
                     </marc:subfield>
                   </xsl:if>
-                  <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                  <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                     <xsl:choose>
                       <xsl:when test="starts-with(.,'Contract:')">
                         <xsl:variable name="v880-b">
@@ -9041,6 +8879,23 @@
                       </xsl:otherwise>
                     </xsl:choose>
                   </xsl:for-each>
+                  <xsl:variable name="v880-7">
+                    <xsl:choose>
+                      <xsl:when test="$vLangTagScript!=''">
+                        <xsl:variable name="bcp47code">
+                          <xsl:call-template name="tOutputBCP47">
+                            <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                      </xsl:when>
+                    </xsl:choose>
+                  </xsl:variable>
+                  <xsl:if test="$v880-7 != ''">
+                    <marc:subfield code="7">
+                      <xsl:value-of select="$v880-7"/>
+                    </marc:subfield>
+                  </xsl:if>
                 </marc:datafield>
               </xsl:when>
             </xsl:choose>
@@ -9098,10 +8953,27 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v545-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v545-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v545-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='issuing body' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/issuing')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -9128,6 +9000,23 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
+                <xsl:variable name="v550-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v550-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v550-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9137,7 +9026,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and                   (translate(bf:noteType,$upper,$lower)='index' or translate(bf:noteType,$upper,$lower)='finding aid' or                   rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/index' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/finding')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="rdfs:label[not(@rdf:datatype='http://www.w3.org/2001/XMLSchema#anyURI')]/@xml:lang"/>
               </xsl:variable>
@@ -9195,6 +9084,23 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
+                <xsl:variable name="v555-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v555-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v555-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9204,7 +9110,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='documentation' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -9231,6 +9137,23 @@
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
+                <xsl:variable name="v556-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v556-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v556-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9241,7 +9164,7 @@
           </xsl:when>
           <xsl:when test="local-name(../..)='Instance' and (translate(bf:noteType,$upper,$lower)='related material' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/related')">
             <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
+              <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
             </xsl:variable>
             <marc:datafield>
               <xsl:attribute name="tag">581</xsl:attribute>
@@ -9256,7 +9179,7 @@
               <xsl:attribute name="ind2">
                 <xsl:text> </xsl:text>
               </xsl:attribute>
-              <xsl:for-each select="rdfs:label">
+              <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="a">
@@ -9275,10 +9198,27 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v581-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v581-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v581-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='exhibition' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/exhibit')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -9333,6 +9273,23 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v585-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v585-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v585-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
@@ -9342,7 +9299,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:when test="(local-name(../..)='Instance' or local-name(../..)='Item') and (translate(bf:noteType,$upper,$lower)='description source' or rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/descsource')">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or            string-length(@xml:lang)='2' or            string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -9418,11 +9375,28 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v588-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v588-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v588-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
-                <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                   <marc:datafield>
                     <xsl:attribute name="tag">880</xsl:attribute>
                     <xsl:attribute name="ind1">
@@ -9486,6 +9460,23 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
+                    <xsl:variable name="v880-7">
+                      <xsl:choose>
+                        <xsl:when test="$vLangTagScript!=''">
+                          <xsl:variable name="bcp47code">
+                            <xsl:call-template name="tOutputBCP47">
+                              <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                            </xsl:call-template>
+                          </xsl:variable>
+                          <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                        </xsl:when>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <xsl:if test="$v880-7 != ''">
+                      <marc:subfield code="7">
+                        <xsl:value-of select="$v880-7"/>
+                      </marc:subfield>
+                    </xsl:if>
                   </marc:datafield>
                 </xsl:for-each>
               </xsl:when>
@@ -9497,7 +9488,7 @@
           <xsl:when test="(         local-name(../..)='Instance' and          rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio'         )"/>
           <xsl:when test="(local-name(../..)='Instance' and          (           rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/doc' or            rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/citeas' or           rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/refcitation'         ))"/>
           <xsl:otherwise>
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))][1]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel][1]">
               <xsl:variable name="vXmlLang">
                 <xsl:value-of select="./@xml:lang"/>
               </xsl:variable>
@@ -9542,7 +9533,7 @@
                 </xsl:for-each>
                 <xsl:variable name="v500-a">
                   <xsl:variable name="vNoteText">
-                    <xsl:for-each select="../rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                    <xsl:for-each select="../rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                       <xsl:choose>
                         <xsl:when test="position() = last()">
                           <xsl:value-of select="."/>
@@ -9578,11 +9569,28 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v500-7">
+                  <xsl:choose>
+                    <xsl:when test="$vLangTagLabel!=''">
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:variable>
+                <xsl:if test="$v500-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v500-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
             <xsl:choose>
               <xsl:when test="$v880Script != ''">
-                <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                   <marc:datafield>
                     <xsl:attribute name="tag">880</xsl:attribute>
                     <xsl:attribute name="ind1">
@@ -9615,7 +9623,7 @@
                     </xsl:for-each>
                     <xsl:variable name="v880-a">
                       <xsl:variable name="vNoteText">
-                        <xsl:for-each select="../rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+                        <xsl:for-each select="../rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                           <xsl:choose>
                             <xsl:when test="position() = last()">
                               <xsl:value-of select="."/>
@@ -9651,6 +9659,23 @@
                         </xsl:otherwise>
                       </xsl:choose>
                     </xsl:for-each>
+                    <xsl:variable name="v880-7">
+                      <xsl:choose>
+                        <xsl:when test="$vLangTagScript!=''">
+                          <xsl:variable name="bcp47code">
+                            <xsl:call-template name="tOutputBCP47">
+                              <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                            </xsl:call-template>
+                          </xsl:variable>
+                          <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                        </xsl:when>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <xsl:if test="$v880-7 != ''">
+                      <marc:subfield code="7">
+                        <xsl:value-of select="$v880-7"/>
+                      </marc:subfield>
+                    </xsl:if>
                   </marc:datafield>
                 </xsl:for-each>
               </xsl:when>
@@ -9659,27 +9684,52 @@
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Work/bf:dissertation/bf:Dissertation">
-        <xsl:variable name="v880Script">
+        <xsl:variable name="vLangTagLabel">
           <xsl:choose>
-            <xsl:when test="rdfs:label[@xml:lang and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-              <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after(rdfs:label/@xml:lang,'-'),$upper,$lower)"/>
-              </xsl:variable>
-              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            <xsl:when test="rdfs:label">
+              <xsl:call-template name="tGetBCP47RegField">
+                <xsl:with-param name="x" select="rdfs:label"/>
+              </xsl:call-template>
             </xsl:when>
-            <xsl:when test="bf:degree[@xml:lang and not(contains(translate(bf:degree/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-              <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after(bf:degree/@xml:lang,'-'),$upper,$lower)"/>
-              </xsl:variable>
-              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            <xsl:when test="bf:degree">
+              <xsl:call-template name="tGetBCP47RegField">
+                <xsl:with-param name="x" select="bf:degree"/>
+              </xsl:call-template>
             </xsl:when>
-            <xsl:when test="bf:grantingInstitution/*/rdfs:label[@xml:lang and not(contains(translate(bf:grantingInstitution/*/rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
-              <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after(bf:grantingInstitution/*/rdfs:label,'-'),$upper,$lower)"/>
-              </xsl:variable>
-              <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
+            <xsl:when test="bf:grantingInstitution/*/rdfs:label">
+              <xsl:call-template name="tGetBCP47RegField">
+                <xsl:with-param name="x" select="bf:grantingInstitution/*/rdfs:label"/>
+              </xsl:call-template>
             </xsl:when>
           </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:choose>
+            <xsl:when test="rdfs:label">
+              <xsl:call-template name="tGetBCP47for880">
+                <xsl:with-param name="x" select="rdfs:label"/>
+                <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="bf:degree">
+              <xsl:call-template name="tGetBCP47for880">
+                <xsl:with-param name="x" select="bf:degree"/>
+                <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="bf:grantingInstitution/*/rdfs:label">
+              <xsl:call-template name="tGetBCP47for880">
+                <xsl:with-param name="x" select="bf:grantingInstitution/*/rdfs:label"/>
+                <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+              </xsl:call-template>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="v880Script">
+          <xsl:variable name="vlang">
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
+          </xsl:variable>
+          <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
         <xsl:variable name="v880Occurrence">
           <xsl:choose>
@@ -9688,12 +9738,12 @@
               This should be the next in the numerical sequence for work notes, 
               when also accounting for tableOfContents and supplementary content 
               and dissertation .. -->
-              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
+              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vXmlLang">
-          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
         </xsl:variable>
         <marc:datafield>
           <xsl:attribute name="tag">502</xsl:attribute>
@@ -9720,7 +9770,7 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
-          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="a">
@@ -9734,7 +9784,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:for-each select="bf:degree[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:degree[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="b">
@@ -9748,7 +9798,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="c">
@@ -9762,7 +9812,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:for-each select="bf:date[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:date[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="d">
@@ -9776,14 +9826,14 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:for-each select="bf:note/*/rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:note/*/rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <marc:subfield code="g">
               <xsl:call-template name="tChopPunct">
                 <xsl:with-param name="pString" select="."/>
               </xsl:call-template>
             </marc:subfield>
           </xsl:for-each>
-          <xsl:for-each select="bf:identifiedBy/*/rdf:value[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="bf:identifiedBy/*/rdf:value[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <marc:subfield code="o">
               <xsl:value-of select="."/>
             </marc:subfield>
@@ -9807,7 +9857,7 @@
                   <xsl:value-of select="$v880-6"/>
                 </marc:subfield>
               </xsl:if>
-              <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="a">
@@ -9821,7 +9871,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:degree[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="bf:degree[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="b">
@@ -9835,7 +9885,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="bf:grantingInstitution/*/rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="c">
@@ -9849,7 +9899,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:date[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="bf:date[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="d">
@@ -9863,14 +9913,14 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="bf:note/*/rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="bf:note/*/rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <marc:subfield code="g">
                   <xsl:call-template name="tChopPunct">
                     <xsl:with-param name="pString" select="."/>
                   </xsl:call-template>
                 </marc:subfield>
               </xsl:for-each>
-              <xsl:for-each select="bf:identifiedBy/*/rdf:value[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+              <xsl:for-each select="bf:identifiedBy/*/rdf:value[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                 <marc:subfield code="o">
                   <xsl:value-of select="."/>
                 </marc:subfield>
@@ -9880,11 +9930,20 @@
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]  |     bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != ''] and not(@rdf:about)]     ">
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                    string-length(@xml:lang)='2' or                    string-length(@xml:lang)='3'                 ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -9894,18 +9953,18 @@
               <!-- 
               This should be the next in the numerical sequence for work notes, 
               when also accounting for tableOfContents and supplementary content .. -->
-              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +                position()"/>
+              <xsl:value-of select="               39 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel] and not(@rdf:about)]) +                position()"/>
             </xsl:when>
             <xsl:when test="$v880Script != '' and ancestor::bf:Instance">
               <!-- 
               This should be the next in the numerical sequence for instance notes, 
               when also accounting for supplementary content .. -->
-              <xsl:value-of select="             49 +              count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +              count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +              position()"/>
+              <xsl:value-of select="             49 +              count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +              count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel] and not(@rdf:about)]) +              position()"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vXmlLang">
-          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
         </xsl:variable>
         <marc:datafield>
           <xsl:attribute name="tag">504</xsl:attribute>
@@ -9932,7 +9991,7 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
-          <xsl:for-each select="rdfs:label">
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="a">
@@ -9958,10 +10017,27 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:variable name="v504-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v504-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v504-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
-            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+            <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">880</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -9995,17 +10071,39 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v880-7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v880-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Instance/bf:note/bf:Note[rdf:type/@rdf:resource='http://id.loc.gov/vocabulary/mnotetype/biblio' and rdfs:label[. != '']]">
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'               ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -10015,12 +10113,12 @@
               <!-- 
               This should be the next in the numerical sequence for instance notes, 
               when also accounting for supplementary content .. -->
-              <xsl:value-of select="               49 +                count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +                position() +                1"/>
+              <xsl:value-of select="               49 +                count(ancestor::bf:Instance/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                count(ancestor::bf:Instance/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel] and not(@rdf:about)]) +                position() +                1"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vXmlLang">
-          <xsl:value-of select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
         </xsl:variable>
         <marc:datafield>
           <xsl:attribute name="tag">504</xsl:attribute>
@@ -10073,10 +10171,27 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:variable name="v504-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v504-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v504-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
-            <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+            <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">880</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -10110,17 +10225,39 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="v880-7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v880-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
         </xsl:choose>
       </xsl:for-each>
       <xsl:for-each select="bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label]">
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[       contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or        string-length(@xml:lang)='2' or        string-length(@xml:lang)='3'       ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -10128,12 +10265,12 @@
           <xsl:choose>
             <xsl:when test="$v880Script != ''">
               <!-- This should be the next in the numerical sequence for work notes. -->
-              <xsl:value-of select="39 + count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) + position()"/>
+              <xsl:value-of select="39 + count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) + position()"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vXmlLang">
-          <xsl:value-of select="rdfs:label[not(@xml:lang) or        string-length(@xml:lang)='2' or        string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]/@xml:lang"/>
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
         </xsl:variable>
         <marc:datafield>
           <xsl:attribute name="tag">505</xsl:attribute>
@@ -10177,7 +10314,7 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
-          <xsl:for-each select="rdfs:label[not(@xml:lang) or          string-length(@xml:lang)='2' or          string-length(@xml:lang)='3' or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="a">
@@ -10194,10 +10331,27 @@
               <xsl:value-of select="."/>
             </marc:subfield>
           </xsl:for-each>
+          <xsl:variable name="v505-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v505-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v505-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
-            <xsl:for-each select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+            <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">880</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -10241,6 +10395,19 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
+                <xsl:variable name="v880-7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v880-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -10481,12 +10648,21 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:for-each select="bf:Work/bf:summary/bf:Summary[rdfs:label]">
-        <xsl:variable name="vLabel" select="rdfs:label[                   not(@xml:lang) or                    (                     string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3' or                     contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))                   )                 ][1]"/>
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[                   @xml:lang and                   (                       ( contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))) ) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3'                   )                   ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLabel" select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel][1]"/>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -10497,14 +10673,14 @@
             </xsl:when>
             <xsl:when test="$v880Script != ''">
               <!-- This should be the next in the numerical sequence for work notes, when also accounting for tableOfContents .. -->
-              <xsl:value-of select="                             39 +                              count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                              count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                              position()"/>
+              <xsl:value-of select="                             39 +                              count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                              count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                              position()"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="string($vLabel) != ''">
             <xsl:variable name="vXmlLang">
-              <xsl:value-of select="rdfs:label/@xml:lang"/>
+              <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
             </xsl:variable>
             <marc:datafield>
               <xsl:attribute name="tag">520</xsl:attribute>
@@ -10545,7 +10721,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
-              <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
                 <xsl:choose>
                   <xsl:when test="position() = 1">
                     <marc:subfield code="a">
@@ -10562,12 +10738,29 @@
                   <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:for-each>
+              <xsl:variable name="v520-7">
+                <xsl:choose>
+                  <xsl:when test="$vLangTagLabel!=''">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:when>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:if test="$v520-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v520-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
-            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+            <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">880</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -10608,6 +10801,19 @@
                     <xsl:value-of select="."/>
                   </marc:subfield>
                 </xsl:for-each>
+                <xsl:variable name="v880-7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v880-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -10638,11 +10844,20 @@
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
       <xsl:for-each select="bf:Work/bf:note/bf:Note[rdf:type/@rdf:resource = 'http://id.loc.gov/vocabulary/mnotetype/lang' and rdfs:label]">
-        <xsl:variable name="vLangTagLabel" select="rdfs:label[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'               ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="rdfs:label"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="rdfs:label"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
-            <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+            <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
           </xsl:variable>
           <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
         </xsl:variable>
@@ -10651,12 +10866,12 @@
             <xsl:when test="$v880Script != ''">
               <!-- This should be the next in the numerical sequence for work notes, 
                  when also accounting for tableOfContents, supplementarycontent, dissertation, and padding .. -->
-              <xsl:value-of select="               41 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and contains(@xml:lang, '-') and not(contains(translate(rdfs:label/@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
+              <xsl:value-of select="               41 +                count(ancestor::bf:Work/bf:note/bf:Note[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +                count(ancestor::bf:Work/bf:tableOfContents/bf:TableOfContents[rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]]) +               count(ancestor::bf:Work/bf:supplementaryContent/bf:SupplementaryContent[rdfs:label[. != '' and @xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel] and not(@rdf:about)]) +               count(ancestor::bf:Work/bf:dissertation/bf:Dissertation) +               position()"/>
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="vXmlLang">
-          <xsl:value-of select="rdfs:label/@xml:lang"/>
+          <xsl:value-of select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]/@xml:lang"/>
         </xsl:variable>
         <marc:datafield>
           <xsl:attribute name="tag">546</xsl:attribute>
@@ -10697,7 +10912,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
-          <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+          <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="a">
@@ -10712,7 +10927,7 @@
             </xsl:choose>
           </xsl:for-each>
           <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')] | ancestor::bf:Work/bf:notation/bf:Notation[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')]">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <marc:subfield code="b">
                 <xsl:call-template name="tChopPunct">
                   <xsl:with-param name="pString" select="."/>
@@ -10721,7 +10936,7 @@
             </xsl:for-each>
           </xsl:for-each>
           <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[not(@rdf:about)] | ancestor::bf:Work/bf:notation/bf:Notation[not(@rdf:about)]">
-            <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:for-each select="rdfs:label[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangTagLabel]">
               <marc:subfield code="b">
                 <xsl:call-template name="tChopPunct">
                   <xsl:with-param name="pString" select="."/>
@@ -10729,10 +10944,27 @@
               </marc:subfield>
             </xsl:for-each>
           </xsl:for-each>
+          <xsl:variable name="v546-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v546-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v546-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$v880Script != ''">
-            <xsl:for-each select="rdfs:label[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]">
+            <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
               <marc:datafield>
                 <xsl:attribute name="tag">880</xsl:attribute>
                 <xsl:attribute name="ind1">
@@ -10769,7 +11001,7 @@
                   </xsl:call-template>
                 </marc:subfield>
                 <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')] | ancestor::bf:Work/bf:notation/bf:Notation[contains(@rdf:about, 'id.loc.gov/vocabulary/mscript')]">
-                  <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                  <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                     <marc:subfield code="b">
                       <xsl:call-template name="tChopPunct">
                         <xsl:with-param name="pString" select="."/>
@@ -10778,7 +11010,7 @@
                   </xsl:for-each>
                 </xsl:for-each>
                 <xsl:for-each select="ancestor::bf:Work/bf:notation/bf:Script[not(@rdf:about)] | ancestor::bf:Work/bf:notation/bf:Notation[not(@rdf:about)]">
-                  <xsl:for-each select="rdfs:label[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                  <xsl:for-each select="rdfs:label[@xml:lang and translate(@xml:lang,$upper,$lower)!=$vLangTagLabel]">
                     <marc:subfield code="b">
                       <xsl:call-template name="tChopPunct">
                         <xsl:with-param name="pString" select="."/>
@@ -10786,6 +11018,19 @@
                     </marc:subfield>
                   </xsl:for-each>
                 </xsl:for-each>
+                <xsl:variable name="v880-7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </xsl:variable>
+                <xsl:if test="$v880-7 != ''">
+                  <marc:subfield code="7">
+                    <xsl:value-of select="$v880-7"/>
+                  </marc:subfield>
+                </xsl:if>
               </marc:datafield>
             </xsl:for-each>
           </xsl:when>
@@ -16287,13 +16532,22 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'               ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
               <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+                <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
               </xsl:variable>
               <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
             </xsl:when>
@@ -16551,11 +16805,16 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
-              <!--<xsl:if test="$vLangTagLabel!=''">
-          <marc:subfield code="7">
-            <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-          </marc:subfield>
-        </xsl:if>-->
+              <xsl:if test="$vLangTagLabel!=''">
+                <marc:subfield code="7">
+                  <xsl:variable name="bcp47code">
+                    <xsl:call-template name="tOutputBCP47">
+                      <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                    </xsl:call-template>
+                  </xsl:variable>
+                  <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -16625,6 +16884,19 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -17128,27 +17400,7 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[                 contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                  string-length(@xml:lang)='2' or                  string-length(@xml:lang)='3'                 ][1]/@xml:lang"/>
         <xsl:variable name="vRelResourcePreNS">
-          <!--<xsl:choose>
-          <xsl:when test="self::node()/bflc:marcKey[not(@xml:lang)]">
-            <xsl:call-template name="tGetMiniMARCFromKey">
-              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[not(@xml:lang)][1]"/>
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:when test="$vLangTagLabel != ''">
-            <xsl:call-template name="tGetMiniMARCFromKey">
-              <xsl:with-param name="pFieldStr" select="self::node()/bflc:marcKey[@xml:lang = $vLangTagLabel][1]"/>
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:when test="self::node()/bflc:marcKey[@xml:lang]" /><!-\- marcKey with @xml:lang and likely in a non-latin script -\->
-          <xsl:otherwise>
-            <xsl:call-template name="tGetRelResource">
-              <xsl:with-param name="pRelUri" select="$relURI"/>
-              <xsl:with-param name="pContext" select="."/>
-            </xsl:call-template>
-          </xsl:otherwise>
-        </xsl:choose>-->
           <xsl:call-template name="tGetRelResource">
             <xsl:with-param name="pRelUri" select="$relURI"/>
             <xsl:with-param name="pContext" select="."/>
@@ -17191,12 +17443,22 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
               <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+                <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
               </xsl:variable>
               <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
             </xsl:when>
@@ -17394,11 +17656,20 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:copy-of select="$vShared"/>
-              <!--<xsl:if test="$vLangTagLabel!=''">
-              <marc:subfield code="7">
-                <xsl:value-of select="concat('(bcp47)', $vLangTagLabel)"/>
-              </marc:subfield>
-            </xsl:if>-->
+              <sf xmlns="http://www.loc.gov/bf2marc" code="7">
+                <switch>
+                  <case test="$vLangTagLabel!=''">
+                    <transform>
+                      <xsl:variable name="bcp47code">
+                        <xsl:call-template name="tOutputBCP47">
+                          <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                        </xsl:call-template>
+                      </xsl:variable>
+                      <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                    </transform>
+                  </case>
+                </switch>
+              </sf>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -17502,6 +17773,19 @@
                 </marc:subfield>
               </xsl:for-each>
               <xsl:copy-of select="$vShared"/>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -19439,10 +19723,19 @@
         </xsl:otherwise>
       </xsl:choose>
       <xsl:for-each select="bf:Work/bf:relation/bf:Relation/bf:associatedResource/bf:Work[rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled'] |     bf:Work/bf:relation/bf:Relation/bf:associatedResource/bflc:Uncontrolled[rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Work'] |     bf:Work/bf:relatedTo/bf:Work[rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled'] |     bf:Work/bf:hasPart/bf:Work[rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/Uncontrolled']">
-        <xsl:variable name="vLangTagLabel" select="bf:title/bf:Title/bf:mainTitle[                   contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                    string-length(@xml:lang)='2' or                    string-length(@xml:lang)='3'                 ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="bf:title/bf:Title/bf:mainTitle[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="bf:title/bf:Title/bf:mainTitle"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="bf:title/bf:Title/bf:mainTitle"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="vScript">
-          <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+          <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
         </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:variable name="vlang">
@@ -19524,6 +19817,23 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
+          <xsl:variable name="v740-7">
+            <xsl:choose>
+              <xsl:when test="$vLangTagLabel!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v740-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v740-7"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vLangTagScript != ''">
@@ -19595,6 +19905,19 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>
+              <xsl:variable name="v880-7">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-7 != ''">
+                <marc:subfield code="7">
+                  <xsl:value-of select="$v880-7"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -20857,13 +21180,22 @@
             </xsl:when>
           </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="vLangTagLabel" select="self::node()/bflc:marcKey[                     contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3'                   ][1]/@xml:lang"/>
-        <xsl:variable name="vLangTagScript" select="self::node()/bflc:marcKey[@xml:lang and contains(@xml:lang, '-') and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))][1]/@xml:lang"/>
+        <xsl:variable name="vLangTagLabel">
+          <xsl:call-template name="tGetBCP47RegField">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="vLangTagScript">
+          <xsl:call-template name="tGetBCP47for880">
+            <xsl:with-param name="x" select="self::node()/bflc:marcKey"/>
+            <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+          </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="v880Script">
           <xsl:choose>
             <xsl:when test="$vLangTagScript!=''">
               <xsl:variable name="vlang">
-                <xsl:value-of select="translate(substring-after($vLangTagScript,'-'),$upper,$lower)"/>
+                <xsl:value-of select="substring-after($vLangTagScript,'-')"/>
               </xsl:variable>
               <xsl:value-of select="exsl:node-set($df880script)/*[lang=$vlang]/code"/>
             </xsl:when>
@@ -21043,6 +21375,19 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
+          <xsl:variable name="vvSeriesMarcKeyTag-y">
+            <xsl:variable name="bcp47code">
+              <xsl:call-template name="tOutputBCP47">
+                <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+              </xsl:call-template>
+            </xsl:variable>
+            <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+          </xsl:variable>
+          <xsl:if test="$vvSeriesMarcKeyTag-y != ''">
+            <marc:subfield code="y">
+              <xsl:value-of select="$vvSeriesMarcKeyTag-y"/>
+            </marc:subfield>
+          </xsl:if>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
@@ -21185,6 +21530,19 @@
                   </xsl:if>
                 </xsl:when>
               </xsl:choose>
+              <xsl:variable name="v880-y">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$v880-y != ''">
+                <marc:subfield code="y">
+                  <xsl:value-of select="$v880-y"/>
+                </marc:subfield>
+              </xsl:if>
             </marc:datafield>
           </xsl:when>
         </xsl:choose>
@@ -27890,10 +28248,10 @@
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
     <xsl:variable name="langCode">
-      <xsl:variable name="vxmllang">
+      <xsl:variable name="viso6391">
         <xsl:value-of select="bf:mainTitle/@xml:lang"/>
       </xsl:variable>
-      <xsl:value-of select="exsl:node-set($languages)/*[xmllang=$vxmllang]/iso6392"/>
+      <xsl:value-of select="exsl:node-set($iso6392-to-iso6391)/*[iso6391=$viso6391]/iso6392"/>
     </xsl:variable>
     <xsl:variable name="vXmlLang">
       <xsl:value-of select="bf:mainTitle/@xml:lang"/>
@@ -28056,7 +28414,11 @@
   <xsl:template match="bf:Instance[not(rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance')]/bf:title/bf:Title[not(rdf:type)]|bf:Work[not(../bf:Instance/bf:title/bf:Title[not(rdf:type)])]/bf:title/bf:Title[not(rdf:type)]" mode="generate-245">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
-    <xsl:variable name="vLangTagLabel" select="bf:mainTitle[                     contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)) or                      string-length(@xml:lang)='2' or                      string-length(@xml:lang)='3'                   ][1]/@xml:lang"/>
+    <xsl:variable name="vLangMainTitle">
+      <xsl:call-template name="tGetBCP47RegField">
+        <xsl:with-param name="x" select="bf:mainTitle"/>
+      </xsl:call-template>
+    </xsl:variable>
     <xsl:choose>
       <xsl:when test="position() = 1">
         <marc:datafield>
@@ -28081,11 +28443,11 @@
           <xsl:attribute name="ind2">
             <xsl:variable name="vInd">
               <xsl:choose>
-                <xsl:when test="bflc:nonSortNum[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                  <xsl:value-of select="bflc:nonSortNum[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]"/>
+                <xsl:when test="bflc:nonSortNum[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                  <xsl:value-of select="bflc:nonSortNum[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]"/>
                 </xsl:when>
-                <xsl:when test="bflc:titleSortKey[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] and                       (string-length(bflc:titleSortKey[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]) &lt; string-length(bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]))">
-                  <xsl:value-of select="string-length(bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]) - string-length(bflc:titleSortKey[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))])"/>
+                <xsl:when test="bflc:titleSortKey[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle] and                       (string-length(bflc:titleSortKey[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]) &lt; string-length(bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]))">
+                  <xsl:value-of select="string-length(bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]) - string-length(bflc:titleSortKey[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle])"/>
                 </xsl:when>
               </xsl:choose>
             </xsl:variable>
@@ -28099,14 +28461,14 @@
             </xsl:choose>
           </xsl:attribute>
           <xsl:choose>
-            <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang] and bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+            <xsl:when test="count(bf:mainTitle)=2 and bf:mainTitle[@xml:lang and @xml:lang!=$vLangMainTitle] and bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
               <marc:subfield code="6">880-03</marc:subfield>
             </xsl:when>
           </xsl:choose>
           <xsl:variable name="v245-a">
             <xsl:choose>
-              <xsl:when test="bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                <xsl:for-each select="bf:mainTitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                <xsl:for-each select="bf:mainTitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:value-of select="."/>
@@ -28131,19 +28493,19 @@
               </xsl:when>
             </xsl:choose>
             <xsl:choose>
-              <xsl:when test="                 bf:partNumber[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] and                 not(                   substring(                     bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))],                      string-length(bf:mainTitle[@xml:lang and not(contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower)))]),                   1) = '.'                 )               ">
+              <xsl:when test="             bf:partNumber[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle] and                 not(                   substring(                   bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)],                    string-length(bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]),                   1) = '.'                 )               ">
                 <xsl:text>.</xsl:text>
               </xsl:when>
-              <xsl:when test="bf:partName[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:partName[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text>.</xsl:text>
               </xsl:when>
-              <xsl:when test="bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
               <xsl:when test="count(bf:subtitle)=1 and bf:subtitle[@xml:lang]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
-              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> /</xsl:text>
               </xsl:when>
               <xsl:when test="count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
@@ -28159,7 +28521,7 @@
           <xsl:variable name="v245-n">
             <xsl:variable name="nExists">
               <xsl:choose>
-                <xsl:when test="bf:partNumber[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                <xsl:when test="bf:partNumber[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:value-of select="'1'"/>
                 </xsl:when>
                 <xsl:when test="count(bf:partNumber)=1 and bf:partNumber[@xml:lang]">
@@ -28168,8 +28530,8 @@
               </xsl:choose>
             </xsl:variable>
             <xsl:choose>
-              <xsl:when test="bf:partNumber[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                <xsl:for-each select="bf:partNumber[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:partNumber[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                <xsl:for-each select="bf:partNumber[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:call-template name="tChopPunct">
@@ -28198,16 +28560,16 @@
               </xsl:when>
             </xsl:choose>
             <xsl:choose>
-              <xsl:when test="$nExists='1' and bf:partName[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$nExists='1' and bf:partName[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text>,</xsl:text>
               </xsl:when>
-              <xsl:when test="$nExists='1' and bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$nExists='1' and bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
               <xsl:when test="$nExists='1' and count(bf:subtitle)=1 and bf:subtitle[@xml:lang]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
-              <xsl:when test="$nExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$nExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> /</xsl:text>
               </xsl:when>
               <xsl:when test="$nExists='1' and count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
@@ -28223,7 +28585,7 @@
           <xsl:variable name="v245-p">
             <xsl:variable name="pExists">
               <xsl:choose>
-                <xsl:when test="bf:partName[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                <xsl:when test="bf:partName[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:value-of select="'1'"/>
                 </xsl:when>
                 <xsl:when test="count(bf:partName)=1 and bf:partName[@xml:lang]">
@@ -28232,8 +28594,8 @@
               </xsl:choose>
             </xsl:variable>
             <xsl:choose>
-              <xsl:when test="bf:partName[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                <xsl:for-each select="bf:partName[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:partName[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                <xsl:for-each select="bf:partName[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:call-template name="tChopPunct">
@@ -28262,13 +28624,13 @@
               </xsl:when>
             </xsl:choose>
             <xsl:choose>
-              <xsl:when test="$pExists='1' and bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$pExists='1' and bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
               <xsl:when test="$pExists='1' and count(bf:subtitle)=1 and bf:subtitle[@xml:lang]">
                 <xsl:text> :</xsl:text>
               </xsl:when>
-              <xsl:when test="$pExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$pExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> /</xsl:text>
               </xsl:when>
               <xsl:when test="$pExists='1' and count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
@@ -28284,7 +28646,7 @@
           <xsl:variable name="v245-b">
             <xsl:variable name="bExists">
               <xsl:choose>
-                <xsl:when test="bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+                <xsl:when test="bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:value-of select="'1'"/>
                 </xsl:when>
                 <xsl:when test="count(bf:subtitle)=1 and bf:subtitle[@xml:lang]">
@@ -28293,8 +28655,8 @@
               </xsl:choose>
             </xsl:variable>
             <xsl:choose>
-              <xsl:when test="bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                <xsl:for-each select="bf:subtitle[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                <xsl:for-each select="bf:subtitle[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:value-of select="."/>
@@ -28319,11 +28681,14 @@
               </xsl:when>
             </xsl:choose>
             <xsl:choose>
-              <xsl:when test="$bExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="$bExists='1' and ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                 <xsl:text> /</xsl:text>
               </xsl:when>
               <xsl:when test="$bExists='1' and count(ancestor::bf:Instance/bf:responsibilityStatement)=1 and ancestor::bf:Instance/bf:responsibilityStatement[@xml:lang]">
                 <xsl:text> /</xsl:text>
+              </xsl:when>
+              <xsl:when test="$bExists='1' and count(ancestor::bf:Instance/bf:responsibilityStatement)=0">
+                <xsl:text>.</xsl:text>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -28334,8 +28699,8 @@
           </xsl:if>
           <xsl:variable name="v245-c">
             <xsl:choose>
-              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
-                <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+                <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:value-of select="."/>
@@ -28347,7 +28712,7 @@
                 </xsl:for-each>
                 <xsl:variable name="vEndsWith">
                   <xsl:call-template name="tEndsWith">
-                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]"/>
+                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]"/>
                     <xsl:with-param name="pEndChar" select="'.'"/>
                   </xsl:call-template>
                 </xsl:variable>
@@ -28381,6 +28746,23 @@
           <xsl:if test="$v245-c != ''">
             <marc:subfield code="c">
               <xsl:value-of select="$v245-c"/>
+            </marc:subfield>
+          </xsl:if>
+          <xsl:variable name="v245-7">
+            <xsl:choose>
+              <xsl:when test="$vLangMainTitle!=''">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangMainTitle"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:if test="$v245-7 != ''">
+            <marc:subfield code="7">
+              <xsl:value-of select="$v245-7"/>
             </marc:subfield>
           </xsl:if>
         </marc:datafield>
@@ -31936,6 +32318,21 @@
       <xsl:attribute name="ind2">
         <xsl:text> </xsl:text>
       </xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="ancestor::bf:Relation">
+          <xsl:variable name="vLinkage">
+            <xsl:value-of select="concat( count(ancestor::bf:relation/preceding::bf:relation) + 10, '\p' )"/>
+          </xsl:variable>
+          <xsl:variable name="v580-8">
+            <xsl:value-of select="$vLinkage"/>
+          </xsl:variable>
+          <xsl:if test="$v580-8 != ''">
+            <marc:subfield code="8">
+              <xsl:value-of select="$v580-8"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
+      </xsl:choose>
       <xsl:variable name="v580-a">
         <xsl:call-template name="tChopPunct">
           <xsl:with-param name="pString" select="."/>
@@ -34881,6 +35278,21 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="ancestor::bf:Relation/bf:note">
+          <xsl:variable name="vLinkage">
+            <xsl:value-of select="concat( count(ancestor::bf:relation/preceding::bf:relation) + 10, '\p' )"/>
+          </xsl:variable>
+          <xsl:variable name="vvLinkTagFromWork2-8">
+            <xsl:value-of select="$vLinkage"/>
+          </xsl:variable>
+          <xsl:if test="$vvLinkTagFromWork2-8 != ''">
+            <marc:subfield code="8">
+              <xsl:value-of select="$vvLinkTagFromWork2-8"/>
+            </marc:subfield>
+          </xsl:if>
+        </xsl:when>
+      </xsl:choose>
       <xsl:for-each select="bflc:appliesTo/bflc:AppliesTo/rdfs:label">
         <xsl:choose>
           <xsl:when test="position() = 1">
@@ -36482,6 +36894,225 @@
           </xsl:attribute>
           <xsl:value-of select="$pString"/>
         </marc:subfield>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  <xsl:template name="tGetBCP47RegField">
+    <xsl:param name="x"/>
+    <xsl:value-of select="translate(                                 $x[                                   contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized) or                                    (                                      string-length(@xml:lang)='2'                                   ) or (                                      string-length(@xml:lang)='3'                                   )                                  ]/@xml:lang,                                  $upper,                                  $lower                               )"/>
+  </xsl:template>
+  <xsl:template name="tGetBCP47for880">
+    <xsl:param name="x"/>
+    <xsl:param name="bcp47forRegField"/>
+    <xsl:value-of select="translate(                                 $x[                                     @xml:lang and                                      translate(@xml:lang,$upper,$lower)!=$bcp47forRegField and                                     (                                       contains(@xml:lang, '-') or                                       string-length(@xml:lang)='2' or                                        string-length(@xml:lang)='3'                                     )                                   ]/@xml:lang,                                   $upper,                                   $lower                                )"/>
+  </xsl:template>
+  <xsl:template name="tOutputBCP47">
+    <xsl:param name="bcp47orig"/>
+    <xsl:choose>
+      <xsl:when test="$bcp47inferrence">
+        <xsl:call-template name="to-bcp47-spec">
+          <xsl:with-param name="bcp47orig" select="$bcp47orig"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="to-bcp47-lc">
+          <xsl:with-param name="bcp47orig" select="$bcp47orig"/>
+        </xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  <xsl:template name="to-bcp47-spec">
+    <xsl:param name="bcp47orig"/>
+    <xsl:variable name="bcp47lower" select="translate($bcp47orig, $upper, $lower)"/>
+    <xsl:choose>
+      <xsl:when test="contains($bcp47lower, '-t-')">
+        <xsl:value-of select="$bcp47lower"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="first4" select="substring($bcp47lower, 1, 4)"/>
+        <xsl:variable name="last5" select="substring($bcp47lower, 4, 5)"/>
+        <xsl:variable name="first3" select="substring($bcp47lower, 1, 3)"/>
+        <xsl:variable name="last4" select="substring($bcp47lower, 3, 5)"/>
+        <xsl:variable name="first2" select="substring($bcp47lower, 1, 2)"/>
+        <xsl:choose>
+          <xsl:when test="string-length($first4)=4 and                                substring($first4, string-length($first4))='-' and                                string-length($last5)=5 and                                substring($last5, 1, 1)='-'">
+            <xsl:variable name="lpart" select="substring($first3, 1, 3)"/>
+            <xsl:variable name="spart" select="substring($last5, 2, 4)"/>
+            <xsl:variable name="l">
+              <xsl:choose>
+                <xsl:when test="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391">
+                  <xsl:value-of select="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="$lpart"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:variable name="s">
+              <xsl:choose>
+                <xsl:when test="not($langcode-to-scriptNS/langcode-script[langcode=$l])">
+                  <xsl:value-of select="$spart"/>
+                </xsl:when>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$l]/script != $spart">
+                  <xsl:value-of select="$spart"/>
+                </xsl:when>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$l]/script = $spart"/>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$l != '' and $s != ''">
+                <xsl:value-of select="concat($l, '-', $s)"/>
+              </xsl:when>
+              <xsl:when test="$l != ''">
+                <xsl:value-of select="$l"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="string-length($first3)=3 and                                substring($first3, string-length($first3))='-' and                                string-length($last4)=5 and                                substring($last4, 1, 1)='-'">
+            <xsl:variable name="lpart" select="substring($first3, 1, 2)"/>
+            <xsl:variable name="spart" select="substring($last4, 2, 4)"/>
+            <xsl:variable name="s">
+              <xsl:choose>
+                <xsl:when test="not($langcode-to-scriptNS/langcode-script[langcode=$lpart])">
+                  <xsl:value-of select="$spart"/>
+                </xsl:when>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$lpart]/script != $spart">
+                  <xsl:value-of select="$spart"/>
+                </xsl:when>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$lpart]/script = $spart">
+                  <xsl:value-of select="''"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$lpart != '' and $s != ''">
+                <xsl:value-of select="concat($lpart, '-', $s)"/>
+              </xsl:when>
+              <xsl:when test="$lpart != ''">
+                <xsl:value-of select="$lpart"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="string-length($first3)=3 and                                substring($first3, string-length($first3))!='-' and                                string-length($last4)=0">
+            <xsl:variable name="lpart" select="substring($first3, 1, 3)"/>
+            <xsl:choose>
+              <xsl:when test="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391">
+                <xsl:value-of select="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$lpart"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="$first2!=''">
+            <xsl:value-of select="$first2"/>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  <xsl:template name="to-bcp47-lc">
+    <xsl:param name="bcp47orig"/>
+    <xsl:variable name="bcp47lower" select="translate($bcp47orig, $upper, $lower)"/>
+    <xsl:choose>
+      <xsl:when test="contains($bcp47lower, '-t-')">
+        <xsl:value-of select="$bcp47lower"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="first4" select="substring($bcp47lower, 1, 4)"/>
+        <xsl:variable name="last5" select="substring($bcp47lower, 4, 5)"/>
+        <xsl:variable name="first3" select="substring($bcp47lower, 1, 3)"/>
+        <xsl:variable name="last4" select="substring($bcp47lower, 3, 5)"/>
+        <xsl:variable name="first2" select="substring($bcp47lower, 1, 2)"/>
+        <xsl:choose>
+          <xsl:when test="string-length($first4)=4 and                                substring($first4, string-length($first4))='-' and                                string-length($last5)=5 and                                substring($last5, 1, 1)='-'">
+            <xsl:variable name="lpart" select="substring($first3, 1, 3)"/>
+            <xsl:variable name="spart" select="substring($last5, 2, 4)"/>
+            <xsl:variable name="l">
+              <xsl:choose>
+                <xsl:when test="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391">
+                  <xsl:value-of select="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="$lpart"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$l != '' and $spart != ''">
+                <xsl:value-of select="concat($l, '-', $spart)"/>
+              </xsl:when>
+              <xsl:when test="$l != ''">
+                <xsl:value-of select="$l"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="string-length($first3)=3 and                                substring($first3, string-length($first3))='-' and                                string-length($last4)=5 and                                substring($last4, 1, 1)='-'">
+            <xsl:variable name="lpart" select="substring($first3, 1, 2)"/>
+            <xsl:variable name="spart" select="substring($last4, 2, 4)"/>
+            <xsl:variable name="s">
+              <xsl:choose>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$lpart]/script">
+                  <xsl:value-of select="$spart"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$lpart != '' and $spart != ''">
+                <xsl:value-of select="concat($lpart, '-', $spart)"/>
+              </xsl:when>
+              <xsl:when test="$lpart != ''">
+                <xsl:value-of select="$lpart"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="string-length($first3)=3 and                                substring($first3, string-length($first3))!='-' and                                string-length($last4)=0">
+            <xsl:variable name="lpart" select="$first3"/>
+            <xsl:variable name="l">
+              <xsl:choose>
+                <xsl:when test="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391">
+                  <xsl:value-of select="$iso6392-to-iso6391NS/iso6392to1[iso6391=$lpart]/iso6391"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="$lpart"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:variable name="s">
+              <xsl:choose>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$l]/script">
+                  <xsl:value-of select="$langcode-to-scriptNS/langcode-script[langcode=$l]/script"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$l != '' and $s != ''">
+                <xsl:value-of select="concat($l, '-', $s)"/>
+              </xsl:when>
+              <xsl:when test="$l != ''">
+                <xsl:value-of select="$l"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:when test="$first2!=''">
+            <xsl:variable name="lpart" select="$first2"/>
+            <xsl:variable name="s">
+              <xsl:choose>
+                <xsl:when test="$langcode-to-scriptNS/langcode-script[langcode=$lpart]/script">
+                  <xsl:value-of select="$langcode-to-scriptNS/langcode-script[langcode=$lpart]/script"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$lpart != '' and $s != ''">
+                <xsl:value-of select="concat($lpart, '-', $s)"/>
+              </xsl:when>
+              <xsl:when test="$lpart != ''">
+                <xsl:value-of select="$lpart"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+        </xsl:choose>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
