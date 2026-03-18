@@ -361,29 +361,43 @@
 								return;
 							}
 							var rows = [];
+							var groupIdx = 0;
 							data.events.forEach(function(e) {
 								var ts = e.timestamp ? new Date(e.timestamp).toLocaleString() : '';
 								var isSaveRecord = e.eventType === 'SAVED_RECORD' && Array.isArray(e.metadata) && e.metadata.length > 0 && e.metadata[0] && e.metadata[0].user;
 								var saveCount = isSaveRecord ? e.metadata.length : '';
 								var detailCol = '';
 								if (isSaveRecord) {
-									detailCol = saveCount + ' save' + (saveCount===1?'':'s');
+									detailCol = '<span class="save-toggle" style="cursor:pointer; user-select:none;">&#9654; ' + saveCount + ' save' + (saveCount===1?'':'s') + '</span>';
 								} else if (e.metadata) {
 									var meta = JSON.stringify(e.metadata);
 									if (meta.length > 80) meta = meta.substring(0, 80) + '\u2026';
 									detailCol = meta;
 								}
 								var userDisplay = (e.username||'') + (e.name ? ' <span style="color:#888; font-size:0.85em;">(' + e.name + ')</span>' : '');
-								rows.push('<tr><td>' + ts + '</td><td>' + userDisplay + '</td><td>' + (e.eventType||'') + '</td><td>' + (e.region||'') + '</td><td>' + (e.eId!=null?e.eId:'') + '</td><td>' + (e.lccn!=null?e.lccn:'') + '</td><td>' + (e.instanceId||'') + '</td><td style="font-size:0.8em; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + detailCol + '</td></tr>');
+								var gid = isSaveRecord ? 'save-group-' + groupIdx : '';
+								rows.push('<tr' + (isSaveRecord ? ' data-save-group="' + groupIdx + '" style="cursor:pointer;"' : '') + '><td>' + ts + '</td><td>' + userDisplay + '</td><td>' + (e.eventType||'') + '</td><td>' + (e.region||'') + '</td><td>' + (e.eId!=null?e.eId:'') + '</td><td>' + (e.lccn!=null?e.lccn:'') + '</td><td>' + (e.instanceId||'') + '</td><td style="font-size:0.8em; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + detailCol + '</td></tr>');
 								if (isSaveRecord) {
 									e.metadata.slice().reverse().forEach(function(m) {
 										var mTime = m.time ? new Date(m.time).toLocaleString() : '';
 										var mUserDisplay = (m.user||'') + (m.name ? ' (' + m.name + ')' : '');
-										rows.push('<tr style="background:#f9f9f9; color:#666; font-size:0.85em;"><td style="padding-left:2em;">\u2514 ' + mTime + '</td><td>' + mUserDisplay + '</td><td colspan="6"></td></tr>');
+										rows.push('<tr class="save-group-' + groupIdx + '" style="display:none; background:#f9f9f9; color:#666; font-size:0.85em;"><td style="padding-left:2em;">\u2514 ' + mTime + '</td><td>' + mUserDisplay + '</td><td colspan="6"></td></tr>');
 									});
+									groupIdx++;
 								}
 							});
 							tbody.innerHTML = rows.join('');
+
+							tbody.addEventListener('click', function(evt) {
+								var row = evt.target.closest('tr[data-save-group]');
+								if (!row) return;
+								var gid = row.getAttribute('data-save-group');
+								var subRows = tbody.querySelectorAll('.save-group-' + gid);
+								var toggle = row.querySelector('.save-toggle');
+								var visible = subRows[0] && subRows[0].style.display !== 'none';
+								subRows.forEach(function(r) { r.style.display = visible ? 'none' : ''; });
+								if (toggle) toggle.innerHTML = (visible ? '&#9654; ' : '&#9660; ') + toggle.textContent.replace(/^[\u25B6\u25BC]\s*/, '');
+							});
 						})
 						.catch(function(err) {
 							tbody.innerHTML = '<tr><td colspan="8" style="color:red;">Error: ' + err.message + '</td></tr>';

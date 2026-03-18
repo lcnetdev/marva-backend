@@ -22,7 +22,8 @@ const {
   createLdpRoutes,
   createAuthRoutes,
   createUsersRoutes,
-  createEventsRoutes
+  createEventsRoutes,
+  createFolioRoutes
 } = require('./routes');
 const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
@@ -170,6 +171,10 @@ function createApp(options) {
   // Event log routes
   const eventsRouter = createEventsRoutes({ getDb });
   app.use('/', eventsRouter);
+
+  // FOLIO test routes
+  const folioRouter = createFolioRoutes();
+  app.use('/', folioRouter);
 
   // LDP routes (api-staging, api-production)
   // Pass getDb as a function for lazy evaluation
