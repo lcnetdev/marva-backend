@@ -209,5 +209,6 @@ module.exports = {
   populateCache,
   setupChangeStream,
   initializeCaches,
-  clearCaches
+  clearCaches,
+  normalizeUser
 };

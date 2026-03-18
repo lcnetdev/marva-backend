@@ -50,7 +50,7 @@ function createPublishingRoutes(options) {
       const { COLLECTIONS } = require('../db/collections');
       await db.collection(COLLECTIONS.USERS).updateOne(
         { username },
-        { $addToSet: { catIdHistory: catId } }
+        { $set: { catId }, $addToSet: { catIdHistory: catId } }
       );
     } catch (err) {
       console.error('catId history update error (non-fatal):', err.message);
