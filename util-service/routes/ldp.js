@@ -118,7 +118,7 @@ function createLdpRoutes(options) {
   /**
    * GET /api-production/ldp/:eid - Retrieve RDF record from production
    */
-  ldpRouter.get('/api-production/ldp/:eid', requireAuth, async (req, res) => {
+  ldpRouter.get('/api-production/ldp/:eid', async (req, res) => {
     const { eid } = req.params;
 
     try {
