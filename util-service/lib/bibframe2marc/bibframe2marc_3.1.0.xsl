@@ -4987,7 +4987,7 @@
           </xsl:for-each>
         </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="bf:Instance/bf:title/*[(local-name() = 'VariantTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']) and bf:variantType = 'translated']" mode="generate-242">
+      <xsl:apply-templates select="bf:Instance/bf:title/*[(local-name() = 'VariantTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']) and (bf:variantType = 'translated' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/tra'])]" mode="generate-242">
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
@@ -12537,6 +12537,9 @@
                   <xsl:attribute name="ind1">
                     <xsl:variable name="vInd">
                       <xsl:choose>
+                        <xsl:when test="starts-with(*/madsrdf:componentList/madsrdf:*[1]/bflc:marcKey, '1101')">
+                          <xsl:text>1</xsl:text>
+                        </xsl:when>
                         <xsl:when test="*[local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction'] or                               local-name(madsrdf:componentList/*[1])='Jurisdiction' or madsrdf:componentList/*[1]/rdf:type/@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction' or                               bf:Hub/bf:contribution/*/bf:agent/*[local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']] or                               madsrdf:componentList/*[1]/bf:Hub/bf:contribution/*/bf:agent/*[local-name()='Jurisdiction' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Jurisdiction']]]">
                           <xsl:text>1</xsl:text>
                         </xsl:when>
@@ -28352,12 +28355,22 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  <xsl:template match="bf:Instance/bf:title/*[(local-name() = 'VariantTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']) and bf:variantType = 'translated']" mode="generate-242">
+  <xsl:template match="bf:Instance/bf:title/*[(local-name() = 'VariantTitle' or rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/VariantTitle']) and (bf:variantType = 'translated' or rdf:type[@rdf:resource='http://id.loc.gov/vocabulary/vartitletype/tra'])]" mode="generate-242">
     <xsl:param name="vRecordId"/>
     <xsl:param name="vAdminMetadata"/>
+    <xsl:variable name="langPart">
+      <xsl:choose>
+        <xsl:when test="contains(bf:mainTitle/@xml:lang, '-')">
+          <xsl:value-of select="substring-before(bf:mainTitle/@xml:lang, '-')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="bf:mainTitle/@xml:lang"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="langCode">
       <xsl:variable name="viso6391">
-        <xsl:value-of select="bf:mainTitle/@xml:lang"/>
+        <xsl:value-of select="$langPart"/>
       </xsl:variable>
       <xsl:value-of select="exsl:node-set($iso6392-to-iso6391)/*[iso6391=$viso6391]/iso6392"/>
     </xsl:variable>
@@ -28543,6 +28556,9 @@
           <xsl:attribute name="ind1">
             <xsl:variable name="vInd">
               <xsl:choose>
+                <xsl:when test="/rdf:RDF/bf:Work/bf:expressionOf">
+                  <xsl:text>1</xsl:text>
+                </xsl:when>
                 <xsl:when test="/rdf:RDF/bf:Work/bf:contribution/*[local-name()='PrimaryContribution' or rdf:type[contains(@rdf:resource, '/PrimaryContribution')]]">
                   <xsl:text>1</xsl:text>
                 </xsl:when>
