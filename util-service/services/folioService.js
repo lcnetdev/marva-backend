@@ -353,4 +353,204 @@ function getFolioClient(env) {
   return _clients[env];
 }
 
-module.exports = { FolioClient, getFolioClient, MLC_NUMBER_GENERATOR };
+// ---------------------------------------------------------------------------
+// ID (id.loc.gov) helpers
+// ---------------------------------------------------------------------------
+
+const ID_BASE_DEFAULT = 'https://preprod-8080.id.loc.gov';
+
+function extractLastModDate(metsXml) {
+  const match = metsXml.match(/LASTMODDATE="([^"]+)"/);
+  return match ? match[1] : null;
+}
+
+async function getIdBibLastModDate(idBase, lccn) {
+  const lookupUrl = `${idBase}/resources/instances/identifier/${encodeURIComponent(lccn)}`;
+  const lookupRes = await got(lookupUrl, { followRedirect: false, throwHttpErrors: false });
+
+  let instancePath;
+  if (lookupRes.statusCode >= 300 && lookupRes.statusCode < 400 && lookupRes.headers.location) {
+    const loc = lookupRes.headers.location;
+    const idMatch = loc.match(/\/(resources\/instances\/[^/\s?]+)/);
+    if (!idMatch) throw new Error(`Could not parse instance path from Location: ${loc}`);
+    instancePath = idMatch[1];
+  } else if (lookupRes.statusCode === 200) {
+    const idMatch = lookupRes.body.match(/\/(resources\/instances\/(in\d+))/);
+    if (!idMatch) throw new Error(`LCCN "${lccn}" not found in ID (status ${lookupRes.statusCode})`);
+    instancePath = idMatch[1];
+  } else {
+    throw new Error(`ID lookup for bib LCCN "${lccn}" failed (${lookupRes.statusCode}): ${lookupRes.body.slice(0, 200)}`);
+  }
+
+  const instanceId = instancePath.split('/').pop();
+  const metsUrl = `${idBase}/${instancePath}.mets.xml`;
+  const metsRes = await got(metsUrl, { followRedirect: true, throwHttpErrors: false });
+  if (metsRes.statusCode >= 400) {
+    throw new Error(`GET ${metsUrl} failed (${metsRes.statusCode})`);
+  }
+  const lastModDate = extractLastModDate(metsRes.body);
+  return { instanceId, lastModDate };
+}
+
+async function getIdAuthLastModDate(idBase, lccn) {
+  const metsUrl = `${idBase}/authorities/names/${encodeURIComponent(lccn)}.mets.xml`;
+  const metsRes = await got(metsUrl, { followRedirect: true, throwHttpErrors: false });
+  if (metsRes.statusCode >= 400) {
+    throw new Error(`GET ${metsUrl} failed (${metsRes.statusCode})`);
+  }
+  const lastModDate = extractLastModDate(metsRes.body);
+  return { lastModDate };
+}
+
+// ---------------------------------------------------------------------------
+// FOLIO last-updated lookups
+// ---------------------------------------------------------------------------
+
+async function getFolioBibUpdatedDate(folio, lccn) {
+  const searchResult = await folio.get('search/instances', null, { query: `lccn="${lccn}"` });
+  const instances = searchResult.instances || [];
+  if (instances.length === 0) return null;
+
+  const instanceId = instances[0].id;
+  const instance = await folio.get(`instance-storage/instances/${instanceId}`);
+  return {
+    id: instanceId,
+    hrid: instance.hrid || null,
+    updatedDate: (instance.metadata && instance.metadata.updatedDate) || null,
+  };
+}
+
+async function getFolioAuthorityUpdatedDate(folio, lccn) {
+  const cleanLccn = lccn.replace(/\s+/g, '');
+  const searchResult = await folio.get('search/authorities', null, { query: `naturalId="${cleanLccn}"` });
+  const authorities = searchResult.authorities || [];
+  if (authorities.length === 0) return null;
+
+  const authId = authorities[0].id;
+  const authority = await folio.get(`authority-storage/authorities/${authId}`);
+  return {
+    id: authId,
+    naturalId: authority.naturalId || null,
+    updatedDate: authority.updatedDate || (authority.metadata && authority.metadata.updatedDate) || null,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Comparison helpers
+// ---------------------------------------------------------------------------
+
+function timeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ago`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ago`;
+  if (minutes > 0) return `${minutes}m ago`;
+  return `${seconds}s ago`;
+}
+
+function formatDuration(ms) {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
+}
+
+function compareResults(folioDate, idDate) {
+  const folio = folioDate ? new Date(folioDate) : null;
+  const id = idDate ? new Date(idDate) : null;
+
+  const result = {};
+  if (folio) {
+    result.folio = { date: folioDate, ago: timeAgo(folio) };
+  } else {
+    result.folio = { error: 'not found' };
+  }
+  if (id) {
+    result.id = { date: idDate, ago: timeAgo(id) };
+  } else {
+    result.id = { error: 'not found' };
+  }
+
+  if (folio && id) {
+    if (folio > id) {
+      result.newerIn = 'FOLIO';
+      result.difference = formatDuration(folio - id);
+    } else if (id > folio) {
+      result.newerIn = 'ID';
+      result.difference = formatDuration(id - folio);
+    } else {
+      result.newerIn = 'same';
+      result.difference = '0s';
+    }
+  }
+
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// High-level last-updated function
+// ---------------------------------------------------------------------------
+
+/**
+ * Compare last-updated dates for bib and/or authority records between FOLIO and ID.
+ *
+ * @param {string} env           – 'staging' or 'production'
+ * @param {object} opts
+ * @param {string} [opts.bibLccn]  – bib LCCN to look up
+ * @param {string} [opts.authLccn] – authority LCCN to look up
+ * @param {string} [opts.idBase]   – override id.loc.gov base URL
+ * @returns {Promise<object>}
+ */
+async function getLastUpdatedComparison(env, { bibLccn, authLccn, idBase } = {}) {
+  const folio = getFolioClient(env);
+  const base = (idBase || ID_BASE_DEFAULT).replace(/\/+$/, '');
+  const output = {};
+
+  if (bibLccn) {
+    const [folioBib, idBib] = await Promise.all([
+      getFolioBibUpdatedDate(folio, bibLccn).catch(e => ({ error: e.message })),
+      getIdBibLastModDate(base, bibLccn).catch(e => ({ error: e.message })),
+    ]);
+
+    const folioDate = folioBib && !folioBib.error ? folioBib.updatedDate : null;
+    const idDate = idBib && !idBib.error ? idBib.lastModDate : null;
+
+    output.bib = {
+      lccn: bibLccn,
+      folio: folioBib && !folioBib.error ? folioBib : { error: folioBib?.error || `No instance found for LCCN "${bibLccn}"` },
+      id: idBib && !idBib.error ? idBib : { error: idBib?.error || 'Not found in ID' },
+      comparison: compareResults(folioDate, idDate),
+    };
+  }
+
+  if (authLccn) {
+    const [folioAuth, idAuth] = await Promise.all([
+      getFolioAuthorityUpdatedDate(folio, authLccn).catch(e => ({ error: e.message })),
+      getIdAuthLastModDate(base, authLccn).catch(e => ({ error: e.message })),
+    ]);
+
+    const folioDate = folioAuth && !folioAuth.error ? folioAuth.updatedDate : null;
+    const idDate = idAuth && !idAuth.error ? idAuth.lastModDate : null;
+
+    output.authority = {
+      lccn: authLccn,
+      folio: folioAuth && !folioAuth.error ? folioAuth : { error: folioAuth?.error || `No authority found for LCCN "${authLccn}"` },
+      id: idAuth && !idAuth.error ? idAuth : { error: idAuth?.error || 'Not found in ID' },
+      comparison: compareResults(folioDate, idDate),
+    };
+  }
+
+  return output;
+}
+
+module.exports = { FolioClient, getFolioClient, MLC_NUMBER_GENERATOR, getLastUpdatedComparison };
