@@ -86,6 +86,12 @@ const config = {
     marva001Start: 1260000000
   },
 
+  // LD Panel Enrichment (Tsundoku)
+  ldPanelEnrichment: {
+    url: process.env.LD_PANEL_ENRICHMENT_URL,
+    apiKey: process.env.LD_PANEL_ENRICHMENT_API_KEY
+  },
+
   // Cache settings
   cache: {
     worldcatTtl: 43200, // 12 hours in seconds

@@ -23,7 +23,8 @@ const {
   createAuthRoutes,
   createUsersRoutes,
   createEventsRoutes,
-  createFolioRoutes
+  createFolioRoutes,
+  createLdPanelEnrichmentRoutes
 } = require('./routes');
 const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
@@ -175,6 +176,10 @@ function createApp(options) {
   // FOLIO test routes
   const folioRouter = createFolioRoutes();
   app.use('/', folioRouter);
+
+  // LD Panel Enrichment proxy routes
+  const ldPanelEnrichmentRouter = createLdPanelEnrichmentRoutes();
+  app.use('/', ldPanelEnrichmentRouter);
 
   // LDP routes (api-staging, api-production)
   // Pass getDb as a function for lazy evaluation
