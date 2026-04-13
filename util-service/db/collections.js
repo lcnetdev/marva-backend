@@ -15,7 +15,8 @@ const COLLECTIONS = {
   USER_PREFS: 'userPrefs',
   ERROR_REPORTS: 'errorReports',
   USERS: 'users',
-  EVENT_LOG: 'eventLog'
+  EVENT_LOG: 'eventLog',
+  FEATURE_FLAGS: 'featureFlags'
 };
 
 // Index definitions for each collection
@@ -54,6 +55,11 @@ const INDEXES = {
     { key: { lccn: 1 }, name: 'lccn_index' },
     { key: { instanceId: 1 }, name: 'instanceId_index' },
     { key: { timestamp: -1 }, name: 'timestamp_index' }
+  ],
+  [COLLECTIONS.FEATURE_FLAGS]: [
+    { key: { type: 1, name: 1 }, name: 'type_name_index' },
+    { key: { type: 1, username: 1 }, name: 'type_username_index' },
+    { key: { type: 1, feature: 1, username: 1 }, name: 'assignment_unique_index', unique: true }
   ]
 };
 

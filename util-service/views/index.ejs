@@ -317,6 +317,204 @@
 		
 
 
+		<h2>Feature Flags <span id="ff-count" style="font-weight:normal; font-size:0.8em; color:#666;"></span></h2>
+		<p style="color:#888; font-size:0.85em;">Manage feature flags and user assignments</p>
+
+		<div style="margin-bottom:12px; display:flex; gap:8px; align-items:center;">
+			<input id="ff-new-name" type="text" placeholder="Feature name (slug)" style="padding:4px 8px; font-size:0.95em; width:200px;">
+			<input id="ff-new-desc" type="text" placeholder="Description" style="padding:4px 8px; font-size:0.95em; width:300px;">
+			<button id="ff-add-btn" style="padding:4px 12px; font-size:0.95em;">Add Feature</button>
+		</div>
+
+		<table id="ff-table" border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%;">
+			<thead>
+				<tr style="background:#f0f0f0;">
+					<th>Name</th>
+					<th>Description</th>
+					<th>Enabled</th>
+					<th>Users</th>
+					<th>Created</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="ff-body">
+				<tr><td colspan="6" style="color:#888;">Loading...</td></tr>
+			</tbody>
+		</table>
+
+		<div id="ff-user-panel" style="display:none; margin-top:12px; padding:12px; border:1px solid #ccc; background:#fafafa;">
+			<h3 style="margin:0 0 8px 0;">Users for: <span id="ff-panel-name"></span></h3>
+			<div style="margin-bottom:8px; display:flex; gap:8px; align-items:center;">
+				<input id="ff-user-input" type="text" list="ff-user-datalist" placeholder="Username" style="padding:4px 8px; font-size:0.95em; width:200px;">
+				<datalist id="ff-user-datalist"></datalist>
+				<button id="ff-assign-btn" style="padding:4px 12px; font-size:0.95em;">Assign User</button>
+			</div>
+			<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse; width:100%;">
+				<thead>
+					<tr style="background:#f0f0f0;">
+						<th>Username</th>
+						<th>Assigned At</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="ff-users-body"></tbody>
+			</table>
+		</div>
+
+		<script>
+		(function() {
+			var currentFeature = null;
+			var allUsers = [];
+
+			function loadUsers() {
+				fetch('./feature-flags/users-list')
+					.then(function(r) { return r.json(); })
+					.then(function(data) {
+						allUsers = data.users || [];
+						var dl = document.getElementById('ff-user-datalist');
+						dl.innerHTML = allUsers.map(function(u) {
+							return '<option value="' + u.username + '">' + (u.name || u.username) + '</option>';
+						}).join('');
+					});
+			}
+
+			function loadFeatures() {
+				fetch('./feature-flags')
+					.then(function(r) { return r.json(); })
+					.then(function(data) {
+						var features = data.features || [];
+						document.getElementById('ff-count').textContent = '(' + features.length + ')';
+						if (features.length === 0) {
+							document.getElementById('ff-body').innerHTML = '<tr><td colspan="6" style="color:#888;">No features defined</td></tr>';
+							return;
+						}
+						document.getElementById('ff-body').innerHTML = features.map(function(f) {
+							var d = f.createdAt ? new Date(f.createdAt).toLocaleString() : '';
+							return '<tr>' +
+								'<td><a href="#" class="ff-manage" data-name="' + f.name + '" style="color:#0366d6; text-decoration:underline; cursor:pointer;">' + f.name + '</a></td>' +
+								'<td>' + (f.description || '') + '</td>' +
+								'<td><input type="checkbox" class="ff-toggle" data-name="' + f.name + '"' + (f.enabled ? ' checked' : '') + '></td>' +
+								'<td>' + f.userCount + '</td>' +
+								'<td style="font-size:0.85em;">' + d + '</td>' +
+								'<td><button class="ff-delete" data-name="' + f.name + '" style="color:red; cursor:pointer;">Delete</button></td>' +
+								'</tr>';
+						}).join('');
+
+						// Bind toggle events
+						document.querySelectorAll('.ff-toggle').forEach(function(cb) {
+							cb.addEventListener('change', function() {
+								var name = this.getAttribute('data-name');
+								fetch('./feature-flags/' + encodeURIComponent(name), {
+									method: 'PATCH',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify({ enabled: this.checked })
+								}).then(function() { loadFeatures(); });
+							});
+						});
+
+						// Bind delete events
+						document.querySelectorAll('.ff-delete').forEach(function(btn) {
+							btn.addEventListener('click', function() {
+								var name = this.getAttribute('data-name');
+								if (!confirm('Delete feature "' + name + '" and all its assignments?')) return;
+								fetch('./feature-flags/' + encodeURIComponent(name), { method: 'DELETE' })
+									.then(function() {
+										if (currentFeature === name) {
+											document.getElementById('ff-user-panel').style.display = 'none';
+											currentFeature = null;
+										}
+										loadFeatures();
+									});
+							});
+						});
+
+						// Bind manage (show users) events
+						document.querySelectorAll('.ff-manage').forEach(function(link) {
+							link.addEventListener('click', function(e) {
+								e.preventDefault();
+								currentFeature = this.getAttribute('data-name');
+								document.getElementById('ff-panel-name').textContent = currentFeature;
+								document.getElementById('ff-user-panel').style.display = 'block';
+								loadFeatureUsers();
+							});
+						});
+					})
+					.catch(function(err) {
+						document.getElementById('ff-body').innerHTML = '<tr><td colspan="6" style="color:red;">Error: ' + err.message + '</td></tr>';
+					});
+			}
+
+			function loadFeatureUsers() {
+				if (!currentFeature) return;
+				fetch('./feature-flags/' + encodeURIComponent(currentFeature) + '/users')
+					.then(function(r) { return r.json(); })
+					.then(function(data) {
+						var users = data.users || [];
+						if (users.length === 0) {
+							document.getElementById('ff-users-body').innerHTML = '<tr><td colspan="3" style="color:#888;">No users assigned</td></tr>';
+							return;
+						}
+						document.getElementById('ff-users-body').innerHTML = users.map(function(u) {
+							var d = u.assignedAt ? new Date(u.assignedAt).toLocaleString() : '';
+							return '<tr>' +
+								'<td>' + u.username + '</td>' +
+								'<td style="font-size:0.85em;">' + d + '</td>' +
+								'<td><button class="ff-unassign" data-username="' + u.username + '" style="color:red; cursor:pointer;">Remove</button></td>' +
+								'</tr>';
+						}).join('');
+
+						document.querySelectorAll('.ff-unassign').forEach(function(btn) {
+							btn.addEventListener('click', function() {
+								var username = this.getAttribute('data-username');
+								fetch('./feature-flags/' + encodeURIComponent(currentFeature) + '/users/' + encodeURIComponent(username), { method: 'DELETE' })
+									.then(function() { loadFeatureUsers(); loadFeatures(); });
+							});
+						});
+					});
+			}
+
+			// Add feature button
+			document.getElementById('ff-add-btn').addEventListener('click', function() {
+				var name = document.getElementById('ff-new-name').value.trim();
+				var desc = document.getElementById('ff-new-desc').value.trim();
+				if (!name) return alert('Feature name is required');
+				fetch('./feature-flags', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ name: name, description: desc })
+				})
+				.then(function(r) {
+					if (!r.ok) return r.json().then(function(d) { throw new Error(d.error); });
+					document.getElementById('ff-new-name').value = '';
+					document.getElementById('ff-new-desc').value = '';
+					loadFeatures();
+				})
+				.catch(function(err) { alert('Error: ' + err.message); });
+			});
+
+			// Assign user button
+			document.getElementById('ff-assign-btn').addEventListener('click', function() {
+				var username = document.getElementById('ff-user-input').value.trim();
+				if (!username || !currentFeature) return alert('Username is required');
+				fetch('./feature-flags/' + encodeURIComponent(currentFeature) + '/users', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ usernames: [username] })
+				})
+				.then(function(r) {
+					if (!r.ok) return r.json().then(function(d) { throw new Error(d.error); });
+					document.getElementById('ff-user-input').value = '';
+					loadFeatureUsers();
+					loadFeatures();
+				})
+				.catch(function(err) { alert('Error: ' + err.message); });
+			});
+
+			loadFeatures();
+			loadUsers();
+		})();
+		</script>
+
 		<h2>Recent Events <span id="recent-events-count" style="font-weight:normal; font-size:0.8em; color:#666;"></span></h2>
 		<p style="color:#888; font-size:0.85em;">Most recent 500 events from the event log
 			&nbsp;&mdash;&nbsp;Region:

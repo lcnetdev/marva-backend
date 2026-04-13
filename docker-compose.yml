@@ -66,10 +66,12 @@ services:
       context: ./dctap-dancer
       dockerfile: Dockerfile
       args:
-        VITE_BASE_PATH: /dancer/      
-    container_name: 'dctap-dancer' 
+        VITE_BASE_PATH: /marva/dancer/
+    container_name: 'dctap-dancer'
     volumes:
       - ./dctap-dancer/data:/app/data
+    environment:
+      - ALLOW_DB_UPLOAD=${ALLOW_DB_UPLOAD:-false}
     restart: always
     # ports:
     #   - 3000:3000

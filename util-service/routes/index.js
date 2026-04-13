@@ -20,6 +20,7 @@ const { createUsersRoutes } = require('./users');
 const { createEventsRoutes } = require('./events');
 const { createFolioRoutes } = require('./folio');
 const { createLdPanelEnrichmentRoutes } = require('./ldPanelEnrichment');
+const { createFeatureFlagRoutes } = require('./featureFlags');
 
 module.exports = {
   createAdminRoutes,
@@ -37,5 +38,6 @@ module.exports = {
   createUsersRoutes,
   createEventsRoutes,
   createFolioRoutes,
-  createLdPanelEnrichmentRoutes
+  createLdPanelEnrichmentRoutes,
+  createFeatureFlagRoutes
 };
