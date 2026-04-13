@@ -21486,19 +21486,23 @@
               </xsl:if>
             </xsl:when>
           </xsl:choose>
-          <xsl:variable name="vvSeriesMarcKeyTag-y">
-            <xsl:variable name="bcp47code">
-              <xsl:call-template name="tOutputBCP47">
-                <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
-          </xsl:variable>
-          <xsl:if test="$vvSeriesMarcKeyTag-y != ''">
-            <marc:subfield code="y">
-              <xsl:value-of select="$vvSeriesMarcKeyTag-y"/>
-            </marc:subfield>
-          </xsl:if>
+          <xsl:choose>
+            <xsl:when test="$vLangTagLabel != ''">
+              <xsl:variable name="vvSeriesMarcKeyTag-y">
+                <xsl:variable name="bcp47code">
+                  <xsl:call-template name="tOutputBCP47">
+                    <xsl:with-param name="bcp47orig" select="$vLangTagLabel"/>
+                  </xsl:call-template>
+                </xsl:variable>
+                <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+              </xsl:variable>
+              <xsl:if test="$vvSeriesMarcKeyTag-y != ''">
+                <marc:subfield code="y">
+                  <xsl:value-of select="$vvSeriesMarcKeyTag-y"/>
+                </marc:subfield>
+              </xsl:if>
+            </xsl:when>
+          </xsl:choose>
         </marc:datafield>
         <xsl:choose>
           <xsl:when test="$vRelVariant//marc:datafield[@tag!='']">
