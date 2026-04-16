@@ -25,7 +25,7 @@
   <xsl:variable name="xslProcessor">
     <xsl:value-of select="system-property('xsl:vendor')"/>
   </xsl:variable>
-  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v3.1-dev</xsl:variable>
+  <xsl:variable name="vCurrentVersion">DLC bibframe2marc v3.1.0</xsl:variable>
   <xsl:variable name="df880script">
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>arab</lang>
@@ -6919,13 +6919,35 @@
             <xsl:attribute name="ind2">
               <xsl:text> </xsl:text>
             </xsl:attribute>
-            <xsl:for-each select="bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:duration[@rdf:datatype='http://www.w3.org/2001/XMLSchema#duration']">
+            <xsl:variable name="v306-a">
+              <xsl:choose>
+                <xsl:when test="starts-with(., 'PT')">
+                  <xsl:variable name="vH" select="substring(., 3, 2)"/>
+                  <xsl:variable name="vM" select="substring(., 6, 2)"/>
+                  <xsl:variable name="vS" select="substring(., 9, 2)"/>
+                  <xsl:value-of select="concat($vH, $vM, $vS)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:for-each select="bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:duration[@rdf:datatype='http://www.w3.org/2001/XMLSchema#duration']">
+                    <xsl:choose>
+                      <xsl:when test="position() = 1">
+                        <xsl:call-template name="tChopPunct">
+                          <xsl:with-param name="pString" select="."/>
+                        </xsl:call-template>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 306 $a.</xsl:message>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:for-each>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:if test="$v306-a != ''">
               <marc:subfield code="a">
-                <xsl:call-template name="tChopPunct">
-                  <xsl:with-param name="pString" select="."/>
-                </xsl:call-template>
+                <xsl:value-of select="$v306-a"/>
               </marc:subfield>
-            </xsl:for-each>
+            </xsl:if>
           </marc:datafield>
         </xsl:when>
       </xsl:choose>
