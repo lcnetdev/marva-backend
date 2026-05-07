@@ -100,6 +100,14 @@
       <code>Beng</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>cher</lang>
+      <code>Cher</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>cyrs</lang>
+      <code>(Q</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>deva</lang>
       <code>Deva</code>
     </script>
@@ -11063,9 +11071,7 @@
             <xsl:choose>
               <xsl:when test="position() = 1">
                 <marc:subfield code="a">
-                  <xsl:call-template name="tChopPunct">
-                    <xsl:with-param name="pString" select="."/>
-                  </xsl:call-template>
+                  <xsl:value-of select="."/>
                 </marc:subfield>
               </xsl:when>
               <xsl:otherwise>
