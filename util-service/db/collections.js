@@ -59,7 +59,12 @@ const INDEXES = {
   [COLLECTIONS.FEATURE_FLAGS]: [
     { key: { type: 1, name: 1 }, name: 'type_name_index' },
     { key: { type: 1, username: 1 }, name: 'type_username_index' },
-    { key: { type: 1, feature: 1, username: 1 }, name: 'assignment_unique_index', unique: true }
+    {
+      key: { type: 1, feature: 1, username: 1 },
+      name: 'assignment_unique_index',
+      unique: true,
+      partialFilterExpression: { type: 'assignment' }
+    }
   ]
 };
 
@@ -76,15 +81,27 @@ async function ensureIndexes(db, collectionName) {
   const collection = db.collection(collectionName);
 
   for (const index of indexes) {
+    const options = {
+      name: index.name,
+      unique: index.unique || false,
+      background: true
+    };
+    if (index.partialFilterExpression) {
+      options.partialFilterExpression = index.partialFilterExpression;
+    }
     try {
-      await collection.createIndex(index.key, {
-        name: index.name,
-        unique: index.unique || false,
-        background: true
-      });
+      await collection.createIndex(index.key, options);
     } catch (err) {
-      // Index might already exist, that's OK
-      if (err.code !== 85 && err.code !== 86) {
+      // Code 85/86: an index with the same name or keys already exists with
+      // different options. Drop it and recreate to apply the new definition.
+      if (err.code === 85 || err.code === 86) {
+        try {
+          await collection.dropIndex(index.name);
+          await collection.createIndex(index.key, options);
+        } catch (recreateErr) {
+          console.error(`Error recreating index ${index.name} on ${collectionName}:`, recreateErr);
+        }
+      } else {
         console.error(`Error creating index ${index.name} on ${collectionName}:`, err);
       }
     }
