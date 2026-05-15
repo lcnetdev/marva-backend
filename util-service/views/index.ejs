@@ -89,6 +89,39 @@
 			background-color: whitesmoke;
 			border: solid 1px lightgray;
 		}
+		#deploy-log-panel{
+			display: none;
+			margin-top: 1em;
+			border: solid 1px #999;
+			background: #111;
+			color: #eee;
+			border-radius: 4px;
+			overflow: hidden;
+		}
+		#deploy-log-panel .deploy-log-header{
+			padding: 0.5em 0.75em;
+			background: #222;
+			color: #fff;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			font-size: 0.9em;
+		}
+		#deploy-log-panel .deploy-log-status.running{ color: #ffeb3b; }
+		#deploy-log-panel .deploy-log-status.done{ color: #8bc34a; }
+		#deploy-log-panel .deploy-log-status.failed{ color: #f44336; }
+		#deploy-log-panel pre{
+			margin: 0;
+			padding: 0.75em;
+			max-height: 22em;
+			overflow: auto;
+			font-family: ui-monospace, Menlo, monospace;
+			font-size: 0.78em;
+			line-height: 1.35;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+		#deploy-log-panel .stderr{ color: #ff8a80; }
 		hr{
 			margin: 2em;
 		}
@@ -127,11 +160,25 @@
 			</div>
 		</div>
 
+		<div id="deploy-log-panel">
+			<div class="deploy-log-header">
+				<span>
+					<strong id="deploy-log-title">Deploy log</strong>
+					<span class="deploy-log-status" id="deploy-log-status">idle</span>
+				</span>
+				<span>
+					<button id="deploy-log-clear" type="button" style="font-size: 0.85em;">Hide</button>
+				</span>
+			</div>
+			<pre id="deploy-log-output"></pre>
+		</div>
+
 		<details style="margin-top: 1em; background-color: whitesmoke; padding: 0.5em; border: solid 1px lightgray;">
 			<summary style="cursor: pointer;">Legacy Deploy (Marva, Profile Editor)</summary>
 			<div style="margin-top: 0.5em; display: flex; gap: 0.5em; flex-wrap: wrap;">
-				<a href="deploy-staging" class="deploy" target="_blank">Deploy Marva Staging</a>
-				<a href="deploy-production" class="deploy" target="_blank">Deploy Marva Production</a>				
+				<button type="button" class="deploy" data-deploy-endpoint="deploy-staging" data-deploy-label="Marva Staging">Deploy Marva Staging</button>
+				<button type="button" class="deploy" data-deploy-endpoint="deploy-production" data-deploy-label="Marva Production">Deploy Marva Production</button>
+				<button type="button" class="deploy" data-deploy-endpoint="deploy-profile-editor" data-deploy-label="Profile Editor">Deploy Profile Editor</button>
 			</div>
 		</details>
 		<div><a href="../dancer/" style="margin-top: 1em; display: inline-block;" target="_blank">Open DCTap Dancer Editor</a></div>
@@ -191,6 +238,7 @@
 
 			// Poll deploy info every 10s until it changes, then stop
 			function pollDeployInfo(region, infoElId) {
+				if (!region || !infoElId) return;
 				const el = document.getElementById(infoElId);
 				const previousDeployed = el.dataset.deployed || '';
 				const interval = setInterval(() => {
@@ -208,21 +256,129 @@
 				}, 10000);
 			}
 
-			// Deploy buttons
+			// ----- Async deploy + SSE log viewer -----
+			const deployLogPanel = document.getElementById('deploy-log-panel');
+			const deployLogTitle = document.getElementById('deploy-log-title');
+			const deployLogStatus = document.getElementById('deploy-log-status');
+			const deployLogOutput = document.getElementById('deploy-log-output');
+			const deployLogHide = document.getElementById('deploy-log-clear');
+			let activeEventSource = null;
+
+			deployLogHide.addEventListener('click', () => {
+				deployLogPanel.style.display = 'none';
+			});
+
+			function setDeployStatus(label, kind) {
+				deployLogStatus.textContent = label;
+				deployLogStatus.className = 'deploy-log-status ' + (kind || '');
+			}
+
+			function appendLogEntry(entry) {
+				const span = document.createElement('span');
+				if (entry.stream === 'stderr') span.className = 'stderr';
+				span.textContent = (entry.line || '') + '\n';
+				const wasAtBottom = deployLogOutput.scrollHeight - deployLogOutput.scrollTop - deployLogOutput.clientHeight < 40;
+				deployLogOutput.appendChild(span);
+				if (wasAtBottom) deployLogOutput.scrollTop = deployLogOutput.scrollHeight;
+			}
+
+			function attachToJob(job, opts) {
+				opts = opts || {};
+				if (activeEventSource) {
+					try { activeEventSource.close(); } catch (_) {}
+					activeEventSource = null;
+				}
+				deployLogPanel.style.display = 'block';
+				deployLogTitle.textContent = 'Deploy log — ' + job.target + (job.branch ? ' (' + job.branch + ')' : '');
+				deployLogOutput.innerHTML = '';
+				setDeployStatus(job.status, job.status);
+
+				const es = new EventSource('deploy-log/' + encodeURIComponent(job.jobId));
+				activeEventSource = es;
+				es.addEventListener('meta', e => {
+					try {
+						const meta = JSON.parse(e.data);
+						setDeployStatus(meta.status, meta.status);
+					} catch (_) {}
+				});
+				es.addEventListener('log', e => {
+					try { appendLogEntry(JSON.parse(e.data)); } catch (_) {}
+				});
+				es.addEventListener('done', e => {
+					try {
+						const summary = JSON.parse(e.data);
+						setDeployStatus(summary.status + ' (exit ' + summary.exitCode + ')', summary.status);
+						if (summary.status === 'done' && opts.region && opts.infoElId) {
+							pollDeployInfo(opts.region, opts.infoElId);
+						}
+					} catch (_) {}
+					es.close();
+					if (activeEventSource === es) activeEventSource = null;
+				});
+				es.onerror = () => {
+					// Connection dropped; the job may still be running on the server.
+					// We don't auto-reconnect — user can reload the page to reattach.
+				};
+			}
+
+			function startDeploy(url, opts) {
+				opts = opts || {};
+				deployLogPanel.style.display = 'block';
+				deployLogTitle.textContent = 'Deploy log — starting…';
+				deployLogOutput.innerHTML = '';
+				setDeployStatus('starting', 'running');
+				fetch(url, { credentials: 'same-origin' })
+					.then(async r => {
+						const body = await r.json().catch(() => ({}));
+						if (r.status === 409 && body && body.running) {
+							alert('Another deploy is already running: ' + (body.running.target || 'unknown') + '. Attaching to it.');
+							attachToJob(body.running, opts);
+							return;
+						}
+						if (!r.ok) {
+							setDeployStatus('failed to start', 'failed');
+							appendLogEntry({ stream: 'stderr', line: '[start error] ' + (body.error || r.statusText) });
+							return;
+						}
+						attachToJob(body, opts);
+					})
+					.catch(err => {
+						setDeployStatus('failed to start', 'failed');
+						appendLogEntry({ stream: 'stderr', line: '[network error] ' + err.message });
+					});
+			}
+
+			// Deploy buttons (quartz)
 			document.getElementById('deploy-staging-quartz-btn').addEventListener('click', () => {
 				const branch = document.getElementById('staging-quartz-branch').value;
-				if (confirm('Deploy Quartz Staging with branch: ' + branch + '?')) {
-					window.open('deploy-staging-quartz?branch=' + encodeURIComponent(branch), '_blank');
-					pollDeployInfo('stage-quartz', 'staging-quartz-info');
-				}
+				if (!confirm('Deploy Quartz Staging with branch: ' + branch + '?')) return;
+				startDeploy('deploy-staging-quartz?branch=' + encodeURIComponent(branch),
+					{ region: 'stage-quartz', infoElId: 'staging-quartz-info' });
 			});
 			document.getElementById('deploy-production-quartz-btn').addEventListener('click', () => {
 				const branch = document.getElementById('production-quartz-branch').value;
-				if (confirm('Deploy Quartz Production with branch: ' + branch + '?')) {
-					window.open('deploy-production-quartz?branch=' + encodeURIComponent(branch), '_blank');
-					pollDeployInfo('prod-quartz', 'production-quartz-info');
-				}
+				if (!confirm('Deploy Quartz Production with branch: ' + branch + '?')) return;
+				startDeploy('deploy-production-quartz?branch=' + encodeURIComponent(branch),
+					{ region: 'prod-quartz', infoElId: 'production-quartz-info' });
 			});
+
+			// Legacy deploy buttons (Marva, Profile Editor)
+			document.querySelectorAll('button.deploy[data-deploy-endpoint]').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const endpoint = btn.dataset.deployEndpoint;
+					const label = btn.dataset.deployLabel || endpoint;
+					if (!confirm('Deploy ' + label + '?')) return;
+					startDeploy(endpoint);
+				});
+			});
+
+			// On page load, reattach to any in-flight deploy
+			fetch('deploy-current')
+				.then(r => r.ok ? r.json() : null)
+				.then(job => {
+					if (job && job.status === 'running') attachToJob(job);
+				})
+				.catch(() => {});
 		</script>
 
 
