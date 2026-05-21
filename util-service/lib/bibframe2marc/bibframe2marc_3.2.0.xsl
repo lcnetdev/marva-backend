@@ -161,7 +161,7 @@
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>nkoo</lang>
-      <code>Nkoo</code>
+      <code>Nkoo/r</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>shrd</lang>
@@ -29162,30 +29162,23 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="position() = 1">
-        <marc:datafield>
-          <xsl:attribute name="tag">264</xsl:attribute>
-          <xsl:attribute name="ind1">
-            <xsl:text> </xsl:text>
-          </xsl:attribute>
-          <xsl:attribute name="ind2">
-            <xsl:text>4</xsl:text>
-          </xsl:attribute>
-          <xsl:variable name="v264-c">
-            <xsl:value-of select="$cDate"/>
-          </xsl:variable>
-          <xsl:if test="$v264-c != ''">
-            <marc:subfield code="c">
-              <xsl:value-of select="$v264-c"/>
-            </marc:subfield>
-          </xsl:if>
-        </marc:datafield>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target field (264).</xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
+    <marc:datafield>
+      <xsl:attribute name="tag">264</xsl:attribute>
+      <xsl:attribute name="ind1">
+        <xsl:text> </xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="ind2">
+        <xsl:text>4</xsl:text>
+      </xsl:attribute>
+      <xsl:variable name="v264-c">
+        <xsl:value-of select="$cDate"/>
+      </xsl:variable>
+      <xsl:if test="$v264-c != ''">
+        <marc:subfield code="c">
+          <xsl:value-of select="$v264-c"/>
+        </marc:subfield>
+      </xsl:if>
+    </marc:datafield>
   </xsl:template>
   <xsl:template match="bf:Instance/bf:extent/bf:Extent" mode="generate-300">
     <xsl:param name="vRecordId"/>
