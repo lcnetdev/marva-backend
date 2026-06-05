@@ -28605,6 +28605,9 @@
       <xsl:when test="position() = 1">
         <marc:datafield>
           <xsl:attribute name="tag">245</xsl:attribute>
+          <xsl:message>
+            <xsl:value-of select="$vLangMainTitle"/>
+          </xsl:message>
           <xsl:attribute name="ind1">
             <xsl:variable name="vInd">
               <xsl:choose>
@@ -28884,8 +28887,8 @@
           </xsl:if>
           <xsl:variable name="v245-c">
             <xsl:choose>
-              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
-                <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]">
+              <xsl:when test="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle or ($vLangMainTitle='' and contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized))]">
+                <xsl:for-each select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle or ($vLangMainTitle='' and contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized))]">
                   <xsl:choose>
                     <xsl:when test="position() = 1">
                       <xsl:value-of select="."/>
@@ -28897,7 +28900,7 @@
                 </xsl:for-each>
                 <xsl:variable name="vEndsWith">
                   <xsl:call-template name="tEndsWith">
-                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle]"/>
+                    <xsl:with-param name="pStr" select="ancestor::bf:Instance/bf:responsibilityStatement[not(@xml:lang) or translate(@xml:lang,$upper,$lower)=$vLangMainTitle or ($vLangMainTitle='' and contains(translate(@xml:lang,$upper,$lower),$pCatScriptNormalized))]"/>
                     <xsl:with-param name="pEndChar" select="'.'"/>
                   </xsl:call-template>
                 </xsl:variable>
