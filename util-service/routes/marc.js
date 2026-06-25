@@ -46,8 +46,6 @@ function runXsltproc(xsltPath, xmlContent) {
  * @returns {string} HTML formatted MARC
  */
 function marcRecordHtmlify(data) {
-  console.info("generating HTML")
-  console.info("data: ", data)
   let formattedMarcRecord = ["<div class='marc record'>"];
   let leader = "<div class='marc leader'>" + data['leader'].replace(/ /g, '&nbsp;') + '</div>';
   formattedMarcRecord.push(leader);
@@ -99,9 +97,8 @@ function marcRecordHtmlify(data) {
  * @returns
  */
 function marcChangeFormat(marc, sourceType, targetType){
-  console.info("swap format")
   let sourceTypeList = [ 'iso2709', 'marcxml', 'mij', 'record']
-  let targetTypeList = [ 'iso2709', 'marcxml', 'mij', 'Ttext', 'json', 'html']
+  let targetTypeList = [ 'iso2709', 'marcxml', 'mij', 'text', 'json', 'html']
 
   if (!sourceTypeList.includes(sourceType)){
     return [false, 'source', sourceTypeList]
@@ -190,7 +187,6 @@ function createMarcRoutes() {
    * POST /marcformat - Generate MARC of 1 format from  another format
    */
   router.post('/marcformat', async (req, res) => {
-    console.info("formatting")
     let marc = req.body.mrc;
     const sourceType = req.body.sourceType;
     const targetType = req.body.targetType;
