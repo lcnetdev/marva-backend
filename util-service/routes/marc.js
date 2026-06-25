@@ -1,8 +1,9 @@
 /**
- * MARC Preview Routes
+ * MARC Routes
  *
  * Handles MARC preview generation:
  * - POST /marcpreview/:type - Generate MARC preview from RDF
+ * - POST /marcformat - Generate MARC of 1 format from  another format
  */
 
 const express = require('express');
@@ -45,6 +46,8 @@ function runXsltproc(xsltPath, xmlContent) {
  * @returns {string} HTML formatted MARC
  */
 function marcRecordHtmlify(data) {
+  console.info("generating HTML")
+  console.info("data: ", data)
   let formattedMarcRecord = ["<div class='marc record'>"];
   let leader = "<div class='marc leader'>" + data['leader'].replace(/ /g, '&nbsp;') + '</div>';
   formattedMarcRecord.push(leader);
@@ -86,6 +89,41 @@ function marcRecordHtmlify(data) {
   formattedMarcRecord.push('</div>');
 
   return formattedMarcRecord.join('\r\n');
+}
+
+/**
+ *
+ * @param {*} marcxml MARC record as XML that will be changed
+ * @param {string} sourceType Type of the incoming MARC, type record is {'leader': <....>, 'fields': [...]}
+ * @param {string} targetType Type of the outgoing MARC
+ * @returns
+ */
+function marcChangeFormat(marc, sourceType, targetType){
+  console.info("swap format")
+  let sourceTypeList = [ 'iso2709', 'marcxml', 'mij', 'record']
+  let targetTypeList = [ 'iso2709', 'marcxml', 'mij', 'Ttext', 'json', 'html']
+
+  if (!sourceTypeList.includes(sourceType)){
+    return [false, 'source', sourceTypeList]
+  }
+  if (!targetTypeList.includes(targetType)){
+    return [false, 'target', targetTypeList]
+  }
+
+  let formatted
+  if (targetType != 'html'){
+    const record = Marc.parse(marc, sourceType);
+    formatted = Marc.format(record, targetType)
+  } else {
+    if (sourceType == 'record'){
+      formatted = marcRecordHtmlify(marc)
+    } else {
+      formatted = Marc.parse(marc, 'marcxml')
+      formatted = marcRecordHtmlify(formatted)
+    }
+  }
+
+  return [true, true, formatted]
 }
 
 /**
@@ -146,6 +184,28 @@ function createMarcRoutes() {
     }
 
     res.json(results);
+  });
+
+  /**
+   * POST /marcformat - Generate MARC of 1 format from  another format
+   */
+  router.post('/marcformat', async (req, res) => {
+    console.info("formatting")
+    let marc = req.body.mrc;
+    const sourceType = req.body.sourceType;
+    const targetType = req.body.targetType;
+
+    if (sourceType != 'record'){
+      marc = marc.replaceAll('marcxml:', '')
+    }
+    let recordFormatted = marcChangeFormat(marc, sourceType, targetType)
+    if (!recordFormatted[0]){
+      let message = 'Failed to match ' + recordFormatted[1] + ' format. Available formats: ' + recordFormatted[2].join(", ")
+
+      return res.status(500).json({ msg: 'Error: ' + message });
+    } else {
+      return res.status(200).json({ result: recordFormatted[2] });
+    }
   });
 
   return router;
