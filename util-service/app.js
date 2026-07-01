@@ -25,7 +25,8 @@ const {
   createEventsRoutes,
   createFolioRoutes,
   createLdPanelEnrichmentRoutes,
-  createFeatureFlagRoutes
+  createFeatureFlagRoutes,
+  createActivityStreamsRoutes
 } = require('./routes');
 const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
@@ -106,6 +107,10 @@ function createApp(options) {
   // Feature flag routes (admin management + client /my-features)
   const featureFlagRouter = createFeatureFlagRoutes({ getDb });
   app.use('/', featureFlagRouter);
+
+  // Activity Streams routes (public EMM feed of published records)
+  const activityStreamsRouter = createActivityStreamsRoutes({ getDb });
+  app.use('/', activityStreamsRouter);
 
   // Records routes (myrecords, allrecords, delete)
   const recordsRouter = createRecordsRoutes({
