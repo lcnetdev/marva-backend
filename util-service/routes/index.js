@@ -21,6 +21,7 @@ const { createEventsRoutes } = require('./events');
 const { createFolioRoutes } = require('./folio');
 const { createLdPanelEnrichmentRoutes } = require('./ldPanelEnrichment');
 const { createFeatureFlagRoutes } = require('./featureFlags');
+const { createActivityStreamsRoutes } = require('./activityStreams');
 
 module.exports = {
   createAdminRoutes,
@@ -39,5 +40,6 @@ module.exports = {
   createEventsRoutes,
   createFolioRoutes,
   createLdPanelEnrichmentRoutes,
-  createFeatureFlagRoutes
+  createFeatureFlagRoutes,
+  createActivityStreamsRoutes
 };
