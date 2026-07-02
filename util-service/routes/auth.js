@@ -14,6 +14,7 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const { config, domainConfigs } = require('../config');
@@ -171,6 +172,33 @@ function buildJwt(profile) {
 }
 
 /**
+ * Build an anonymous guest JWT (PUBLIC_GUEST_MODE).
+ *
+ * Each login mints a fresh, unique guest identity — no IdP round-trip and no
+ * user record in Mongo. The rest of the stack treats guests like any other
+ * JWT user: requireAuth passes, /myrecords keys off username, and the
+ * username matches the record's <lclocal:user> because the frontend derives
+ * its cataloger id from the token's email local part.
+ */
+function buildGuestJwt() {
+  const id = crypto.randomBytes(3).toString('hex'); // e.g. "a3f2b1"
+  const username = `guest-${id}`;
+  const payload = {
+    sub: username,
+    email: `${username}@bibframe.org`,
+    name: `Guest-${id}`,
+    given_name: 'Guest',
+    family_name: '',
+    objectidentifier: '',
+    tenantid: '',
+    upn: username,
+    username,
+    guest: true,
+  };
+  return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.guestExpiry });
+}
+
+/**
  * Build a dev bypass JWT with test user claims
  */
 function buildDevJwt() {
@@ -206,14 +234,24 @@ function createAuthRoutes(options = {}) {
     debug('Host header:', req.headers.host);
     debug('X-Forwarded-Proto:', req.headers['x-forwarded-proto']);
     debug('X-Forwarded-Host:', req.headers['x-forwarded-host']);
-    debug('SAML enabled:', config.features.samlEnabled, '| Dev bypass:', config.features.devAuthBypass);
+    debug('SAML enabled:', config.features.samlEnabled, '| Dev bypass:', config.features.devAuthBypass,
+      '| Guest mode:', config.features.guestMode);
+
+    // Resolve domain config early — needed for guest/dev bypass redirects too
+    const domainCfg = resolveDomainConfig(req);
+
+    // Public guest mode — no SSO: mint an anonymous guest JWT and "log in"
+    // immediately. Takes precedence over SAML so public demos work with
+    // SAML_ENABLED=0.
+    if (config.features.guestMode) {
+      const token = buildGuestJwt();
+      debug('Guest mode — redirecting to:', domainCfg.postLoginRedirect);
+      return res.redirect(`${domainCfg.postLoginRedirect}?token=${encodeURIComponent(token)}`);
+    }
 
     if (!config.features.samlEnabled) {
       return res.status(503).json({ error: 'SSO is not configured' });
     }
-
-    // Resolve domain config early — needed for dev bypass redirect too
-    const domainCfg = resolveDomainConfig(req);
 
     // Dev auth bypass — skip SAML, issue test JWT immediately
     if (config.features.devAuthBypass) {
@@ -384,7 +422,9 @@ function createAuthRoutes(options = {}) {
   router.get('/auth/refresh', requireAuth, async (req, res) => {
     // req.user is set by requireAuth middleware
     const { iat, exp, ...claims } = req.user;
-    const token = jwt.sign(claims, config.jwt.secret, { expiresIn: config.jwt.expiry });
+    // Guest tokens keep their longer lifetime across refreshes
+    const expiresIn = claims.guest ? config.jwt.guestExpiry : config.jwt.expiry;
+    const token = jwt.sign(claims, config.jwt.secret, { expiresIn });
 
     // Update lastLogin on refresh
     if (getDb && req.user.username) {
@@ -425,7 +465,6 @@ function createAuthRoutes(options = {}) {
     }
 
     try {
-      const { saml } = getSamlForDomain(req);
       // Try to get user info from JWT for the logout request
       let nameID = '';
       let sessionIndex = '';
@@ -433,12 +472,18 @@ function createAuthRoutes(options = {}) {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         try {
           const decoded = jwt.verify(authHeader.split(' ')[1], config.jwt.secret);
+          // Guest sessions have no IdP session — nothing to single-logout
+          if (decoded.guest) {
+            debug('Guest token — skipping SAML SLO, redirecting to:', fallbackRedirect);
+            return res.redirect(fallbackRedirect);
+          }
           nameID = decoded.sub || '';
         } catch {
           // Token might be expired — that's fine for logout
         }
       }
 
+      const { saml } = getSamlForDomain(req);
       const logoutUrl = await saml.getLogoutUrlAsync(
         { nameID, sessionIndex, nameIDFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified' },
         '',

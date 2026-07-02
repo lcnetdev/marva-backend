@@ -69,6 +69,9 @@ const config = {
   jwt: {
     secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION',
     expiry: process.env.JWT_EXPIRY || '1h',
+    // Guest tokens (PUBLIC_GUEST_MODE) live longer so returning visitors
+    // keep their guest identity and can still see their saved records.
+    guestExpiry: process.env.GUEST_JWT_EXPIRY || '7d',
     refreshWindowMinutes: parseInt(process.env.JWT_REFRESH_WINDOW, 10) || 15,
   },
 
@@ -78,6 +81,10 @@ const config = {
     samlEnabled: process.env.SAML_ENABLED === 'true' || process.env.SAML_ENABLED === '1',
     devAuthBypass: process.env.DEV_AUTH_BYPASS === 'true' || process.env.DEV_AUTH_BYPASS === '1',
     samlDebug: process.env.SAML_DEBUG === 'true' || process.env.SAML_DEBUG === '1',
+    // Public guest mode: /auth/login mints an anonymous guest JWT instead of
+    // using SAML, so public demos (e.g. bibframe.org) work without SSO.
+    // Pair with SAML_ENABLED=0.
+    guestMode: process.env.PUBLIC_GUEST_MODE === 'true' || process.env.PUBLIC_GUEST_MODE === '1',
   },
 
   // ID generation defaults
