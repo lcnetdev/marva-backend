@@ -11572,6 +11572,16 @@
                     </marc:subfield>
                   </xsl:if>
                 </xsl:when>
+                <xsl:when test="self::node()/*/madsrdf:isIdentifiedByAuthority/@rdf:resource != '' and                         self::node()/*/madsrdf:isIdentifiedByAuthority/@rdf:resource != $relURI">
+                  <xsl:variable name="v-0">
+                    <xsl:value-of select="self::node()/*/madsrdf:isIdentifiedByAuthority/@rdf:resource"/>
+                  </xsl:variable>
+                  <xsl:if test="$v-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$v-0"/>
+                    </marc:subfield>
+                  </xsl:if>
+                </xsl:when>
               </xsl:choose>
             </xsl:variable>
             <xsl:variable name="vXmlLang">
@@ -11673,6 +11683,9 @@
                     <xsl:when test="contains($vMainSourceUri, '/subjectSchemes/rvm')">
                       <xsl:text>6</xsl:text>
                     </xsl:when>
+                    <xsl:when test="contains($vMainSourceUri, 'vocabulary/subjectSchemes/')">
+                      <xsl:text>7</xsl:text>
+                    </xsl:when>
                   </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
@@ -11736,6 +11749,11 @@
                   </xsl:when>
                   <xsl:when test="contains($relURI, 'd-nb.info/gnd/')">
                     <xsl:text>gnd</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="contains($vMainSourceUri, 'vocabulary/subjectSchemes/')">
+                    <xsl:call-template name="tUriCode">
+                      <xsl:with-param name="pUri" select="$vMainSourceUri"/>
+                    </xsl:call-template>
                   </xsl:when>
                 </xsl:choose>
               </xsl:variable>
@@ -11991,12 +12009,14 @@
             </xsl:variable>
             <xsl:variable name="vSharedDollar0s">
               <xsl:choose>
-                <xsl:when test="1=1">
+                <xsl:when test="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
                   <xsl:for-each select="*/@rdf:about[not(contains(.,'example.org')) and not(contains(.,'REPLACE'))]">
                     <marc:subfield code="0">
                       <xsl:value-of select="."/>
                     </marc:subfield>
                   </xsl:for-each>
+                </xsl:when>
+                <xsl:when test="*/bf:identifiedBy/bf:Identifier">
                   <xsl:for-each select="*/bf:identifiedBy/bf:Identifier">
                     <marc:subfield code="0">
                       <xsl:variable name="vIdType">
@@ -12014,6 +12034,16 @@
                       </xsl:choose>
                     </marc:subfield>
                   </xsl:for-each>
+                </xsl:when>
+                <xsl:when test="self::node()/*/madsrdf:isIdentifiedByAuthority/@rdf:resource != ''">
+                  <xsl:variable name="v-0">
+                    <xsl:value-of select="self::node()/*/madsrdf:isIdentifiedByAuthority/@rdf:resource"/>
+                  </xsl:variable>
+                  <xsl:if test="$v-0 != ''">
+                    <marc:subfield code="0">
+                      <xsl:value-of select="$v-0"/>
+                    </marc:subfield>
+                  </xsl:if>
                 </xsl:when>
               </xsl:choose>
             </xsl:variable>
@@ -28605,9 +28635,6 @@
       <xsl:when test="position() = 1">
         <marc:datafield>
           <xsl:attribute name="tag">245</xsl:attribute>
-          <xsl:message>
-            <xsl:value-of select="$vLangMainTitle"/>
-          </xsl:message>
           <xsl:attribute name="ind1">
             <xsl:variable name="vInd">
               <xsl:choose>
