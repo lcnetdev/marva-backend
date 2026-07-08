@@ -11750,7 +11750,7 @@
                   <xsl:when test="contains($relURI, 'd-nb.info/gnd/')">
                     <xsl:text>gnd</xsl:text>
                   </xsl:when>
-                  <xsl:when test="contains($vMainSourceUri, 'vocabulary/subjectSchemes/')">
+                  <xsl:when test="not(contains($relURI, 'loc.gov/authorities/')) and                            contains($vMainSourceUri, 'vocabulary/subjectSchemes/')">
                     <xsl:call-template name="tUriCode">
                       <xsl:with-param name="pUri" select="$vMainSourceUri"/>
                     </xsl:call-template>
