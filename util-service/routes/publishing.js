@@ -263,6 +263,7 @@ function createPublishingRoutes(options) {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('staging');
+    const cataloger = req.headers['x-cat-id']
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
     const url = 'https://' + mlConfig.nacoStub.trim() + endpoint;
@@ -271,6 +272,9 @@ function createPublishingRoutes(options) {
     console.log(req.body.marcxml);
     console.log('------');
     console.log('posting to', url);
+
+    console.info("cataloger: ", cataloger)
+    return
 
     const postLogEntry = {
       postingDate: new Date(),
@@ -358,6 +362,10 @@ function createPublishingRoutes(options) {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('production');
+
+    const cataloger = req.headers.get('X-Cat-Id')
+    console.info("cataloger: ", cataloger)
+    return
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
     const url = 'https://' + mlConfig.nacoStub.trim() + endpoint;
@@ -472,7 +480,7 @@ function createPublishingRoutes(options) {
     console.log('validating against: ', url);
     const loc = req.params.loc;
     if (loc == 'stage') {
-      url = url.replace('preprod', 'preprod-8299');
+      // url = url.replace('preprod', 'preprod-8299');
     }
 
     const postLogEntry = {
