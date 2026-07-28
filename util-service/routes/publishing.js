@@ -273,9 +273,6 @@ function createPublishingRoutes(options) {
     console.log('------');
     console.log('posting to', url);
 
-    console.info("cataloger: ", cataloger)
-    return
-
     const postLogEntry = {
       postingDate: new Date(),
       postingEnv: 'staging',
@@ -290,7 +287,8 @@ function createPublishingRoutes(options) {
         password: mlConfig.pass,
         headers: {
           'Content-type': 'application/xml',
-          'user-agent': 'marva-backend'
+          'user-agent': 'marva-backend',
+          'X-Cat-Id': cataloger,
         }
       });
 
@@ -362,10 +360,7 @@ function createPublishingRoutes(options) {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('production');
-
-    const cataloger = req.headers.get('X-Cat-Id')
-    console.info("cataloger: ", cataloger)
-    return
+    const cataloger = req.headers['x-cat-id']
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
     const url = 'https://' + mlConfig.nacoStub.trim() + endpoint;
@@ -389,7 +384,8 @@ function createPublishingRoutes(options) {
         password: mlConfig.pass,
         headers: {
           'Content-type': 'application/xml',
-          'user-agent': 'marva-backend'
+          'user-agent': 'marva-backend',
+          'X-Cat-Id': cataloger,
         }
       });
 
