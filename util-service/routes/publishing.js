@@ -476,7 +476,7 @@ function createPublishingRoutes(options) {
     console.log('validating against: ', url);
     const loc = req.params.loc;
     if (loc == 'stage') {
-      // url = url.replace('preprod', 'preprod-8299');
+      url = url.replace('preprod', 'preprod-8299');
     }
 
     const postLogEntry = {
