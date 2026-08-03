@@ -297,7 +297,7 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       addToPostLog(postLogEntry);
 
-      let postStatus = { status: 'published', details: atob(postResponse.headers['x-folio-result'])};
+      let postStatus = { status: 'published', details: postResponse.headers['x-folio-result']};
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
         postStatus = { status: 'error', server: url, message: postResponse.statusCode };
       }
