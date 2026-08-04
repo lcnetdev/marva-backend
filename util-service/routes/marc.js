@@ -20,7 +20,7 @@ const Marc = marcjs.Marc;
  */
 function runXsltproc(xsltPath, xmlContent) {
   return new Promise((resolve) => {
-    const proc = spawn('xsltproc', [xsltPath, '-']);
+    const proc = spawn('xsltproc', ['--nonet', xsltPath, '-']);
     let stdout = '';
     let stderr = '';
 
