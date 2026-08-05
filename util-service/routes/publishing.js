@@ -363,7 +363,7 @@ function createPublishingRoutes(options) {
     const cataloger = req.headers['x-cat-id']
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
-    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint + "&marva-nar=1";
+    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint + "?marva-nar=1";
 
     console.log('------');
     console.log(req.body.marcxml);
@@ -476,7 +476,7 @@ function createPublishingRoutes(options) {
     console.log('validating against: ', url);
     const loc = req.params.loc;
     if (loc == 'stage') {
-      url = url.replace('preprod', 'preprod-8299');
+      url = url.replace('preprod', 'preprod-8299');  //TODO: undo
     }
 
     const postLogEntry = {
