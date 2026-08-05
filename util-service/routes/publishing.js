@@ -263,9 +263,10 @@ function createPublishingRoutes(options) {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('staging');
+    const cataloger = req.headers['x-cat-id']
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
-    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint;
+    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint + "?marva-nar=1";
 
     console.log('------');
     console.log(req.body.marcxml);
@@ -286,7 +287,8 @@ function createPublishingRoutes(options) {
         password: mlConfig.pass,
         headers: {
           'Content-type': 'application/xml',
-          'user-agent': 'marva-backend'
+          'user-agent': 'marva-backend',
+          'X-Cat-Id': cataloger,
         }
       });
 
@@ -295,7 +297,7 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       addToPostLog(postLogEntry);
 
-      let postStatus = { status: 'published' };
+      let postStatus = { status: 'published', details: postResponse.headers['x-folio-result']};
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
         postStatus = { status: 'error', server: url, message: postResponse.statusCode };
       }
@@ -358,9 +360,10 @@ function createPublishingRoutes(options) {
     const name = req.body.name + '.xml';
     const marcxml = req.body.marcxml;
     const mlConfig = getMarkLogicConfig('production');
+    const cataloger = req.headers['x-cat-id']
 
     const endpoint = '/controllers/ingest/marc-auth.xqy';
-    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint;
+    const url = 'https://' + mlConfig.nacoStub.trim() + endpoint + "?marva-nar=1";
 
     console.log('------');
     console.log(req.body.marcxml);
@@ -381,7 +384,8 @@ function createPublishingRoutes(options) {
         password: mlConfig.pass,
         headers: {
           'Content-type': 'application/xml',
-          'user-agent': 'marva-backend'
+          'user-agent': 'marva-backend',
+          'X-Cat-Id': cataloger,
         }
       });
 
@@ -390,7 +394,7 @@ function createPublishingRoutes(options) {
       postLogEntry.postingBodyResponse = postResponse.body;
       addToPostLog(postLogEntry);
 
-      let postStatus = { status: 'published' };
+      let postStatus = { status: 'published', details: postResponse.headers['x-folio-result'] };
       if (postResponse.statusCode != 201 && postResponse.statusCode != 204) {
         postStatus = { status: 'error', server: url, message: postResponse.statusCode };
       }
@@ -472,7 +476,7 @@ function createPublishingRoutes(options) {
     console.log('validating against: ', url);
     const loc = req.params.loc;
     if (loc == 'stage') {
-      url = url.replace('preprod', 'preprod-8299');
+      url = url.replace('preprod', 'preprod-8299');  //TODO: undo
     }
 
     const postLogEntry = {
