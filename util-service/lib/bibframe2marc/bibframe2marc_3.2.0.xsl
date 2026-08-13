@@ -64,7 +64,19 @@
       <code>$1</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>jamo</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>hani</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>hans</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>hant</lang>
       <code>$1</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
@@ -73,6 +85,18 @@
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
       <lang>jpan</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>hrkt</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>hira</lang>
+      <code>$1</code>
+    </script>
+    <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
+      <lang>kana</lang>
       <code>$1</code>
     </script>
     <script xmlns:bf2marc="http://www.loc.gov/bf2marc">
