@@ -11443,6 +11443,17 @@
                 </xsl:when>
               </xsl:choose>
             </xsl:variable>
+            <xsl:variable name="vLangTagLabel">
+              <xsl:call-template name="tGetBCP47RegField">
+                <xsl:with-param name="x" select="self::node()/*/bflc:marcKey"/>
+              </xsl:call-template>
+            </xsl:variable>
+            <xsl:variable name="vLangTagScript">
+              <xsl:call-template name="tGetBCP47for880">
+                <xsl:with-param name="x" select="self::node()/*/bflc:marcKey"/>
+                <xsl:with-param name="bcp47forRegField" select="$vLangTagLabel"/>
+              </xsl:call-template>
+            </xsl:variable>
             <xsl:variable name="vNameVariantPreNS">
               <xsl:if test="$v880Script != ''">
                 <xsl:choose>
@@ -11978,6 +11989,19 @@
                     </marc:subfield>
                   </xsl:if>
                   <xsl:copy-of select="$vShared0and1"/>
+                  <xsl:variable name="v880-7">
+                    <xsl:variable name="bcp47code">
+                      <xsl:call-template name="tOutputBCP47">
+                        <xsl:with-param name="bcp47orig" select="$vLangTagScript"/>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:value-of select="concat('(bcp47)', $bcp47code)"/>
+                  </xsl:variable>
+                  <xsl:if test="$v880-7 != ''">
+                    <marc:subfield code="7">
+                      <xsl:value-of select="$v880-7"/>
+                    </marc:subfield>
+                  </xsl:if>
                 </marc:datafield>
               </xsl:when>
             </xsl:choose>
