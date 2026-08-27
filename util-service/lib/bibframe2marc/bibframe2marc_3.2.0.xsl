@@ -5256,9 +5256,7 @@
                     <xsl:for-each select="bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]">
                       <xsl:choose>
                         <xsl:when test="position() = 1">
-                          <xsl:call-template name="tChopPunct">
-                            <xsl:with-param name="pString" select="."/>
-                          </xsl:call-template>
+                          <xsl:value-of select="."/>
                         </xsl:when>
                         <xsl:otherwise>
                           <xsl:message>Record <xsl:value-of select="$vRecordId"/>: Unprocessed node <xsl:value-of select="name()"/>. Non-repeatable target element 880 $a.</xsl:message>
@@ -5267,7 +5265,14 @@
                     </xsl:for-each>
                   </xsl:when>
                 </xsl:choose>
+                <xsl:variable name="v880AEndsWithEqual">
+                  <xsl:call-template name="tEndsWith">
+                    <xsl:with-param name="pStr" select="bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]"/>
+                    <xsl:with-param name="pEndChar" select="'='"/>
+                  </xsl:call-template>
+                </xsl:variable>
                 <xsl:choose>
+                  <xsl:when test="$v880AEndsWithEqual = '1'"/>
                   <xsl:when test="                   bf:partNumber[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)] and                   not(                     substring(                       bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)],                        string-length(bf:mainTitle[@xml:lang and not(translate(@xml:lang,$upper,$lower)=$vLangMainTitle)]),                       1) = '.'                   )                 ">
                     <xsl:text>.</xsl:text>
                   </xsl:when>
