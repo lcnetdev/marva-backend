@@ -76,6 +76,31 @@ services:
     # ports:
     #   - 3000:3000
 
+  # CIP lookup (ISBN/barcode -> best OCLC record as MARC + BIBFRAME). Internal only:
+  # it has no auth of its own, so it is reached through util (/cip-lookup) at
+  # http://cip-lookup:8080 and is not exposed on the host or through nginx.
+  cip-lookup:
+    build:
+      context: ./cip-lookup
+      dockerfile: Dockerfile
+    container_name: 'cip-lookup'
+    volumes:
+      # marc2bibframe2 lives outside the image: replace this directory to update the converter.
+      # The stylesheet is read on every conversion, so no rebuild or restart is needed.
+      - ${CIP_LOOKUP_M2B_DIR:-./cip-lookup/marc2bibframe2}:/opt/marc2bibframe2:ro
+    environment:
+      - WC_CLIENTID=${WC_CLIENTID:-}
+      - WC_SECRET=${WC_SECRET:-}
+      - CIP_LOOKUP_OCLC_TOKEN_URL=${CIP_LOOKUP_OCLC_TOKEN_URL:-https://oauth.oclc.org/token}
+      - CIP_LOOKUP_OCLC_SEARCH_URL=${CIP_LOOKUP_OCLC_SEARCH_URL:-https://americas.discovery.api.oclc.org/worldcat/search/v2/brief-bibs}
+      - CIP_LOOKUP_OCLC_MARC_URL=${CIP_LOOKUP_OCLC_MARC_URL:-https://metadata.api.oclc.org/worldcat/manage/bibs}
+      - CIP_LOOKUP_OCLC_SCOPES=${CIP_LOOKUP_OCLC_SCOPES:-WorldCatMetadataAPI wcapi:view_bib wcapi:view_brief_bib}
+      - CIP_LOOKUP_IDLOC_URL=${CIP_LOOKUP_IDLOC_URL:-https://id.loc.gov}
+      # base for the placeholder Work/Instance URIs marc2bibframe2 mints
+      - CIP_LOOKUP_M2B_BASEURI=${CIP_LOOKUP_M2B_BASEURI:-http://example.org/}
+      - CIP_LOOKUP_HTTP_TIMEOUT=${CIP_LOOKUP_HTTP_TIMEOUT:-20}
+    restart: always
+
   reverse:
     container_name: reverse
     hostname: reverse
