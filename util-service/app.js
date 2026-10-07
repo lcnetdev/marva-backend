@@ -25,8 +25,10 @@ const {
   createEventsRoutes,
   createFolioRoutes,
   createLdPanelEnrichmentRoutes,
+  createCipLookupRoutes,
   createFeatureFlagRoutes,
-  createActivityStreamsRoutes
+  createActivityStreamsRoutes,
+  createWorkflowsRoutes
 } = require('./routes');
 const { optionalAuth } = require('./middleware/jwtAuth');
 const { getStagingCache, getProductionCache } = require('./services/cacheService');
@@ -190,6 +192,14 @@ function createApp(options) {
   // LD Panel Enrichment proxy routes
   const ldPanelEnrichmentRouter = createLdPanelEnrichmentRoutes();
   app.use('/', ldPanelEnrichmentRouter);
+
+  // CIP lookup proxy routes (cip-lookup container)
+  const cipLookupRouter = createCipLookupRoutes();
+  app.use('/', cipLookupRouter);
+
+  // Workflows storage (definitions, sessions, preferences; per user)
+  const workflowsRouter = createWorkflowsRoutes({ getDb });
+  app.use('/', workflowsRouter);
 
   // LDP routes (api-staging, api-production)
   // Pass getDb as a function for lazy evaluation

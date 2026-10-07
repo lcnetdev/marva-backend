@@ -16,7 +16,11 @@ const COLLECTIONS = {
   ERROR_REPORTS: 'errorReports',
   USERS: 'users',
   EVENT_LOG: 'eventLog',
-  FEATURE_FLAGS: 'featureFlags'
+  FEATURE_FLAGS: 'featureFlags',
+  // the Workflows feature of the editor (spreadsheet-style batch editing), all per user
+  WORKFLOW_DEFINITIONS: 'workflowDefinitions',
+  WORKFLOW_SESSIONS: 'workflowSessions',
+  WORKFLOW_PREFERENCES: 'workflowPreferences'
 };
 
 // Index definitions for each collection
@@ -65,6 +69,17 @@ const INDEXES = {
       unique: true,
       partialFilterExpression: { type: 'assignment' }
     }
+  ],
+  [COLLECTIONS.WORKFLOW_DEFINITIONS]: [
+    { key: { user: 1, id: 1 }, name: 'user_id_unique_index', unique: true },
+    { key: { user: 1, updated: -1 }, name: 'user_updated_index' }
+  ],
+  [COLLECTIONS.WORKFLOW_SESSIONS]: [
+    { key: { user: 1, id: 1 }, name: 'user_id_unique_index', unique: true },
+    { key: { user: 1, updated: -1 }, name: 'user_updated_index' }
+  ],
+  [COLLECTIONS.WORKFLOW_PREFERENCES]: [
+    { key: { user: 1 }, name: 'user_unique_index', unique: true }
   ]
 };
 

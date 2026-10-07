@@ -99,6 +99,12 @@ const config = {
     apiKey: process.env.LD_PANEL_ENRICHMENT_API_KEY
   },
 
+  // CIP lookup (cip-lookup container)
+  cipLookup: {
+    url: process.env.CIP_LOOKUP_URL || 'http://cip-lookup:8080',
+    timeout: 90000 // ms; a lookup makes several OCLC and id.loc.gov calls
+  },
+
   // Cache settings
   cache: {
     worldcatTtl: 43200, // 12 hours in seconds
