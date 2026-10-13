@@ -1,21 +1,34 @@
 # cip-lookup API
 
-Given a scanned ISBN or inventory barcode for a print book, `cip-lookup` finds the exact
-WorldCat record for that manifestation and returns the data a cataloger needs to finish
-the CIP record, as MARC fields, BIBFRAME RDF/XML and BIBFRAME JSON-LD.
+`cip-lookup` finds the exact WorldCat record for a manifestation and returns it as MARC
+fields, BIBFRAME RDF/XML and BIBFRAME JSON-LD. There are two ways in:
+
+- **`GET /lookup`** — CIP verification: a scanned ISBN or inventory barcode for a print book
+  (or a known LCCN / OCLC number).
+- **`POST /enrich`** — general enrichment: any BIBFRAME record. The identifiers the record
+  already carries (OCLC number, ISBN, LCCN) drive the search, and the converted OCLC record
+  comes back for reuse in the editor.
+
+Both end in the same core (steps 2–4 below).
 
 ## What a request does
 
-1. **id.loc.gov** resolves the scan to an LC instance and its LCCN.
-   - Barcode: keyword search of instances, then the print instance is picked from the hits.
-   - ISBN: the identifier lookup, used only if the ISBN is a valid (not cancelled) ISBN on
-     the instance it returns.
-2. **OCLC** is searched by ISBN, limited to print books cataloged in English. Records that
-   only cite the ISBN in `020 $z` are dropped. The full MARC of each remaining record is fetched.
-3. The **best record** is chosen: LCCN match first, then DLC as cataloging agency, then pcc,
-   then having a `300`, then number of fields.
-4. **marc2bibframe2** converts the best record, and the result is grouped by RDA CIP VER
-   checklist row.
+1. **Identifiers.** `/lookup` resolves the scan through **id.loc.gov** to an LC instance and
+   its LCCN (barcode: keyword search of instances, then the print instance is picked from the
+   hits; ISBN: the identifier lookup, used only if the ISBN is a valid, not cancelled, ISBN on
+   the instance it returns). `/enrich` reads `bf:identifiedBy` on the record's `bf:Instance`
+   and skips cancelled ones (`bf:status`); if the record has only an ISBN, id.loc.gov is asked
+   for the LCCN the same way.
+2. **OCLC** is searched with the most specific identifier that finds anything, limited to
+   records cataloged in English and (for print) to print books:
+   - OCLC number: that record is fetched directly (`oclc.matchedBy` = `oclcNumber`).
+   - ISBN: `bn:` search; records that only cite the ISBN in `020 $z` are dropped (`isbn`).
+   - LCCN: `nl:` search (`lccn`).
+   The full MARC of each remaining record is fetched.
+3. The **best record** is chosen: LCCN match (or being the named OCLC record) first, then DLC
+   as cataloging agency, then pcc, then having a `300`, then number of fields.
+4. **marc2bibframe2** converts the best record; the result is returned whole (`/enrich`, or
+   `full=true`) and grouped by RDA CIP VER checklist row.
 
 ## Endpoints
 
@@ -23,20 +36,50 @@ the CIP record, as MARC fields, BIBFRAME RDF/XML and BIBFRAME JSON-LD.
 
 | Parameter | Required | Default | Meaning |
 | :-- | :-- | :-- | :-- |
-| `barcode` | one of `barcode` / `isbn` | | Inventory barcode. Takes precedence if both are given. |
-| `isbn` | one of `barcode` / `isbn` | | ISBN; hyphens are ignored. |
-| `lccn` | no | looked up | LCCN to confirm the OCLC match with. Skips the id.loc.gov ISBN lookup. Ignored with `barcode`. |
+| `barcode` | one of the four identifiers | | Inventory barcode. Takes precedence if an ISBN is also given. |
+| `isbn` | one of the four identifiers | | ISBN; hyphens are ignored. |
+| `lccn` | one of the four identifiers | looked up | LCCN to confirm the OCLC match with, or to search by when it is the only identifier. Skips the id.loc.gov ISBN lookup. Ignored with `barcode`. |
+| `oclcNumber` | one of the four identifiers | | OCLC number; that record is fetched directly. `(OCoLC)`/`ocm`/`ocn` prefixes are ignored. |
 | `bibframe` | no | `true` | `false` skips the conversion and returns only the MARC data. |
 | `full` | no | `false` | `true` adds the complete MARCXML of each candidate and the complete converted record. |
 
 Boolean parameters accept `true`, `1` or `yes`; anything else is false.
 
 ```
-curl 'http://cip-lookup:8080/lookup?barcode=00539481265'
-curl 'http://cip-lookup:8080/lookup?isbn=9781668072851'
-curl 'http://cip-lookup:8080/lookup?isbn=9781668072851&lccn=2025018671&bibframe=false'
-curl 'http://cip-lookup:8080/lookup?barcode=00539481265&full=true'
+curl 'http://127.0.0.1:9402/lookup?barcode=00539481265'
+curl 'http://127.0.0.1:9402/lookup?isbn=9781668072851'
+curl 'http://127.0.0.1:9402/lookup?isbn=9781668072851&lccn=2025018671&bibframe=false'
+curl 'http://127.0.0.1:9402/lookup?barcode=00539481265&full=true'
+curl 'http://127.0.0.1:9402/lookup?oclcNumber=1522761698'
 ```
+
+### `POST /enrich`
+
+The body is either JSON or the RDF/XML itself:
+
+| Content-Type | Body |
+| :-- | :-- |
+| `application/json` | `{ "rdfxml": "<rdf:RDF …>", "isbn"?, "lccn"?, "oclcNumber"?, "printOnly"?, "bibframe"?, "full"? }` |
+| anything else | The BIBFRAME record as RDF/XML; options go in the query string. |
+
+| Option | Default | Meaning |
+| :-- | :-- | :-- |
+| `isbn`, `lccn`, `oclcNumber` | from the record | Override what the record says. |
+| `printOnly` | from `bf:carrier` | Limit OCLC to print books. Defaults to true unless the carrier is a computer carrier (`cr`, `cd`, …). |
+| `bibframe` | `true` | `false` skips the conversion. |
+| `full` | `true` | The complete converted record and MARCXML are included unless this is `false`. |
+
+The record is parsed as the editor produces it: identifiers are the `bf:identifiedBy`
+children of the (first) `bf:Instance` — `bf:Isbn`, `bf:Lccn`, `bf:OclcNumber`, or a
+`bf:Identifier`/`bf:Local` whose value or assigner/source mentions `OCoLC`. Up to 16 MB
+(`CIP_LOOKUP_MAX_BODY`).
+
+```
+curl -X POST -H 'Content-Type: application/rdf+xml' --data-binary @instance.rdf 'http://127.0.0.1:9402/enrich'
+curl -X POST -H 'Content-Type: application/json' -d '{"rdfxml": "<rdf:RDF …>", "full": false}' 'http://127.0.0.1:9402/enrich'
+```
+
+Through util-service it is `POST /cip-lookup/enrich` with the JSON body (login required).
 
 ### `GET /health`
 
@@ -54,8 +97,10 @@ lookup can succeed; it does not call OCLC or id.loc.gov.
 | :-- | :-- | :-- |
 | 200 | `ok` | A record was found. |
 | 404 | `no_print_instance` | Barcode: id.loc.gov returned zero or several print instances. `idloc.hits` lists what it found. |
-| 404 | `no_oclc_record` | No print, English-cataloged OCLC record has the ISBN in `020 $a`. |
-| 400 | `bad_request` | Neither `isbn` nor `barcode` was given. |
+| 404 | `no_oclc_record` | No (print,) English-cataloged OCLC record for any of the identifiers. |
+| 422 | `no_identifiers` | `/enrich`: the record has no valid ISBN, LCCN or OCLC number. `query.recordIdentifiers` shows what was read. |
+| 400 | `bad_request` | No identifier was given, the body is missing or not well-formed XML/JSON. |
+| 413 | `bad_request` | `/enrich`: the body is larger than `CIP_LOOKUP_MAX_BODY`. |
 | 502 | `upstream_error` | OCLC, id.loc.gov or the converter failed or timed out. |
 | 500 | `error` | Unexpected failure; details are in the container log. |
 
@@ -66,7 +111,7 @@ failure, and on success any warnings (for example `300 $a differs between OCLC r
 
 ```json
 {
-  "query":    { "barcode": "00539481265", "isbn": "9781668072851", "lccn": "2025018671" },
+  "query":    { "barcode": "00539481265", "isbn": "9781668072851", "lccn": "2025018671", "oclcNumber": null, "printOnly": true },
   "status":   "ok",
   "messages": ["300 $a differs between OCLC records"],
   "idloc":    { ... },
@@ -75,7 +120,10 @@ failure, and on success any warnings (for example `300 $a differs between OCLC r
 }
 ```
 
-`query` echoes the input with the ISBN and LCCN that were resolved along the way.
+`query` echoes the input with the identifiers that were resolved along the way. For
+`/enrich` it instead has `source: "record"`, the record's `instance` URI and `carrier`
+code, and `recordIdentifiers` (everything read from the record: `isbns`, `lccn`,
+`oclcNumber`), plus the same resolved `isbn` / `lccn` / `oclcNumber` / `printOnly`.
 
 ### `idloc`
 
@@ -99,13 +147,15 @@ failure, and on success any warnings (for example `300 $a differs between OCLC r
 - ISBNs are `[value, qualifier]` pairs.
 - A hit counts as print when none of its valid ISBNs is qualified as an ebook/electronic
   format and its carrier is not `cr` (online resource).
-- `idloc` is `null` when `lccn` was supplied with an ISBN. For an ISBN lookup `lccn` is
-  `null` when id.loc.gov has no instance, or the instance only lists the ISBN as cancelled.
+- `idloc` is `null` when `lccn` was supplied with an ISBN, or when the search started from an
+  LCCN or OCLC number. For an ISBN lookup `lccn` is `null` when id.loc.gov has no instance, or
+  the instance only lists the ISBN as cancelled.
 
 ### `oclc`
 
 ```json
 {
+  "matchedBy": "isbn",
   "best": {
     "oclcNumber": "1522761698",
     "lccnConfirmed": true,
@@ -120,8 +170,10 @@ failure, and on success any warnings (for example `300 $a differs between OCLC r
 }
 ```
 
-- `lccnConfirmed` is true when the record's `010` matches the LCCN. When false, the record
-  was chosen by the fallback ranking and should be treated as a suggestion.
+- `matchedBy` is which identifier found the records: `oclcNumber`, `isbn` or `lccn`.
+- `lccnConfirmed` is true when the record's `010` matches the LCCN, or the record was fetched
+  by its OCLC number. When false, the record was chosen by the fallback ranking and should be
+  treated as a suggestion.
 - `fields` holds only the tags relevant to the checklist: 010, 020, 040, 042, 100, 110,
   245, 246, 250, 264, 300, 490, 700, 710, 776. Subfields are a list of single-key objects
   so order and repeats are kept.
@@ -230,7 +282,7 @@ a later marc2bibframe2 release that fixes them needs no change here.
 
 The service is the `cip-lookup` block in `../docker-compose.yml` and starts with the rest of
 the stack. It publishes no host port: inside the docker network it is
-`http://cip-lookup:8080`, and clients reach it through util-service, which requires a login:
+`http://127.0.0.1:9402`, and clients reach it through util-service, which requires a login:
 
 ```
 GET /marva/util/cip-lookup?barcode=00539481265      (Authorization: Bearer <jwt>)
@@ -261,8 +313,9 @@ Everything except the shared WorldCat credentials is prefixed `CIP_LOOKUP_`.
 | `CIP_LOOKUP_M2B_BASEURI` | `http://example.org/` | Base for the converter's placeholder URIs |
 | `CIP_LOOKUP_HTTP_TIMEOUT` | `20` | Seconds before an upstream call gives up |
 | `CIP_LOOKUP_MAX_CONVERSIONS` | CPU count | Conversions allowed to run at once |
-| `CIP_LOOKUP_PORT` | `8080` | Port inside the container |
-| `CIP_LOOKUP_URL` | `http://cip-lookup:8080` | Where util-service reaches the service (read by util, not this container) |
+| `CIP_LOOKUP_PORT` | `9402` | Port inside the container |
+| `CIP_LOOKUP_MAX_BODY` | `16777216` | Largest `/enrich` body accepted, in bytes |
+| `CIP_LOOKUP_URL` | `http://127.0.0.1:9402` | Where util-service reaches the service (read by util, not this container) |
 
 ### Updating marc2bibframe2
 
@@ -279,6 +332,8 @@ the same environment variables, so outside the container set `WC_CLIENTID`, `WC_
 ```
 python lookup.py --barcode 00539481265
 python lookup.py 9781668072851 --full
+python lookup.py --lccn 2025018671
+python lookup.py --record instance.rdf          # same as POST /enrich
 ```
 
 ## Limits
@@ -288,6 +343,9 @@ python lookup.py 9781668072851 --full
 - id.loc.gov returns one instance per ISBN. For an ISBN shared by several books,
   `lccnConfirmed` only means the record matches whichever instance came back. A barcode is
   more reliable.
-- Print, English-cataloged records only.
-- Developed against one title plus a few edge cases; the ranking and the print/ebook
+- English-cataloged records only. `/lookup` is print only; `/enrich` follows the record's
+  carrier (`printOnly`).
+- `/enrich` trusts an OCLC number the record carries: that record is returned without checking
+  it against the ISBN or LCCN.
+- Developed against one title plus a dozen editor records; the ranking and the print/ebook
   rule are not tested on a large batch.

@@ -1,13 +1,17 @@
-"""Find the exact WorldCat record for a print manifestation from a scanned ISBN or
-inventory barcode, and return the data useful for finishing a CIP record as MARC
-fields, BIBFRAME RDF/XML and BIBFRAME JSON-LD.
+"""Find the exact WorldCat record for a manifestation and return it as MARC fields,
+BIBFRAME RDF/XML and BIBFRAME JSON-LD.
 
-    id.loc.gov (barcode/ISBN -> instance, LCCN) -> OCLC search + MARC -> marc2bibframe2
+Two ways in, one core:
+    lookup(): a scanned ISBN or inventory barcode (CIP verification)
+              id.loc.gov (barcode/ISBN -> instance, LCCN) -> OCLC search + MARC -> marc2bibframe2
+    enrich(): any BIBFRAME record; its own identifiers (OCLC number, ISBN, LCCN) drive the search
+              record -> OCLC search + MARC -> marc2bibframe2
 
 Used by server.py; also runnable directly:
 
     python lookup.py --barcode 00539481265
     python lookup.py 9781668072851 --full
+    python lookup.py --record instance.rdf
 """
 import argparse
 import base64
@@ -160,22 +164,39 @@ def oclc_get(url, accept, params=None):
                 raise
 
 
-def search(isbn):
+def search(q, print_only=True):
+    """Brief-bib search; q uses WorldCat indexes (bn: ISBN, nl: LCCN, no: OCLC number)."""
     params = {
-        "q": f"bn:{isbn}",
+        "q": q,
         "groupRelatedEditions": "false",
         "groupVariantRecords": "false",
-        "itemSubType": "book-printbook",
         "inCatalogLanguage": "eng",
         "limit": 50,
     }
-    records = json.loads(oclc_get(OCLC_SEARCH_URL, "application/json", params)).get("briefRecords", [])
+    if print_only:
+        params["itemSubType"] = "book-printbook"
+    return json.loads(oclc_get(OCLC_SEARCH_URL, "application/json", params)).get("briefRecords", [])
+
+
+def search_isbn(isbn, print_only=True):
     # bn: also hits 020 $z (e.g. the ebook record citing the print ISBN); isbns[] is $a only
-    return [r for r in records if isbn in r.get("isbns", [])]
+    return [r for r in search(f"bn:{isbn}", print_only) if isbn in r.get("isbns", [])]
 
 
 def norm_lccn(s):
     return re.sub(r"\s+", "", s or "")
+
+
+def norm_isbn(s):
+    """'978-1-66807-285-1 (hardcover)' -> '9781668072851'; None if the value is not an ISBN."""
+    v = (s or "").strip().split(" ")[0].replace("-", "").upper()
+    return v if re.fullmatch(r"\d{13}|\d{9}[\dX]", v) else None
+
+
+def norm_oclc(s):
+    """'(OCoLC)ocm01537921 ' -> '1537921'; None if no number is left."""
+    v = re.sub(r"^\(OCoLC\)|^oc[mn]|^on", "", (s or "").strip(), flags=re.I).lstrip("0")
+    return v if v.isdigit() else None
 
 
 def parse_marc(xml):
@@ -209,6 +230,76 @@ def fetch_candidate(brief, lccn):
     rec["oclcNumber"] = brief["oclcNumber"]
     rec["score"] = score(rec, lccn)
     return rec
+
+
+def find_candidates(isbn=None, lccn=None, oclc_number=None, print_only=True):
+    """Fetch and rank the OCLC records that could be this manifestation.
+
+    Tries the most specific identifier first and stops at the first that finds anything:
+    an OCLC number names one record; an ISBN finds the records with it in 020 $a; an LCCN
+    finds the records citing it in 010. Returns (candidates best first, how they were found).
+    """
+    briefs, how = [], None
+    if oclc_number:
+        try:
+            rec = fetch_candidate({"oclcNumber": oclc_number}, lccn)
+            rec["score"] = (True,) + rec["score"][1:]  # the record names it, so treat it as confirmed
+            return [rec], "oclcNumber"
+        except UpstreamError as e:
+            if "HTTP 404" not in str(e):
+                raise
+    if isbn:
+        briefs, how = search_isbn(isbn, print_only), "isbn"
+    if not briefs and lccn:
+        briefs, how = search(f"nl:{lccn}", print_only), "lccn"
+    if not briefs:
+        return [], None
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        candidates = list(pool.map(lambda b: fetch_candidate(b, lccn), briefs))
+    candidates.sort(key=lambda r: r["score"], reverse=True)
+    return candidates, how
+
+
+# ---- identifiers already in a BIBFRAME record --------------------------------------------------
+def record_identifiers(rdfxml):
+    """What a BIBFRAME record (RDF/XML, as the editor produces it) already says about itself:
+    {instance, isbns, lccn, oclcNumber, carrier}. Cancelled identifiers (bf:status) are skipped."""
+    try:
+        root = ET.fromstring(rdfxml)
+    except ET.ParseError as e:
+        raise ValueError(f"record is not well-formed XML: {e}") from e
+    inst = root.find("bf:Instance", BF_NS)
+    if inst is None:
+        inst = root.find(".//bf:Instance", BF_NS)
+    scope = inst if inst is not None else root
+
+    def valid(cls):
+        return [el for el in scope.iterfind(f"bf:identifiedBy/bf:{cls}", BF_NS) if el.find("bf:status", BF_NS) is None]
+
+    def value(el):
+        return el.findtext("rdf:value", namespaces=BF_NS) or ""
+
+    def oclc_assigned(el):
+        # an OCLC number may also be a generic identifier whose value or assigner/source says OCoLC
+        text = value(el) + " ".join(el.itertext()) + " ".join(
+            s.get(RDF_ABOUT, "") for s in el.iter() if s.get(RDF_ABOUT))
+        return "ocolc" in text.lower()
+
+    oclc = [norm_oclc(value(el)) for el in valid("OclcNumber")]
+    oclc += [norm_oclc(value(el)) for cls in ("Identifier", "Local") for el in valid(cls) if oclc_assigned(el)]
+    lccns = [norm_lccn(value(el)) for el in valid("Lccn")]
+    isbns = [norm_isbn(value(el)) for el in valid("Isbn")]
+    carrier = scope.find("bf:carrier", BF_NS)
+    carrier_uri = carrier.get(RDF_RESOURCE) if carrier is not None else None
+    if carrier is not None and not carrier_uri and len(carrier):
+        carrier_uri = carrier[0].get(RDF_ABOUT)
+    return {
+        "instance": inst.get(RDF_ABOUT) if inst is not None else None,
+        "isbns": sorted({v for v in isbns if v}, key=len, reverse=True),  # 13-digit first
+        "lccn": next((v for v in lccns if v), None),
+        "oclcNumber": next((v for v in oclc if v), None),
+        "carrier": carrier_uri.rsplit("/", 1)[-1] if carrier_uri else None,
+    }
 
 
 # ---- id.loc.gov -----------------------------------------------------------------------------
@@ -417,41 +508,19 @@ def marc_json(rec, full):
     return out
 
 
-def lookup(isbn=None, barcode=None, lccn=None, bibframe=True, full=False):
-    """Run the whole process and return it as one JSON-serializable dict.
-
-    full=True also returns the complete MARCXML and the complete converted record (RDF/XML and JSON-LD).
-    Raises UpstreamError when OCLC, id.loc.gov or the converter fails.
-    """
-    result = {"query": {"barcode": barcode, "isbn": isbn, "lccn": lccn}, "status": "ok", "messages": [],
-              "idloc": None, "oclc": None, "bibframe": None}
-
-    def stop(status, message):
-        result["status"] = status
-        result["messages"].append(message)
+def describe(result, isbn, lccn, oclc_number, print_only, bibframe, full):
+    """The shared second half: find the OCLC record from whatever identifiers we have, then
+    describe it (MARC fields, conflicts) and convert it. Fills result["oclc"] / result["bibframe"]."""
+    result["query"].update({"isbn": isbn, "lccn": lccn, "oclcNumber": oclc_number, "printOnly": print_only})
+    candidates, how = find_candidates(isbn, lccn, oclc_number, print_only)
+    if not candidates:
+        wanted = " / ".join(f"{k} {v}" for k, v in (("OCLC number", oclc_number), ("ISBN", isbn), ("LCCN", lccn)) if v)
+        result["status"] = "no_oclc_record"
+        result["messages"].append(f"No {'print, ' if print_only else ''}English-cataloged record for {wanted}")
         return result
 
-    if barcode:
-        inst, hits = barcode_lookup(barcode)
-        result["idloc"] = {"source": "barcode", "instance": inst["uri"] if inst else None,
-                           "lccn": inst["lccn"] if inst else None, "hits": hits}
-        if not inst:
-            return stop("no_print_instance", f"Could not pick a single print instance for barcode {barcode} ({len(hits)} hits)")
-        isbn, lccn = inst["isbns"][0][0], inst["lccn"]
-    isbn = isbn.replace("-", "").strip()
-    if not lccn:
-        uri, lccn = idloc_lookup(isbn)
-        result["idloc"] = {"source": "isbn", "instance": uri, "lccn": lccn}
-    result["query"]["isbn"], result["query"]["lccn"] = isbn, lccn
-
-    briefs = search(isbn)
-    if not briefs:
-        return stop("no_oclc_record", f"No print, English-cataloged record with {isbn} in 020 $a")
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        candidates = list(pool.map(lambda b: fetch_candidate(b, lccn), briefs))
-    candidates.sort(key=lambda r: r["score"], reverse=True)
-
-    result["oclc"] = {"best": marc_json(candidates[0], full),
+    result["oclc"] = {"matchedBy": how,
+                      "best": marc_json(candidates[0], full),
                       "otherCandidates": [marc_json(r, full) for r in candidates[1:]],
                       "conflicts": {}}
     # the same book described differently across records is worth a human look
@@ -472,17 +541,76 @@ def lookup(isbn=None, barcode=None, lccn=None, bibframe=True, full=False):
     return result
 
 
+def lookup(isbn=None, barcode=None, lccn=None, bibframe=True, full=False, oclc_number=None):
+    """Identifier route: scanned barcode or ISBN (or a known LCCN / OCLC number) -> one JSON-serializable dict.
+
+    full=True also returns the complete MARCXML and the complete converted record (RDF/XML and JSON-LD).
+    Raises UpstreamError when OCLC, id.loc.gov or the converter fails.
+    """
+    result = {"query": {"barcode": barcode, "isbn": isbn, "lccn": lccn, "oclcNumber": oclc_number},
+              "status": "ok", "messages": [], "idloc": None, "oclc": None, "bibframe": None}
+
+    if barcode:
+        inst, hits = barcode_lookup(barcode)
+        result["idloc"] = {"source": "barcode", "instance": inst["uri"] if inst else None,
+                           "lccn": inst["lccn"] if inst else None, "hits": hits}
+        if not inst:
+            result["status"] = "no_print_instance"
+            result["messages"].append(f"Could not pick a single print instance for barcode {barcode} ({len(hits)} hits)")
+            return result
+        isbn, lccn = inst["isbns"][0][0], inst["lccn"]
+    if isbn:
+        isbn = isbn.replace("-", "").strip()
+        if not lccn:
+            uri, lccn = idloc_lookup(isbn)
+            result["idloc"] = {"source": "isbn", "instance": uri, "lccn": lccn}
+    return describe(result, isbn, norm_lccn(lccn) or None, norm_oclc(oclc_number), True, bibframe, full)
+
+
+def enrich(rdfxml, isbn=None, lccn=None, oclc_number=None, print_only=None, bibframe=True, full=True):
+    """Record route: a BIBFRAME record (RDF/XML) -> the OCLC record for the same manifestation, converted.
+
+    The identifiers are read from the record (bf:identifiedBy on the Instance); the arguments
+    override them. print_only defaults to whatever the record's bf:carrier says (print unless
+    it is a computer carrier). full defaults on because the converted record is the point.
+    """
+    ids = record_identifiers(rdfxml)
+    result = {"query": {"source": "record", "instance": ids["instance"], "carrier": ids["carrier"],
+                        "recordIdentifiers": ids},
+              "status": "ok", "messages": [], "idloc": None, "oclc": None, "bibframe": None}
+    isbn = (isbn or "").replace("-", "").strip() or (ids["isbns"][0] if ids["isbns"] else None)
+    lccn = norm_lccn(lccn) or ids["lccn"]
+    oclc_number = norm_oclc(oclc_number) or ids["oclcNumber"]
+    if print_only is None:
+        print_only = not (ids["carrier"] or "").startswith("c")
+    if not (isbn or lccn or oclc_number):
+        result["status"] = "no_identifiers"
+        result["messages"].append("The record has no valid ISBN, LCCN or OCLC number to search WorldCat with")
+        return result
+    if isbn and not lccn and not oclc_number:
+        uri, lccn = idloc_lookup(isbn)
+        result["idloc"] = {"source": "isbn", "instance": uri, "lccn": lccn}
+    return describe(result, isbn, lccn, oclc_number, print_only, bibframe, full)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("isbn", nargs="?")
     ap.add_argument("--barcode", help="inventory barcode; resolves the print instance (and its ISBN/LCCN) from id.loc.gov")
     ap.add_argument("--lccn", help="LCCN to confirm the match; looked up from id.loc.gov if omitted")
+    ap.add_argument("--oclc", help="OCLC number of the record to fetch")
+    ap.add_argument("--record", help="BIBFRAME RDF/XML file to enrich; its identifiers are used unless overridden")
     ap.add_argument("--no-bibframe", action="store_true", help="skip the marc2bibframe2 conversion")
     ap.add_argument("--full", action="store_true", help="include the complete MARCXML and converted record")
     args = ap.parse_args()
-    if not (args.isbn or args.barcode):
-        ap.error("give an ISBN or --barcode")
-    print(json.dumps(lookup(args.isbn, args.barcode, args.lccn, not args.no_bibframe, args.full), indent=2, ensure_ascii=False))
+    if args.record:
+        with open(args.record, "rb") as f:
+            out = enrich(f.read(), args.isbn, args.lccn, args.oclc, None, not args.no_bibframe, True)
+    elif args.isbn or args.barcode or args.lccn or args.oclc:
+        out = lookup(args.isbn, args.barcode, args.lccn, not args.no_bibframe, args.full, args.oclc)
+    else:
+        ap.error("give an ISBN, --barcode, --lccn, --oclc or --record")
+    print(json.dumps(out, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":

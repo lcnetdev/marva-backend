@@ -101,7 +101,7 @@ const config = {
 
   // CIP lookup (cip-lookup container)
   cipLookup: {
-    url: process.env.CIP_LOOKUP_URL || 'http://cip-lookup:8080',
+    url: process.env.CIP_LOOKUP_URL || 'http://127.0.0.1:9402',
     timeout: 90000 // ms; a lookup makes several OCLC and id.loc.gov calls
   },
 

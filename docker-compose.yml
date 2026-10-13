@@ -3,6 +3,7 @@ services:
 
 
   util:
+    network_mode: host
     build:
       context: ./
       dockerfile: config/util.docker
@@ -17,14 +18,17 @@ services:
       - ./tmp:/tmp
     env_file:
       - .env
+    environment:
+      # network_mode: host -> no container DNS, everything is on loopback
+      - MONGO_URI=mongodb://127.0.0.1:27017/?directConnection=true
+      - CIP_LOOKUP_URL=http://127.0.0.1:9402
     depends_on:
       database:
         condition: service_healthy
     restart: always
-    # ports:
-    #   - 5001:5001
 
   scriptshifter:
+    network_mode: host
     image: lcnetdev/scriptshifter:latest
     volumes:
       - ./tmp:/tmp
@@ -33,6 +37,7 @@ services:
     restart: always
 
   database:
+    network_mode: host
     image: 'mongo:8'
     container_name: 'mongo' # give your container a name
     environment:
@@ -40,21 +45,24 @@ services:
       # We don't need to define root stuff because we are not using auth in the db
       #- MONGO_INITDB_ROOT_USERNAME=bfe2 # set your container root username
       #- MONGO_INITDB_ROOT_PASSWORD=bfe2 # set your contatner root password
-    command: ["--replSet", "rs0", "--bind_ip_all"]
+    # network_mode: host puts mongod on the host's 27017, so bind to loopback only.
+    command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1"]
     volumes:
       - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./config/mongo-healthcheck.js:/mongo-healthcheck.js:ro
       - ./database_files:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "try { var s = rs.status(); s.myState === 1 } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}); false }"]
+      # Initiates rs0 on a fresh data dir, and re-points the member at
+      # localhost:27017 if the data dir still says mongo:27017 (pre host-mode).
+      test: ["CMD", "mongosh", "--quiet", "--file", "/mongo-healthcheck.js"]
       interval: 10s
       timeout: 10s
       retries: 12
       start_period: 40s
     restart: always
 
-    # we don't need to expose the mongo server, it only talks internally to the other containers
-    #ports:
-    #  - '37017-37019:27017-27019'
+    # bound to 127.0.0.1 above: reachable from the host and the other
+    # host-network containers, not from the network
 
 
 
@@ -62,6 +70,7 @@ services:
   # ldpjs services removed - LDP functionality migrated to util-service
 
   dctap-dancer:
+    network_mode: host
     build:
       context: ./dctap-dancer
       dockerfile: Dockerfile
@@ -78,8 +87,9 @@ services:
 
   # CIP lookup (ISBN/barcode -> best OCLC record as MARC + BIBFRAME). Internal only:
   # it has no auth of its own, so it is reached through util (/cip-lookup) at
-  # http://cip-lookup:8080 and is not exposed on the host or through nginx.
+  # http://127.0.0.1:9402 and is not proxied by nginx.
   cip-lookup:
+    network_mode: host
     build:
       context: ./cip-lookup
       dockerfile: Dockerfile
@@ -99,9 +109,12 @@ services:
       # base for the placeholder Work/Instance URIs marc2bibframe2 mints
       - CIP_LOOKUP_M2B_BASEURI=${CIP_LOOKUP_M2B_BASEURI:-http://example.org/}
       - CIP_LOOKUP_HTTP_TIMEOUT=${CIP_LOOKUP_HTTP_TIMEOUT:-20}
+      # largest BIBFRAME record POST /enrich accepts, in bytes
+      - CIP_LOOKUP_MAX_BODY=${CIP_LOOKUP_MAX_BODY:-16777216}
     restart: always
 
   reverse:
+    network_mode: host
     container_name: reverse
     hostname: reverse
     depends_on:
@@ -116,10 +129,7 @@ services:
       - ./dist/prod-quartz:/srv/prod/marva
       - ./dist/stage-quartz:/stage-quartz
       - ./dist/stage-quartz:/srv/stage/marva
-    ports:
-      - 9401:8080
-      - 9400:80
+    # network_mode: host ignores port mappings; nginx.conf listens on
+    # 9400 (production) and 9401 (staging) directly.
     restart: always
-      # - 443:443
-    # volumes:
 
