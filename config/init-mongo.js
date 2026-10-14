@@ -12,4 +12,9 @@
 //         }
 // );
 
-rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]})
+// NOTE: do not call rs.initiate() here. This script runs against the image's
+// temporary init mongod, which is bound to 127.0.0.1 only, so a member host of
+// 'mongo:27017' can never match it and the initiate fails with
+// "No host described in new configuration ... maps to this node", killing the
+// container on a fresh install. The healthcheck in docker-compose.yml initiates
+// the replica set once the real mongod is up with --bind_ip_all.
