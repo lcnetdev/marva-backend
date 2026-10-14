@@ -364,7 +364,11 @@ def process_archive(path: str, sink: Sink, db_name: Optional[str],
     prune_stats = None
     files = []
     seen_db = db_name
-    with tarfile.open(path, mode="r|gz", bufsize=CHUNK) as tar:
+    # Leave bufsize at the tarfile default. In streaming gzip mode bufsize is the size of each
+    # compressed piece fed to zlib, and the stdlib copies the whole decompressed piece on every
+    # read. filter_bson reads one document at a time, so a large bufsize makes each document cost a
+    # copy of (bufsize * compression ratio) bytes: with 8 MB that was ~1.5 MB/s on production.
+    with tarfile.open(path, mode="r|gz") as tar:
         for member in tar:
             if not member.isfile():
                 continue
