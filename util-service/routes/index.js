@@ -20,8 +20,10 @@ const { createUsersRoutes } = require('./users');
 const { createEventsRoutes } = require('./events');
 const { createFolioRoutes } = require('./folio');
 const { createLdPanelEnrichmentRoutes } = require('./ldPanelEnrichment');
+const { createCipLookupRoutes } = require('./cipLookup');
 const { createFeatureFlagRoutes } = require('./featureFlags');
 const { createActivityStreamsRoutes } = require('./activityStreams');
+const { createWorkflowsRoutes } = require('./workflows');
 
 module.exports = {
   createAdminRoutes,
@@ -40,6 +42,8 @@ module.exports = {
   createEventsRoutes,
   createFolioRoutes,
   createLdPanelEnrichmentRoutes,
+  createCipLookupRoutes,
   createFeatureFlagRoutes,
-  createActivityStreamsRoutes
+  createActivityStreamsRoutes,
+  createWorkflowsRoutes
 };
