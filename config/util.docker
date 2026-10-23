@@ -2,8 +2,9 @@
 # FROM node:18.15.0-alpine3.17
 # FROM node:lts-alpine3.20  # Node 20.14.0
 
-# NODE VERSION is 25.x
-FROM node:25-alpine 
+# NODE VERSION is 26.x. 25.x went EOL June 2026 and never received the
+# CVE-2026-111497 (Brotli RCE) fix; 26.12.1+ is patched. Rebuild with --pull.
+FROM node:26-alpine
 
 RUN apk add --no-cache git
 RUN apk add --no-cache libxslt
