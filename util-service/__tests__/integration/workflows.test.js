@@ -108,6 +108,18 @@ describe('Workflows storage', () => {
       expect(none.body.definitions).toHaveLength(0);
     });
 
+    it('keeps the graph of the advanced builder, and only an object as one', async () => {
+      const graph = { version: 1, editor: { graph: { id: 'g', nodes: [{ type: 'wf-source', id: 'source', inputs: {}, outputs: {} }], connections: [] }, graphTemplates: [] } };
+      await request(app).put('/workflows/definitions/wf-abc').set('Authorization', alice).send(Object.assign({}, definition, { graph })).expect(200);
+      const mine = await request(app).get('/workflows/definitions').set('Authorization', alice).expect(200);
+      expect(mine.body.definitions[0].graph).toEqual(graph);
+      // a definition without one, and one that clears it
+      await request(app).put('/workflows/definitions/wf-abc').set('Authorization', alice).send(Object.assign({}, definition, { graph: null })).expect(200);
+      const cleared = await request(app).get('/workflows/definitions').set('Authorization', alice).expect(200);
+      expect(cleared.body.definitions[0].graph).toBeNull();
+      await request(app).put('/workflows/definitions/wf-abc').set('Authorization', alice).send(Object.assign({}, definition, { graph: 'nope' })).expect(400);
+    });
+
     it('two users can use the same id', async () => {
       await request(app).put('/workflows/definitions/wf-abc').set('Authorization', alice).send(definition).expect(200);
       await request(app).put('/workflows/definitions/wf-abc').set('Authorization', bob).send(Object.assign({}, definition, { name: 'Bobs' })).expect(200);
@@ -152,6 +164,14 @@ describe('Workflows storage', () => {
       expect(one.body.session.rows).toEqual([]);
       expect(one.body.session.hiddenComponents).toEqual([]);
       expect(one.body.session.name).toBe('From def');
+    });
+
+    it('keeps the records the graph dropped', async () => {
+      const dropped = [{ id: 'r9', sourceUrl: 'https://id.loc.gov/resources/instances/9.cbd.rdf', scanned: '999', label: 'Old book', lccn: null, reason: 'Published 1998 which is before 2010', at: 1700000000000 }];
+      await request(app).put('/workflows/sessions/ws-1').set('Authorization', alice).send(Object.assign({}, session, { dropped })).expect(200);
+      const one = await request(app).get('/workflows/sessions/ws-1').set('Authorization', alice).expect(200);
+      expect(one.body.session.dropped).toEqual(dropped);
+      await request(app).put('/workflows/sessions/ws-1').set('Authorization', alice).send(Object.assign({}, session, { dropped: 'nope' })).expect(400);
     });
 
     it('validates the body', async () => {

@@ -7,7 +7,8 @@
  * record endpoints (ldp), a session only keeps pointers to them.
  *
  * Definitions - the workflows a user has made: which profile, which components (columns), which
- *               enrichments. The built in ones ship with the editor and are not stored.
+ *               enrichments, and the graph of the advanced builder when it has one (kept as the
+ *               editor sends it, an object). The built in ones ship with the editor and are not stored.
  *   GET    /workflows/definitions          -> { definitions: [...] }
  *   PUT    /workflows/definitions/:id      -> { definition }   (create or replace)
  *   DELETE /workflows/definitions/:id      -> { deleted: true|false }
@@ -33,8 +34,9 @@ const { requireAuth } = require('../middleware/jwtAuth');
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,80}$/;
 
 // what a document may contain, anything else sent is dropped
-const DEFINITION_FIELDS = ['name', 'description', 'profileId', 'components', 'enrichments', 'created', 'updated'];
-const SESSION_FIELDS = ['workflowId', 'name', 'created', 'updated', 'definition', 'hiddenComponents', 'rows'];
+const DEFINITION_FIELDS = ['name', 'description', 'profileId', 'components', 'enrichments', 'graph', 'created', 'updated'];
+// dropped: the records the definition's graph kept off the sheet
+const SESSION_FIELDS = ['workflowId', 'name', 'created', 'updated', 'definition', 'hiddenComponents', 'rows', 'dropped'];
 const PREFERENCE_FIELDS = ['columnWidths', 'workflows'];
 
 function pick(body, fields) {
@@ -120,6 +122,9 @@ function createWorkflowsRoutes(options) {
     if (definition.enrichments !== undefined && !Array.isArray(definition.enrichments)) {
       return res.status(400).json({ error: 'enrichments must be an array' });
     }
+    if (definition.graph !== undefined && definition.graph !== null && !isPlainObject(definition.graph)) {
+      return res.status(400).json({ error: 'graph must be an object' });
+    }
     const now = Date.now();
     definition.id = req.params.id;
     definition.user = req.workflowUser;
@@ -194,6 +199,9 @@ function createWorkflowsRoutes(options) {
     }
     if (session.hiddenComponents !== undefined && !Array.isArray(session.hiddenComponents)) {
       return res.status(400).json({ error: 'hiddenComponents must be an array' });
+    }
+    if (session.dropped !== undefined && !Array.isArray(session.dropped)) {
+      return res.status(400).json({ error: 'dropped must be an array' });
     }
     const now = Date.now();
     session.id = req.params.id;
