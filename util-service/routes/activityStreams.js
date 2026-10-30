@@ -132,8 +132,7 @@ function buildActivityItem(index = {}) {
     id: pickObjectId(index),
     title: index.title || null,
     updated: published,
-    //type: toBibframeTypes(index.profiletypes),
-    type: ["bf:Instance"],
+    type: toBibframeTypes(index.profiletypes),
     url: toUrlLinks(index.externalid)
   };
 
