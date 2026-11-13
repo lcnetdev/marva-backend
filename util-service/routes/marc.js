@@ -8,19 +8,27 @@
 
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const { spawn } = require('child_process');
 const marcjs = require('marcjs');
 const Marc = marcjs.Marc;
 
+// Applies a stylesheet to untrusted XML with entity substitution, DTD loading,
+// network and file access all off. Do not swap this back to the xsltproc CLI:
+// xsltproc always expands external entities in its input (--nonet does not
+// stop file:// ones), which let a caller read files off the server.
+const SAFE_XSLT = path.join(__dirname, '..', 'scripts', 'safe_xslt.py');
+
 /**
- * Run xsltproc with XML piped via stdin (avoids temp file I/O)
+ * Run an XSLT transform with XML piped via stdin (avoids temp file I/O)
  * @param {string} xsltPath - Path to XSLT file
- * @param {string} xmlContent - XML content to transform
+ * @param {string} xmlContent - XML content to transform (untrusted)
  * @returns {Promise<{stdout: string, stderr: string}>} Result with stdout/stderr for legacy compatibility
  */
-function runXsltproc(xsltPath, xmlContent) {
+function runXslt(xsltPath, xmlContent) {
   return new Promise((resolve) => {
-    const proc = spawn('xsltproc', ['--nonet', xsltPath, '-']);
+    // -I: isolated mode, ignore PYTHON* env vars and don't import from cwd/script dir
+    const proc = spawn('python3', ['-I', SAFE_XSLT, xsltPath]);
     let stdout = '';
     let stderr = '';
 
@@ -35,6 +43,9 @@ function runXsltproc(xsltPath, xmlContent) {
       resolve({ stdout: '', stderr: err.message });
     });
 
+    // If the helper exits before reading its input (python3 or lxml missing),
+    // the write fails with EPIPE; without a listener that would crash the server.
+    proc.stdin.on('error', () => {});
     proc.stdin.write(xmlContent);
     proc.stdin.end();
   });
@@ -150,7 +161,7 @@ function createMarcRoutes() {
 
     // Process each XSLT (pipe XML via stdin, no temp file)
     for (const xslt of xslts) {
-      const marcxml = await runXsltproc(xslt.fullPath, rdfxml);
+      const marcxml = await runXslt(xslt.fullPath, rdfxml);
       results.push({ version: xslt.version, results: marcxml });
     }
 
