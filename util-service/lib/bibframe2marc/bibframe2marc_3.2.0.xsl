@@ -2317,6 +2317,21 @@
         </xsl:choose>
         <xsl:variable name="vPosition-4">
           <xsl:choose>
+            <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Text'] and                        bf:Work/bf:relation/bf:Relation/bf:relationship//@rdf:*[1] = 'http://id.loc.gov/vocabulary/relationship/partof' and                         bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
+              <xsl:text>a</xsl:text>
+            </xsl:when>
+            <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Cartopgraphy'] and                        bf:Work/bf:relation/bf:Relation/bf:relationship//@rdf:*[1] = 'http://id.loc.gov/vocabulary/relationship/partof' and                         bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
+              <xsl:text>a</xsl:text>
+            </xsl:when>
+            <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Manuscript'] and                        bf:Work/bf:relation/bf:Relation/bf:relationship//@rdf:*[1] = 'http://id.loc.gov/vocabulary/relationship/partof' and                         bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
+              <xsl:text>a</xsl:text>
+            </xsl:when>
+            <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/NotatedMusic'] and                        bf:Work/bf:relation/bf:Relation/bf:relationship//@rdf:*[1] = 'http://id.loc.gov/vocabulary/relationship/partof' and                         bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
+              <xsl:text>a</xsl:text>
+            </xsl:when>
+            <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/StillImage'] and                        bf:Work/bf:relation/bf:Relation/bf:relationship//@rdf:*[1] = 'http://id.loc.gov/vocabulary/relationship/partof' and                         bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
+              <xsl:text>d</xsl:text>
+            </xsl:when>
             <xsl:when test="bf:Work/rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bibframe/Collection'] and                        bf:Instance[not(rdf:type[@rdf:resource='http://id.loc.gov/ontologies/bflc/SecondaryInstance'])]/bf:issuance//@rdf:*[1] = 'http://id.loc.gov/vocabulary/issuance/mono'">
               <xsl:text>d</xsl:text>
             </xsl:when>
@@ -11354,7 +11369,7 @@
         <xsl:with-param name="vRecordId" select="$vRecordId"/>
         <xsl:with-param name="vAdminMetadata" select="$vAdminMetadata"/>
       </xsl:apply-templates>
-      <xsl:for-each select="bf:Instance/bf:custodialHistory[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] |                   bf:Item/bf:custodialHistory[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
+      <xsl:for-each select="bf:Instance/bf:custodialHistory[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] |                   bf:Item/bf:custodialHistory[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))] |                   bf:Instance/bf:hasItem/bf:Item/bf:custodialHistory[not(@xml:lang) or contains(translate(@xml:lang,$upper,$lower),translate($pCatScript,$upper,$lower))]">
         <xsl:variable name="vLangTagLabel">
           <xsl:call-template name="tGetBCP47RegField">
             <xsl:with-param name="x" select="."/>
@@ -37090,7 +37105,7 @@
             <xsl:value-of select="$vInd"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text> </xsl:text>
+            <xsl:text>1</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
@@ -37171,7 +37186,7 @@
             <xsl:value-of select="$vInd"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text> </xsl:text>
+            <xsl:text>1</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
@@ -37676,6 +37691,15 @@
       <xsl:when test="$pOrgProp/*/bf:code[@rdf:datatype='http://id.loc.gov/datatypes/orgs/code']">
         <xsl:value-of select="$pOrgProp/*/bf:code[@rdf:datatype='http://id.loc.gov/datatypes/orgs/code']"/>
       </xsl:when>
+      <xsl:when test="$pOrgProp/*/madsrdf:code[@rdf:datatype='http://id.loc.gov/datatypes/orgs/code']">
+        <xsl:value-of select="$pOrgProp/*/madsrdf:code[@rdf:datatype='http://id.loc.gov/datatypes/orgs/code']"/>
+      </xsl:when>
+      <xsl:when test="$pOrgProp/*[contains(@rdf:about, 'id.loc.gov/vocabulary/organizations/')]/bf:code">
+        <xsl:value-of select="$pOrgProp/*/bf:code[1]"/>
+      </xsl:when>
+      <xsl:when test="$pOrgProp/*[contains(@rdf:about, 'id.loc.gov/vocabulary/organizations/')]/madsrdf:code">
+        <xsl:value-of select="$pOrgProp/*/madsrdf:code[1]"/>
+      </xsl:when>
       <xsl:when test="$pOrgProp/*/@rdf:about and contains(substring-after($pOrgProp/*/@rdf:about,'://'),'/')">
         <xsl:call-template name="tUriCode">
           <xsl:with-param name="pUri" select="substring-after($pOrgProp/*/@rdf:about,'://')"/>
@@ -38097,7 +38121,6 @@
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:message>Desire to look up <xsl:value-of select="$pUri"/> but using xsltproc. No lookup occurred.</xsl:message>
-                  <xsl:value-of select="$pUri"/>
                 </xsl:otherwise>
               </xsl:choose>
             </xsl:when>
@@ -38131,9 +38154,6 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$pUri"/>
-        </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:choose>
