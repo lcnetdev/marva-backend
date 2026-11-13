@@ -7,7 +7,10 @@
 FROM node:26-alpine
 
 RUN apk add --no-cache git
-RUN apk add --no-cache libxslt
+# python3 + lxml run util-service/scripts/safe_xslt.py (MARC preview), which
+# replaced the xsltproc CLI: xsltproc cannot parse untrusted XML safely.
+# py3-lxml brings in libxslt, so no separate libxslt install is needed.
+RUN apk add --no-cache python3 py3-lxml
 
 RUN npm install -g forever nodemon @vue/cli @vue/cli-service-global grunt marcjs
 
