@@ -19,6 +19,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import threading
 import time
 import urllib.error
@@ -40,7 +41,7 @@ IDLOC_URL = os.environ.get("CIP_LOOKUP_IDLOC_URL", "https://id.loc.gov").rstrip(
 M2B_XSL = os.environ.get("CIP_LOOKUP_M2B_XSL", "/opt/marc2bibframe2/xsl/marc2bibframe2.xsl")
 M2B_BASEURI = os.environ.get("CIP_LOOKUP_M2B_BASEURI", "http://example.org/")
 HTTP_TIMEOUT = float(os.environ.get("CIP_LOOKUP_HTTP_TIMEOUT", "20"))
-# xsltproc is the only CPU-heavy step; cap how many run at once
+# the XSLT conversion is the only CPU-heavy step; cap how many run at once
 MAX_CONVERSIONS = int(os.environ.get("CIP_LOOKUP_MAX_CONVERSIONS", str(os.cpu_count() or 2)))
 
 NS = {"m": "http://www.loc.gov/MARC21/slim"}
@@ -378,6 +379,10 @@ def barcode_lookup(barcode):
 DUPLICATED_PROPS = ("provisionActivity", "publicationStatement", "productionStatement",
                     "distributionStatement", "manufactureStatement", "relation")
 _conversions = threading.BoundedSemaphore(MAX_CONVERSIONS)
+# Runs the stylesheet with entity substitution, DTD loading and network access off. Do not
+# swap this back to the xsltproc CLI: it expands external entities in its input, so a
+# <!ENTITY x SYSTEM "file:///..."> in a record would be read off this server into the output.
+SAFE_XSLT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "safe_xslt.py")
 
 
 def fix_converter_output(root):
@@ -425,7 +430,9 @@ def to_bibframe(marcxml):
         raise UpstreamError(f"marc2bibframe2 stylesheet not found at {M2B_XSL}")
     with _conversions:
         try:
-            result = subprocess.run(["xsltproc", "--stringparam", "baseuri", M2B_BASEURI, M2B_XSL, "-"],
+            # --allow-local-read: marc2bibframe2 loads its own conf/*.xml tables with document()
+            result = subprocess.run([sys.executable, "-I", SAFE_XSLT, "--allow-local-read",
+                                     "--stringparam", "baseuri", M2B_BASEURI, M2B_XSL],
                                     input=marcxml, capture_output=True, timeout=120)
         except (OSError, subprocess.TimeoutExpired) as e:
             raise UpstreamError(f"marc2bibframe2 conversion failed: {e}") from e

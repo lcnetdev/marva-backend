@@ -1,11 +1,11 @@
 FROM python:3.14-alpine
 
-# xsltproc runs marc2bibframe2; rdflib (pure Python) produces the JSON-LD
-RUN apk add --no-cache libxslt \
- && pip install --no-cache-dir "rdflib>=7,<8"
+# lxml (libxslt) runs marc2bibframe2 via safe_xslt.py, which unlike the xsltproc CLI can
+# parse the record with entity substitution off; rdflib (pure Python) produces the JSON-LD
+RUN pip install --no-cache-dir "rdflib>=7,<8" "lxml>=6,<7"
 
 WORKDIR /app
-COPY lookup.py server.py ./
+COPY lookup.py server.py safe_xslt.py ./
 
 ENV PYTHONUNBUFFERED=1 \
     CIP_LOOKUP_PORT=8080 \

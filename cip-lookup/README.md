@@ -266,7 +266,7 @@ The local checklist fields 906, 955 and 963 have no marc2bibframe2 mapping and n
 
 ## Converter output fixes
 
-marc2bibframe2 run with `xsltproc` has two output problems, which the service repairs
+marc2bibframe2 run with libxslt has two output problems, which the service repairs
 after conversion rather than changing the stylesheets:
 
 - **Duplicates:** the nodes built from 264 and 490 are emitted twice. A provision activity,
@@ -327,7 +327,7 @@ no rebuild or restart is needed. `marc2bibframe2/VERSION` records which release 
 
 `lookup.py` runs the same process without the server and prints the JSON response. It reads
 the same environment variables, so outside the container set `WC_CLIENTID`, `WC_SECRET` and
-`CIP_LOOKUP_M2B_XSL` (and install `rdflib` and `xsltproc`):
+`CIP_LOOKUP_M2B_XSL` (and install `rdflib` and `lxml`):
 
 ```
 python lookup.py --barcode 00539481265
