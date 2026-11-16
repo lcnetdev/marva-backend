@@ -15,6 +15,7 @@ const express = require('express');
 const router = express.Router();
 const ldpService = require('../services/ldpService');
 const { requireAuth } = require('../middleware/jwtAuth');
+const { NotRdfError } = require('../utils/rdfParser');
 
 /**
  * Send a stored record as inert data.
@@ -80,6 +81,9 @@ function createLdpRoutes(options) {
       );
       return res.json(result);
     } catch (err) {
+      if (err instanceof NotRdfError) {
+        return res.status(400).json({ error: 'Not an RDF/XML document: ' + err.message });
+      }
       console.error('Error storing staging record:', err);
       return res.status(500).json({ error: err.message });
     }
@@ -130,6 +134,9 @@ function createLdpRoutes(options) {
       );
       return res.json(result);
     } catch (err) {
+      if (err instanceof NotRdfError) {
+        return res.status(400).json({ error: 'Not an RDF/XML document: ' + err.message });
+      }
       console.error('Error storing production record:', err);
       return res.status(500).json({ error: err.message });
     }

@@ -45,13 +45,12 @@ describe('LDP record responses are served as inert data', () => {
     app = appFor();
   });
 
+  // seeded straight into Mongo: the PUT routes no longer accept this, but
+  // records stored before that check existed are still there to be served
   it('sandboxes a production record containing an svg script', async () => {
-    await request(app)
-      .put('/api-production/ldp/e1794454507253')
-      .set('Authorization', token)
-      .set('Content-Type', 'application/rdf+xml')
-      .send(SVG_SCRIPT)
-      .expect(200);
+    await seedCollection('resourcesProduction', [
+      { index: { eid: 'e1794454507253' }, data: SVG_SCRIPT }
+    ]);
 
     // no Authorization: this is the URL a victim would be sent
     const response = await request(app)
@@ -65,12 +64,9 @@ describe('LDP record responses are served as inert data', () => {
   });
 
   it('sandboxes a staging record containing an svg script', async () => {
-    await request(app)
-      .put('/api-staging/ldp/e2222222222222')
-      .set('Authorization', token)
-      .set('Content-Type', 'application/rdf+xml')
-      .send(SVG_SCRIPT)
-      .expect(200);
+    await seedCollection('resourcesStaging', [
+      { index: { eid: 'e2222222222222' }, data: SVG_SCRIPT }
+    ]);
 
     const response = await request(app)
       .get('/api-staging/ldp/e2222222222222')

@@ -16,7 +16,20 @@
  * - time: Human-readable timestamp
  */
 
-const { XMLParser } = require('fast-xml-parser');
+const { XMLParser, XMLValidator } = require('fast-xml-parser');
+
+const RDF_NS = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+
+/**
+ * Thrown when a body offered for storage is not an RDF/XML document.
+ * The message is safe to return to the client.
+ */
+class NotRdfError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NotRdfError';
+  }
+}
 
 // Configure parser to avoid scientific notation issues with EIDs like "e1234567890123"
 const parser = new XMLParser({
@@ -41,9 +54,10 @@ function ensureArray(value) {
 /**
  * Extract index fields from RDF/XML content
  * @param {string} rdfXml - The RDF/XML content to parse
+ * @param {object} [preParsed] - The document if the caller has already parsed it
  * @returns {object} Index object with all lclocal fields
  */
-function extractIndexFromRdf(rdfXml) {
+function extractIndexFromRdf(rdfXml, preParsed = null) {
   const now = new Date();
   const defaultTimestamp = Math.floor(now.getTime() / 1000);
   const defaultTime = now.toJSON().slice(0, 19).replace('T', ':');
@@ -53,7 +67,7 @@ function extractIndexFromRdf(rdfXml) {
   }
 
   try {
-    const parsed = parser.parse(rdfXml);
+    const parsed = preParsed || parser.parse(rdfXml);
 
     // Navigate to void:DatasetDescription element
     // Handle both with and without rdf:RDF wrapper
@@ -127,7 +141,81 @@ function extractIndexFromRdf(rdfXml) {
   }
 }
 
+/**
+ * Say what is wrong with a parsed document's top level, or null if it is an
+ * optional XML declaration followed by a single rdf:RDF element.
+ *
+ * The root's prefix is resolved through its own xmlns declaration, so a
+ * document that merely names its root "rdf:RDF" in some other namespace does
+ * not pass, and <RDF xmlns="...rdf-syntax-ns#"> does.
+ * @param {object} parsed - Output of parser.parse()
+ * @returns {string|null}
+ */
+function rdfRootProblem(parsed) {
+  const keys = Object.keys(parsed).filter(k => k !== '?xml');
+
+  // e.g. <?xml-stylesheet?>, which a browser would apply to the document
+  const instruction = keys.find(k => k.startsWith('?'));
+  if (instruction) {
+    return `processing instruction <${instruction.slice(0, 80)}> is not allowed outside the root element`;
+  }
+
+  if (keys.length === 0) return 'no root element';
+  if (keys.length > 1 || Array.isArray(parsed[keys[0]])) return 'more than one root element';
+
+  const name = keys[0];
+  const root = parsed[name];
+  const colon = name.indexOf(':');
+  const prefix = colon === -1 ? '' : name.slice(0, colon);
+  const local = colon === -1 ? name : name.slice(colon + 1);
+  const declared = root && typeof root === 'object'
+    ? root[prefix ? `@_xmlns:${prefix}` : '@_xmlns']
+    : undefined;
+
+  if (local !== 'RDF' || declared !== RDF_NS) {
+    return `root element is <${name.slice(0, 80)}>, expected rdf:RDF in the RDF namespace`;
+  }
+  return null;
+}
+
+/**
+ * Check that a body is an RDF/XML document and extract its index fields.
+ *
+ * This keeps things that are not records out of the store. It is not what
+ * makes stored content safe to serve: script can sit inside a valid rdf:RDF
+ * document, which is why the GET routes send records sandboxed.
+ * @param {string} rdfXml - The body offered for storage
+ * @returns {object} Index object, as extractIndexFromRdf
+ * @throws {NotRdfError} If the body is not well-formed XML with an rdf:RDF root
+ */
+function validateAndIndexRdf(rdfXml) {
+  if (typeof rdfXml !== 'string' || rdfXml.trim() === '') {
+    throw new NotRdfError('empty or non-text body');
+  }
+
+  const wellFormed = XMLValidator.validate(rdfXml);
+  if (wellFormed !== true) {
+    throw new NotRdfError(`not well-formed XML (${wellFormed.err.msg} at line ${wellFormed.err.line})`);
+  }
+
+  let parsed;
+  try {
+    parsed = parser.parse(rdfXml);
+  } catch (err) {
+    throw new NotRdfError(`not well-formed XML (${err.message})`);
+  }
+
+  const problem = rdfRootProblem(parsed);
+  if (problem) {
+    throw new NotRdfError(problem);
+  }
+
+  return extractIndexFromRdf(rdfXml, parsed);
+}
+
 module.exports = {
   extractIndexFromRdf,
+  validateAndIndexRdf,
+  NotRdfError,
   parser  // Export parser for testing
 };
