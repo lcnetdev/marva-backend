@@ -5,7 +5,7 @@
  * Replaces the ldpjs service functionality.
  */
 
-const { extractIndexFromRdf } = require('../utils/rdfParser');
+const { validateAndIndexRdf } = require('../utils/rdfParser');
 
 // Collection names for staging and production environments
 const COLLECTIONS = {
@@ -30,13 +30,14 @@ function getCollectionName(env) {
  * @param {string} rdfContent - RDF/XML content
  * @param {object} cache - In-memory cache objects { byEid, byUser }
  * @returns {Promise<object>} Result with status
+ * @throws {NotRdfError} If rdfContent is not an RDF/XML document; nothing is stored
  */
 async function storeRecord(db, env, eid, rdfContent, cache = null) {
   const collectionName = getCollectionName(env);
   const collection = db.collection(collectionName);
 
-  // Extract index fields from the RDF/XML
-  const index = extractIndexFromRdf(rdfContent);
+  // Refuse anything that is not RDF/XML, and extract index fields from what is
+  const index = validateAndIndexRdf(rdfContent);
 
   // URL eid takes precedence over embedded eid
   index.eid = eid;

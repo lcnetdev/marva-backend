@@ -15,6 +15,27 @@ const express = require('express');
 const router = express.Router();
 const ldpService = require('../services/ldpService');
 const { requireAuth } = require('../middleware/jwtAuth');
+const { NotRdfError } = require('../utils/rdfParser');
+
+/**
+ * Send a stored record as inert data.
+ *
+ * Records are whatever a client PUT, and browsers render any +xml type as a
+ * live document, so an <svg><script> (or XHTML, or an xml-stylesheet) in a
+ * record would run on our origin if someone opened the URL directly. The CSP
+ * sandbox makes the browser treat the document as origin-less with scripts
+ * off; nosniff stops it second-guessing the type. Neither affects fetch()/XHR,
+ * which is how the editor reads these.
+ */
+function sendRdf(res, rdfContent) {
+  return res
+    .set({
+      'Content-Security-Policy': "sandbox; default-src 'none'",
+      'X-Content-Type-Options': 'nosniff'
+    })
+    .type('application/rdf+xml')
+    .send(rdfContent);
+}
 
 /**
  * Create LDP routes with database and cache injection
@@ -60,6 +81,9 @@ function createLdpRoutes(options) {
       );
       return res.json(result);
     } catch (err) {
+      if (err instanceof NotRdfError) {
+        return res.status(400).json({ error: 'Not an RDF/XML document: ' + err.message });
+      }
       console.error('Error storing staging record:', err);
       return res.status(500).json({ error: err.message });
     }
@@ -78,7 +102,7 @@ function createLdpRoutes(options) {
         return res.status(404).json({ error: 'Record not found' });
       }
 
-      return res.type('application/rdf+xml').send(rdfContent);
+      return sendRdf(res, rdfContent);
     } catch (err) {
       console.error('Error retrieving staging record:', err);
       return res.status(500).json({ error: err.message });
@@ -110,6 +134,9 @@ function createLdpRoutes(options) {
       );
       return res.json(result);
     } catch (err) {
+      if (err instanceof NotRdfError) {
+        return res.status(400).json({ error: 'Not an RDF/XML document: ' + err.message });
+      }
       console.error('Error storing production record:', err);
       return res.status(500).json({ error: err.message });
     }
@@ -128,7 +155,7 @@ function createLdpRoutes(options) {
         return res.status(404).json({ error: 'Record not found' });
       }
 
-      return res.type('application/rdf+xml').send(rdfContent);
+      return sendRdf(res, rdfContent);
     } catch (err) {
       console.error('Error retrieving production record:', err);
       return res.status(500).json({ error: err.message });
