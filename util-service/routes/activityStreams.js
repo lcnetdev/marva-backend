@@ -76,11 +76,21 @@ function toBibframeTypes(profiletypes) {
  * @returns {object[]}
  */
 function toUrlLinks(externalid) {
-  return asArray(externalid).map(href => ({
-    type: 'Link',
-    href: `${href}.rdf`,
-    mediaType: 'application/rdf+xml'
-  }));
+    return externalid
+        .filter(l => l.includes('instances'))
+        .flatMap(href => ([
+            {
+                type: 'Link',
+                href: `${href}.cbd.rdf`,
+                mediaType: 'application/rdf+xml',
+                name: 'Bounded description package (LC-normalized BCP47 codes)'
+            },{
+                type: 'Link',
+                href: `${href}.bd.rdf`,
+                mediaType: 'application/rdf+xml',
+                name: 'Bounded description package (BCP47 codes conform to BCP47 spec)'
+            }
+        ]));
 }
 
 /**
